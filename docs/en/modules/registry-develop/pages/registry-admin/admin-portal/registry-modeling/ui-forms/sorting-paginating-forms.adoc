@@ -1,0 +1,78 @@
+= Sorting and paginating UI forms
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+The platform allows you to sort modeled forms by various parameters:
+
+* xref:#sorting-by-name[by name];
+* xref:#sorting-by-date[by creation or modification date and time].
+
+There is also the row xref:#pagination[pagination] option available.
+
+[#sorting-by-name]
+== Sorting forms by name
+
+The platform provides you with the ability to sort existing forms by name in the Regulations administrator portal. This type of sorting allows generating an ascending or descending list of forms for convenience and improved user experience.
+
+. Navigate to the section for managing UI forms.
++
+.Forms management section
+image::registry-admin/admin-portal/ui-forms/ui-forms-1.png[]
+
+. In the `Form name` column, select the sorting option:
+
+* `↓` — Descending sorting by name (from `A` to `Z` alphabetically).
+* `↑` — Ascending sorting by name (from `Z` to `A` alphabetically).
+
++
+.Sorting forms by name
+image::registry-admin/admin-portal/ui-forms/sorting/form-sorting-1.png[]
+
+[#sorting-by-date]
+== Sorting forms by creation or modification date and time
+
+The platform allows sorting existing forms by creation or modification date and time in the Regulations administrator portal. This type of sorting enables creating an ascending or descending list of forms for convenience and improved user experience.
+
+. Navigate to the section for managing UI forms.
++
+.Forms management section
+image::registry-admin/admin-portal/ui-forms/ui-forms-1.png[]
+
+. In the `Creation date` column, select the sorting option by creation date and time:
+
+* `↓` — Descending sorting (most recent on top of the list).
+* `↑` — Ascending sorting (most recent at the bottom of the list).
+
++
+.Sorting forms by the date and time modified
+image::registry-admin/admin-portal/ui-forms/sorting/form-sorting-2.png[]
+
+. In the `Modified` column, select the sorting option by modification date and time of the form:
+
+* `↓` — Descending sorting (most recent on top of the list).
+* `↑` — Ascending sorting (most recent at the bottom of the list).
+
++
+.Sorting forms by creation date and time
+image::registry-admin/admin-portal/ui-forms/sorting/form-sorting-3.png[]
+
+[NOTE]
+====
+After editing a form, the modification date and time change, and the form moves up the list if descending sorting is chosen.
+
+UI forms can only be edited within the change candidate version. To apply the changes from the candidate version to the master version, they need to be applied. After applying the changes to the master version, all candidate branches will automatically receive updates, including the form's modification dates.
+
+This approach allows developers to work in different change candidate branches and explore the history of forms.
+====
+
+[#pagination]
+== Pagination
+
+You can switch between pages and adjust the number of rows displayed on a page. For this, scroll down to the bottom of the page.
+
+* To switch between pages, use the `>` (next) or `<` (previous) icons.
+
+* Here you can also change the number of rows displayed on a page (10 by default).
+
+image::registry-admin/admin-portal/ui-forms/sorting/form-sorting-4.png[]

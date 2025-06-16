@@ -1,0 +1,33 @@
+= General recommendations
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+|===
+|Name |Criticality
+
+|<<_gn_01>> |Medium
+|===
+
+== Audit cases
+
+[_gn_01]
+[#_gn_01]
+=== GN-01. Components in development
+IMPORTANT: Criticality: Medium
+
+Description ::
+Some registry regulation components (business processes, forms, tables, etc.) may still be under development or created solely for demonstration purposes.
+Such components must not be included in the registry regulation when releasing software into production.
+
+Impact ::
+* **System instability:** Unfinished components may contain bugs or incomplete functionality.
+* **Security risks:** Unreviewed components may introduce vulnerabilities.
+* **Incorrect functionality:** Demonstration components may not reflect real business processes, misleading users.
+
+Recommendations ::
+* **Verification and testing:** Before releasing to production, thoroughly verify all components. Ensure they are complete and have passed all necessary testing stages.
+* **Removal of demonstration components:** Components created solely for demo purposes must be excluded from the production release.
+* **Regular audit:** Perform regular audits to detect components still under development and remove them from the registry regulation.

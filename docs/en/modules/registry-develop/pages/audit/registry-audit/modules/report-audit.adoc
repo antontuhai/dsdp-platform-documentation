@@ -1,0 +1,117 @@
+= Audit of analytical report templates
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+|===
+|Name |Criticality
+
+|<<_rp_01>> |High
+|<<_rp_02>> |High
+|<<_rp_03>> |Low
+|<<_rp_04>> |Medium
+|<<_rp_05>> |Medium
+|<<_rp_06>> |High
+|===
+
+== Audit cases
+
+[#_rp_01]
+=== RP-01. Filtering in CTE
+IMPORTANT: Criticality: High
+
+Description ::
+When using common table expressions (CTE) in SQL queries, it is critically important to apply filtering directly inside the CTE body, not in the main query that references the CTE.
+
+Impact ::
+Applying filters outside the CTE may lead to significantly slower processing times. Unfiltered CTEs can extract excessive data from the database, making the computation of the CTE and the overall query much slower.
+
+Recommendations ::
+Always apply filters inside the CTE body rather than in the main query. This optimizes your SQL queries, reduces unnecessary computational load, and improves overall data processing time.
+
+[#_rp_02]
+=== RP-02. Indexes for analytical views
+IMPORTANT: Criticality: High
+
+Description ::
+When creating analytical views (using the `ext:createAnalyticsView` tag), you must also create indexes for the fields that will be used for search operations.
+
+Impact ::
+Failure to create indexes can significantly degrade database query performance, negatively impacting system performance, response times, and user satisfaction.
+
+Recommendations ::
+* Create indexes for fields used in search queries within analytical views using the `ext:createAnalyticsIndex` tag to ensure fast data retrieval and reduced server response times.
+* Remove duplicate or unnecessary indexes promptly using the `ext:dropAnalyticsIndex` tag.
+
+NOTE: See also: xref:registry-develop:audit/registry-audit/modules/dm-audit.adoc#_dm_02[DM-02. Indexes for analytical views].
+
+[#_rp_03]
+=== RP-03. Standard SQL functions
+IMPORTANT: Criticality: Low
+
+Description ::
+Use standard SQL functions provided by the platform to solve common tasks when modeling queries for analytical reports.
+
+Impact ::
+* Reduces the amount of custom code needed.
+* Functions provided by the platform are optimized and account for multiple use cases.
+* Speeds up development time by reusing already implemented and tested solutions.
+
+Recommendations ::
+The following typical tasks can use standard SQL functions:
+
+* Escaping special characters in search parameters — `f_regexp_escape`, `f_like_escape`
+* Applying RLS (row-level security) — `f_starts_with_array`
+
+NOTE: For more details, refer to: xref:registry-develop:data-modeling/data/physical-model/liquibase-ddm-ext.adoc[Liquibase extensions for data modeling].
+
+[#_rp_04]
+=== RP-04. Changes in analytical reports for different roles
+IMPORTANT: Criticality: Medium
+
+Description ::
+When making changes to a report or a related query, you must update every copy of the report for each role.
+The authorization model for analytical reports creates a separate directory with queries and reports for each role, leading to the duplication of files.
+
+Impact ::
+* Inconsistent report states for different roles. For example, fixing an error for one role leaves outdated versions visible to other roles until all copies are updated.
+* Potentially increased release or hotfix delivery time due to additional work needed across multiple role-specific copies.
+
+Recommendations ::
+* After making changes in the _Report modeling web interface_, replicate the changes across all relevant roles.
+* If a report needs role-specific customization, create a separate report instance with its own lifecycle.
+* When copying reports for roles, do not change file names or resource identifiers generated initially to maintain traceability.
+
+[#_rp_05]
+=== RP-05. Scheduled queries
+IMPORTANT: Criticality: Medium
+
+Description ::
+Minimize the frequency of scheduled query updates.
+Scheduled queries can automatically refresh results without manual user intervention, improving the user experience, but excessive scheduling can overload the system.
+
+Impact ::
+* Additional load on the analytical database due to frequent query executions.
+* Increased load on temporary storage for query results.
+
+Recommendations ::
+Analyze business requirements carefully to determine when query results genuinely need refreshing and adjust schedules to minimize system impact.
+
+[#_rp_06]
+=== RP-06. Access rights configuration for analytical views
+IMPORTANT: Criticality: High
+
+Description ::
+When configuring access rights for analytical views (using the `ext:grant` tag), apply the principle of least privilege: grant access only to the specific views required by the reports, not to all views.
+
+NOTE: Report access is configured at the user account level (for reports and queries) and the data source level (for analytical views).
+
+Impact ::
+See: xref:registry-develop:audit/registry-audit/modules/sec-audit.adoc#_sc_01[Principle of least privilege].
+
+Recommendations ::
+* Use a granular approach by granting access to specific views using the `ext:grant` tag for each role.
+* Use the `ext:grantAll` tag to grant full access only to the `analytics_admin` role necessary for report development in the _Report modeling web interface_.
+* Always set the attribute `runAlways="true"` when using `ext:grant` or `ext:grantAll` to maintain authorization consistency after changes to analytical views.

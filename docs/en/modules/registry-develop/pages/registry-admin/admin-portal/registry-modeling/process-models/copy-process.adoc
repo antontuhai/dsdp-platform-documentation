@@ -1,0 +1,22 @@
+= Copying business processes
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+Utilize the functionality of business process copying. This allows for easier and faster creation of process diagrams. There is no need to model processes from scratch—simply select a similar diagram that has been previously modeled and copy it.
+
+Open the *Process models* section and click on the copying icon next to the desired business process.
+
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-15.png[]
+
+As a result, a _complete copy_ of the selected process (duplicate) is created, meaning that the entire code is copied.
+
+[NOTE]
+====
+* The default business name of the process is created with the prefix *`Copy_`*.
+* The default technical name of the process is *`new-bp`*.
+====
+
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-16.png[]
+
+include::partial$snippets/admin-portal-master-candidate-edit-en.adoc[]

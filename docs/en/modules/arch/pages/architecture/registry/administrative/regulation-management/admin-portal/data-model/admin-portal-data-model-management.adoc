@@ -1,0 +1,97 @@
+= Managing registry data model table structures
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+include::admin-portal-data-model-problem-description.adoc[]
+
+include::admin-portal-data-model-scenarious.adoc[]
+
+== Out of scope
+
+- Working with data types
+- Working with analytical representations
+- Resolving conflicts using the administrative portal's regulations management
+
+== Principles of working with changes in the database
+
+=== Existing mechanism for working with changes in the database
+
+The existing mechanism for working with changes in the database is based on two principles:
+
+- Creating the Liquibase changeset
+- Saving the Liquibase changeset in git
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/tables-management-luqibase-current-flow.svg[]
+
+=== Advanced mechanism for working with changes in the database
+
+It is suggested to extend the existing mechanism for working with database changes by adding a _DataModelSnapshot_ document to the git repository, which will reflect the data model's state.
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/tables-management-luqibase-extended-flow.svg[]
+
+=== Basic concepts
+
+- _DataModelSnapshot_ model: JSON documents reflecting the state of the registry regulations data model.
+- Diff Document: The document showing the difference between the two states of the registry regulations data model.
+- History Document: The document reflects the history of changes made to the master or candidate versions of the registry regulations.
+
+=== DataModelSnapshot structure description
+
+[NOTE]
+The above data model was obtained from analyzing the existing state of liquibase changelogs, including the functionality analysis of the custom liquibase tags.
+
+[plantuml, db-tables-management-er, svg]
+----
+include::partial$architecture/registry/administrative/regulation-management/admin-portal/db-tables-management-er.puml[]
+----
+
+=== Description of the file structure in the file system
+
+The _DataModelSnapshot_ model has the following file structure in the file system:
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/tables-management-datamodel-filestructure.svg[]
+
+- The list of tables is determined by the list of files in the file system.
+- The name of the table file matches the name of the table and is `<table-name>.json`.
+- The name of the role permission file corresponds to the name id role permission and is the following: `<role-id>.json`.
+
+==== Temporary file structure in the file system (first iteration)
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/tables-management-datamodel-filestructure-simple.svg[]
+
+=== Description of the DataModelSnapshot data format
+
+We use the JSON format as a technical tool for describing the data structure of _DataModelSnapshot_. As a description of the contract document, https://json-schema.org/ [JsonSchema] is used.
+
+xref:arch:architecture/registry/administrative/regulation-management/admin-portal/data-model/admin-portal-data-model-json-schema-description.adoc[DataModelSnapshotSchema]
+
+include::domain-model-description.adoc[]
+include::domain-attributes-description.adoc[]
+
+include::admin-portal-data-model-principles.adoc[]
+
+== Technical solution description
+
+=== Container
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/tables-management-c4-container.svg[]
+
+=== Admin portal API container
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/tables-management-c4-apiContainer.svg[]
+
+=== CICD container
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/tables-management-c4-cicd-container.svg[]
+
+== System component interaction scenario when editing the structure of the registry tables
+
+[plantuml, db-tables-management-sequence, svg]
+----
+include::partial$architecture/registry/administrative/regulation-management/admin-portal/db-tables-management-sequence.puml[]
+----
+
+== General diagram of the system components' interaction when editing the data model of the registry regulations
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/tables-management-component-structure.svg[]

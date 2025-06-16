@@ -1,0 +1,601 @@
+= Selecting and acting on one or multiple rows in a table
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Data structure modeling
+
+Create a data model for the registry based on the example below.
+
+[TIP]
+====
+[%collapsible]
+.Where can I find reference data modeling examples?
+=====
+include::partial$snippets/demo-reg-reference-examples-en.adoc[]
+
+Examples of _.xml_ schemas and associated CSV files for creating a data model can be found in the demo registry's regulations by searching with keywords.
+
+The schema for creating tables and search criteria will be available under the name *_licenseTable.xml_*.
+
+The reference CSV file with data for importing into the database will be available under the name *_licences.csv_*.
+
+The file to populate the `licences` table with data will be available under the name *_populateLicenses.xml_*.
+=====
+====
+
+. Create a new data type, table, and search conditions.
++
+This data model creates a new user-defined data type and table, as well as it defines the search condition.
++
+._Базова модель даних для нашого прикладу_
+._Basic data model for our example_
+[%collapsible]
+====
+[source,xml]
+----
+  <changeSet author="registry owner" id="enum license_status">
+    <comment>CREATE TYPE license_status</comment>
+    <ext:createType name="license_status">
+      <ext:asEnum>
+        <ext:label translation="діюча">active</ext:label>
+        <ext:label translation="анульована">canceled</ext:label>
+      </ext:asEnum>
+    </ext:createType>
+  </changeSet>
+
+  <changeSet author="registry owner" id="table licenses">
+    <comment>CREATE TABLE licenses</comment>
+    <ext:createTable tableName="licenses" ext:historyFlag="true">
+      <column name="license_id" type="UUID">
+        <constraints nullable="false" primaryKey="true" primaryKeyName="pk_licenses"/>
+      </column>
+      <column name="number" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="date_received" type="DATE">
+        <constraints nullable="false"/>
+      </column>
+      <column name="date_terminated" type="DATE">
+        <constraints nullable="false"/>
+      </column>
+      <column name="full_name" type="TEXT">
+        <constraints nullable="false"/>
+      </column>
+      <column name="licensing_status" type="license_status">
+        <constraints nullable="false"/>
+      </column>
+    </ext:createTable>
+  </changeSet>
+
+  <changeSet author="registry owner" id="searchCondition search_licenses_by_status">
+    <comment>CREATE search condition search_licenses_by_status</comment>
+    <ext:createSearchCondition name="search_licenses_by_status">
+      <ext:table name="licenses" alias="l">
+        <ext:column name="license_id"/>
+        <ext:column name="number"/>
+        <ext:column name="date_received"/>
+        <ext:column name="date_terminated"/>
+        <ext:column name="full_name"/>
+        <ext:column name="licensing_status" searchType="equal"/>
+      </ext:table>
+    </ext:createSearchCondition>
+  </changeSet>
+----
+====
++
+A custom data type called *`license_status`* is being created with two possible values: "`active`" and "`canceled`".
++
+A new table called *`licenses`* is being created with the following columns:
+
+* *`license_id`*: unique identifier for the license (`UUID`).
+* *`number`*: license number (text format).
+* *`date_received`*: date when the license was received (date format).
+* *`date_terminated`*: date when the license was terminated (date format).
+* *`full_name`*: full name of the license owner (text format).
+* *`licensing_status`*: license status (of type `license_status`).
++
+A search condition named *`search_licenses_by_status`* is being created, which allows searching for licenses in the *`licenses`* table based on their status. This search condition assumes that the value of the *`licensing_status`* column should be equal to the specified search value (*`searchType="equal"`*).
+
+[start=2]
+. Prepare a CSV reference file with data for importing into the database.
++
+This CSV reference file contains data about licenses that can be loaded into the database (table "licenses"). The file contains the following columns:
+
+* *`number`*: license number.
+* *`licensing_status`*: license status (active or canceled).
+* *`date_received`*: date when the license was received.
+* *`date_terminated`*: date when the license was terminated.
+* *`full_name`*: full name of the license owner (organization or individual).
++
+These data can be imported into the *`licenses`* table of the database.
+
+. Import the data from the CSV reference file using the data loading function call to the database: *`CALL p_load_table_from_csv()`*. To do this, create a separate file named *_populateLicences.xml_* with the following structure:
++
+[source,xml]
+----
+  <property  name="dataLoadPath"  value="/tmp/data-load/"/>
+
+  <changeSet author="registry owner" id="load licenses">
+    <sql dbms="postgresql" endDelimiter=";" splitStatements="true" stripComments="true">
+      CALL p_load_table_from_csv('licenses','${dataLoadPath}licenses.csv', array['number', 'licensing_status', 'date_received', 'date_terminated', 'full_name']);
+    </sql>
+  </changeSet>
+----
++
+This function uses the built-in Liquibase mechanism to import data from a CSV file into a database table. The following components are used:
+
+* *`<property>`*: sets the value of the `dataLoadPath` variable, which specifies the path to the directory containing CSV files for data loading.
+* *`<changeSet>`*: describes the changes to apply to the database. In this case, it's a call to the *`p_load_table_from_csv()`* function to import data from the CSV file into the *`licenses`* table.
+* *`<sql>`*: describes the SQL query that invokes the `p_load_table_from_csv` function. The query includes the name of the `licenses` table, the path to the CSV file (using the `${dataLoadPath}` variable), and an array of columns to import from the file.
+
+TIP: For more information on creating a data model and loading data into the registry, please refer to xref:data-modeling/data/physical-model/overview.adoc[] and  xref:data-modeling/initial-load/data-initial-data-load-pl-pgsql.adoc[].
+
+== Reference business process
+
+=== Creating pools for processes
+
+This is a complex business process consisting of a main process and subprocesses that it invokes.
+
+The BPMN diagram includes the main process and two subprocesses initiated by the main process through a *Call Activity*. These subprocesses are similar and differ only in the names of tasks and their execution order.
+
+In our example, we will examine the main process and briefly discuss one of the subprocesses -- license cancellation.
+
+[TIP]
+====
+[%collapsible]
+.Where can I find an example of a reference business process?
+=====
+include::partial$snippets/demo-reg-reference-examples-en.adoc[]
+
+An example of a BPMN process diagram will be available in the demo-registry's regulations by searching for the keywords -- *_edit-grid-rows-action_*. The names of the forms can be found inside the corresponding User Tasks of the business process in the *`Form key`* field.
+=====
+====
+
+=== Selecting all licensing authorities from the database using search condition
+
+Model a Service Task and utilize the delegate *Search entities in data factory*.
+
+Based on the created data model, this task is responsible for searching and selecting licenses from the *`licenses`* table. The *`licenses`* table contains the following columns:
+
+* `license_id`: unique identifier of the license (`UUID`).
+* `number`: license number (`TEXT`).
+* `date_received`: date of license issuance (`DATE`).
+* `date_terminated`: date of license termination (`DATE`).
+* `full_name`: full name of the licensing authority (`TEXT`).
+* `licensing_status`: license status (data type: `license_status`).
+
+The *`license_status`* data type is an enumeration with two possible values:
+
+* *`active`*: the license is valid.
+* *`canceled`*: the license is canceled.
+
+The current task uses the search condition *`search_licenses_by_status`* to filter licenses in the *`licenses`* table based on their licensing status. In this case, the task searches for licenses with the status *`active`*.
+
+Thus, the service task performs a search for active licenses in the *`licenses`* table based on the defined search conditions, passing the system access token for query authorization to the database.
+
+The parameters used for configuration and obtaining search results are as follows: ::
+
+. In the *Inputs* section, set the input parameter *`resource`* as *`search-licenses-by-status`* to determine the resource/API endpoint to be used for the search.
++
+TIP: Here, the endpoint `search-licenses-by-status` is generated based on the search criterion `search_licenses_by_status` defined in the data model.
++
+. In the *Inputs > Search variables* section, provide the search parameters to be applied as key-value pairs (*`Map`*):
+
+* `Key: *licensingStatus*`
+* `Value: *active*`
++
+In this case, we are searching for licenses with the status *`active`*.
++
+. In the *Inputs > X-Access-Token* section, pass the system access token for query authorization to the database:
++
+----
+${system_user().accessToken}
+----
++
+. In the *Outputs > Result variable* section, set the output parameter as the variable *`licensesResponse`*, which will store the response from the database for further use.
+
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-1.png[]
+
+===  Data preparation script for displaying in tabular form
+
+Model the service task and use the following Groovy script.
+
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-2.png[]
+
+.Скрипт для отримання списку ліцензій та виведення їх на форму
+.Script for retrieving alList of licenses and displaying them on a form
+====
+[source,groovy]
+----
+def licenses = licensesResponse.responseBody.elements()
+
+        def payload = S([:], 'application/json')
+        payload.prop('licenses', licenses)
+        set_transient_variable('payload', payload)
+----
+====
+
+This script performs the following actions:
+
+. Extracts the list of licenses from the response *`licensesResponse.responseBody.elements()`*. The variable *`licenses`* contains the list of active licenses obtained from the previous service task.
+
+. Creates a new JSON object *`payload`* with an empty dictionary.
+
+. Adds the list of licenses obtained in the first step to the JSON object *`payload`*, under the key *`licenses`*.
+
+. Stores the JSON object *`payload`* in a transient variable (a temporary variable that exists only during the process execution) named *`payload`*.
+
+=== Performing an action on data in a single row of a table
+
+Model a User Task and associate it with the corresponding UI form using the *`Form key`* key.
+
+The main goal of this form is to allow the user to select an action to perform on the data in a specific row of a table using the *Edit Grid* component (such as changing the date or canceling a license).
+
+Perform the following configurations: ::
+
+. In the *Name* field, enter the name of the User Task.
+. Apply the delegate template -- *`User Form`*.
+. In the *`ID`* field, enter the task identifier -- *`defineActionActivity`*.
+. In the *`Form key`* field, define the key to connect with the corresponding modeled form of the business process -- *`feature-edit-grid-rows-action-define`*.
+. In the *Assignee* field, specify the variable for the person assigned to the current task -- *`${initiator}`*.
+. In the *`Form data pre-population`* field, pass the data to the UI form as the variable *`${payload}`*.
+
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-3.png[]
+
+=== Modeling an XOR gateway and adding logic through condition expressions
+
+Model an XOR Gateway that determines which subprocess to call based on the *`action codes`* selected on the previous form.
+
+TIP: Action codes are buttons in the context menu (three dots), modeled on the UI form using the *`Edit Grid`* element.
+
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-4.png[]
+
+[NOTE]
+====
+If the multiple rows (records) checkbox is selected on the *`defineActionActivity`* form, a subprocess will be triggered for each of these rows according to the selected button on the UI form (in this context, these should be _separate buttons_ modeled using the *Button* component). Launching a subprocess for each selected row is made possible by the *`Multi-instance`* feature (see _xref:#call-activity-cancel[]_ ).
+
+If you select the context menu (three dots) next to a specific row, the corresponding subprocess will only be triggered for the data in that row. The specific subprocess to be launched is controlled by the action code logic, modeled on the *Edit Grid* component. In other words, the context menu (three dots) allows you to choose the execution logic for an individual row of the table.
+====
+
+Depending on the action defined in the action codes (in our example, we only update data for one row on the form, so we only use action codes through the context menu), the main process initiates one of the following subprocesses through the *Call Activity*:
+
+. The `Change license expiry date process` if the entered action code satisfies the following condition:
++
+[source,juel]
+----
+${submission('defineActionActivity').formData.hasProp('_action_code') && submission('defineActionActivity').formData.prop('_action_code').value().equals('_action_update')}
+----
++
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-4-1.png[]
+
+. `License Cancellation` process if the entered action code satisfies the following condition:
++
+[source,juel]
+----
+${submission('defineActionActivity').formData.hasProp('_action_code') && submission('defineActionActivity').formData.prop('_action_code').value().equals('_action_cancel')}
+----
++
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-4-2.png[]
+
+After calling the corresponding subprocess using the Call Activity, the main process continues to the final event. Next, we will discuss the flow with the cancellation subprocess call.
+
+[#call-activity-cancel]
+=== Call Activity for the license cancellation subprocess
+
+This Call Activity executes a process named *`license-cancellation`* for each item in the data collection specified in `multiInstanceLoopCharacteristics`. This means that if you select the checkbox on one or more records in the Edit Grid form, using the Multi-instance feature, the subprocess will be triggered for each of those records.
+
+[NOTE]
+====
+Note that when the checkbox for multiple rows in the table is selected, the data from the form should be sent to the process based on the action codes modeled on the UI form using the *Button* component.
+
+For more details, see
+xref:#modeling-forms[].
+====
+
+[TIP]
+====
+For more details on Call Activity and its application features, you can review the following pages:
+
+* xref:bp-modeling/bp/element-templates/call-activities/call-activities-overview.adoc[]
+* xref:bp-modeling/bp/bpmn/subprocesses/subprocess-overview.adoc[]
+====
+
+Perform the following configurations: ::
++
+. In the *Multi-instance* > *`Collection`* section, enter the value:
++
+----
+${submission('defineActionActivity').formData.prop('licenses').elements()}
+----
++
+. For *Multi-instance* > *`Element variable`*, specify the variable *`license`*.
++
+[NOTE]
+====
+This means that the Call Activity will be performed for each element in the data collection returned by the function ${submission('defineActionActivity').formData.prop('licenses').elements()}. Each element of this collection will be stored in the defined variable license.
+
+The use of the Multi-instance feature is also demonstrated in the example
+xref:registry-admin/user-notifications/email/e-mail-notification.adoc[].
+====
+
+. In the *`Called element`* field, specify the identifier (Process ID) of the subprocess to be called and executed. In our case, it is *`license-cancellation`*.
+
+. For the *`Asynchronous continuation`* field, specify the value *`Before`*. This means that this activity will be performed asynchronously. Asynchronous continuation starts before the execution of the Call Activity itself, meaning "asynchronously before."
++
+[TIP]
+====
+.What is Asynchronous continuation?
+[%collapsible]
+=====
+*Asynchronous continuation* in Call Activity in Camunda BPM is a mechanism that allows executing an activity asynchronously in relation to the main process flow. This means that the activity (in this case, Call Activity) can be executed later without delaying the execution of subsequent elements in the main flow.
+
+Asynchronous continuation is often used when it is necessary to initiate a long-running or resource-intensive operation without blocking the further execution of the process. This can be useful, for example, when the Call Activity invokes an external process that may take some time.
+
+After the completion of the asynchronous operation, the process workflow continues from the next point after the Call Activity. Asynchronous continuation also enables process management systems (such as Camunda BPM) to more efficiently manage resources by distributing the load among different process instances.
+
+In the context of Camunda BPM, *`asynchronous continuation: before`* means that the asynchronous invocation takes place before the start of the Call Activity, rather than after its completion.
+
+This use of asynchronous continuation can be useful when you need to initiate a long-running or resource-intensive activity (such as a Call Activity), but you don't want to block the execution of the main process flow until this activity is completed.
+=====
+====
+
++
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-5.png[]
+
+. In the *In mappings* field, specify:
+
+* `Source: *Type*`
+* `source: *license*`
+* `target: *license*`
+
++
+This means that the data from the variable license in the main process will be passed to the license-cancellation subprocess and stored in a variable with the same name.
+
++
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-5-1.png[]
+
+[CAUTION]
+====
+If you choose an action on a single row of the table using the context menu (three dots) *`&#x22EE;`* (see more about form modeling in xref:#modeling-forms[]), you can model the business process in two ways:
+
+* Using Multi-instance in the Call Activity (as shown above in the section).
+* Using basic configurations of the Call Activity.
+
+The basic configurations of the Call Activity in this case will look almost identical to the Multi-instance option:
+
+* Specify the input parameter type as *`Source expression`*.
+
+* Specify an expression to retrieve data from the form using the `submission()` function.
++
+[source,juel]
+----
+${submission('defineActionActivity').formData.prop('licenses').elements()[0]}
+----
++
+* Specify the *`Target`* as *`license`*.
++
+This means that the data from the variable license in the main process will be passed to the `license-cancellation` subprocess and stored in a variable with the same name.
+
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-10.png[]
+
+====
+
+=== User task for license cancellation
+
+Model a User Task that allows the user to cancel a license.
+
+. Use the *`User Form`* delegate template to create the user form.
+
+. Specify the form ID to be shown to the user, in this case - *`edit-grid-rows-action-cancel-license`*.
+
+. The task can be assigned to a user (`Assignee`), but in this case, the field can be left empty, which means any user can claim and execute it.
+
+. In the *Candidate roles* field, specify the role. This field indicates that users with a specific role/roles, in our case -- *`op-regression`*, can view and execute this task.
+
+. In the Form data pre-population field, pass the license data as the variable *`${license}`*, which will be displayed on the form for pre-filling the data.
+
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-6.png[]
+
+=== Data preparation for recording (transient var)
+
+Model a Script Task and apply a script that can retrieve data from the previous task (form) and prepare it for recording in the database (in our case, updating an entity).
+
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-7.png[]
+
+._Groovy-скрипт для отримання даних з форми cancelLicenseActivity та підготовки їх до запису_
+[%collapsible]
+._Groovy script to retrieve data from the cancelLicenseActivity form and prepare it for recording_
+====
+[source,groovy]
+----
+def canceledLicense = submission('cancelLicenseActivity').formData
+        canceledLicense.prop('licensingStatus', 'canceled')
+        set_transient_variable('canceledLicense', canceledLicense)
+----
+
+This script performs the following actions:
+
+. Retrieves the form data that was submitted by the user in the *`cancelLicenseActivity`* task. The result of this expression is stored in the variable *`canceledLicense`*.
++
+[source,groovy]
+----
+submission('cancelLicenseActivity').formData
+----
+
+. Sets the *`licensingStatus`* property of the *`canceledLicense`* object to the value *`canceled`*. This means that the license is marked as "canceled".
++
+[source,groovy]
+----
+canceledLicense.prop('licensingStatus', 'canceled')
+----
+
+. Creates a transient variable named '*`canceledLicense`*' with the value set to the *`canceledLicense`* object. Transient variables are only stored during the current execution of the process and are not persisted to the database.
++
+[source,groovy]
+----
+set_transient_variable('canceledLicense', canceledLicense)
+----
+====
+
+=== Data signing with the qualified digital signature and system signature
+
+Next, model the corresponding tasks for data signing with a digital signature and system key. Use the *Officer sign task* and *System signature by DSO service* delegates, respectively.
+
+TIP: You can refer to the Modeling Examples for such tasks at
+xref:best-practices/bp-officer-self-register-manual.adoc[].
+
+=== Saving the updated data of the selected row in the table on the form to the database.
+
+Model a service task that will perform the operation of updating data for the selected record in the database.
+
+. Use the *Update entity in data factory* delegate, which is a Java class that contains the logic to perform this task.
++
+Alternatively, you can apply the general *Connect to data factory* connector, using the *`PUT`* method.
++
+[TIP]
+====
+For more information, refer to
+xref:bp-modeling/bp/element-templates/service-task-templates/connect-to-data-factory.adoc[].
+====
+
+. Specify the *`resource`* that indicates the resource, i.e., the table that needs to be updated, in this case - *`licenses`*.
+
+. Specify the `Resource id` that defines the identifier of the license that needs to be updated. For example:
++
+----
+${license.prop('licenseId').value()}
+----
+
+. In the *`Payload`* field, pass the data that needs to be updated for the specified license. This data is taken from the temporary variable `canceledLicense`, which was set in the previous steps of the process. This can be done using the `submission()` function. For example:
++
+----
+${submission('signCanceledLicenseActivity').formData}
+----
+
+. Pass the access token to the resource -- *`X-Access-Token`*, obtained from the `signCanceledLicenseActivity` task. This can be done using the `completer()` function. For example:
++
+----
+${completer('signCanceledLicenseActivity').accessToken}
+----
+
+. Pass the keys for the digital signature of the CEP data and the system key in the `X-Digital-Signature source` and `X_Digital-Signature-Derived source` fields, respectively. For example:
++
+.Qualified digital signature
+----
+${sign_submission('signCanceledLicenseActivity').signatureDocumentId}
+----
++
+.System signature
+----
+${system_signature_ceph_key}
+----
+
+. Save the result of the request in the output parameter *`response`*.
+
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-8.png[]
+
+=== Completing the process and returning the user to the initial form.
+
+After updating the entity in the Data Factory, the sub-process that invoked it is completed, and the result is returned back to the Call Activity, and the user is returned to the beginning of the main process. User redirection is possible thanks to the modeled *Link events*.
+
+image:best-practices/edit-grid-rows-action/edit-grid-rows-action-9.png[]
+
+TIP: For more information about the "Link" event, you can refer to
+xref:bp-modeling/bp/bpmn/events/bp-link-events.adoc[].
+
+[#modeling-forms]
+== Modeling UI Forms for business processes
+
+Let's consider an example of modeling a user form for viewing and performing actions on specific rows of a table using the Edit Grid component.
+
+We will also model two buttons using the Button component to perform additional logic.
+
+[NOTE]
+====
+If the multi-row checkbox is selected on the *`defineActionActivity`* form, a subprocess will be launched for each of these rows based on the selected button on the UI form (in this context, these should be _separate buttons_ modeled using the *Button* component). Launching a subprocess for each selected row is possible using the Multi-instance function (see _xref:#call-activity-cancel[]_).
+
+If you select the context menu "Three dots" next to a specific row, the corresponding subprocess will only be launched for the data of that row. The specific subprocess to be launched is determined by the action codes logic modeled on the *Edit Grid* component on the form. Therefore, the context menu "Three dots" allows selecting the logic for performing an action on a single table row.
+====
+
+. Go to the form builder in the Administrator of Regulations Portal, create a new form, and model the *Edit Grid* component, which consists of 5 text fields (*Text Field*) for the table.
+
+. Go to the settings of the *Edit Grid* component.
++
+image:best-practices/edit-grid-rows-action/forms/edit-grid-rows-action-form-1.png[]
+
+. Enter a name (*`Label`*) for this component, which will be displayed on the form, and activate the options `Multiple-record selection` and `Read Only`.
+
+* `Multiple-record selection` allows users to select multiple records in the table simultaneously.
+* `Read Only` displays data through a separate control element in the context menu (three vertical dots), which allows viewing data without the ability to edit.
+
++
+image:best-practices/edit-grid-rows-action/forms/edit-grid-rows-action-form-2.png[]
+
+. Switch to the *API* tab and enter a service name for the component to be used in API requests. In our case, it is `licenses`, which corresponds to the table name in the database.
++
+image:best-practices/edit-grid-rows-action/forms/edit-grid-rows-action-form-3.png[]
+
+. Switch to the *Logic* tab and add action codes for the options in the context menu "Three dots" that will be available for performing an action on a specific row on the form during the execution of the business process.
++
+[NOTE]
+====
+
+The regulation developer should avoid modeling actions using the `action_code` in the context menu "Three dots" of a table row when EditGrid is in edit mode. Failure to do so may result in unsaved edited data, and the user will automatically move to the next business process based on the action_code.
+
+Instead, the user should be directed to a signing form after editing the data to ensure that all changes are saved.
+====
++
+image:best-practices/edit-grid-rows-action/forms/edit-grid-rows-action-form-4.png[]
+
+. Model the *Button* component for two additional buttons to be able to perform actions on multiple rows of the table simultaneously when the Multiple-record selection option is activated in Edit Grid.
+
+* Add a button to update the license action period (for one or more records in the table, provided the `Multiple-record selection` checkbox is used in Edit Grid).
++
+image:best-practices/edit-grid-rows-action/forms/edit-grid-rows-action-form-5.png[]
++
+image:best-practices/edit-grid-rows-action/forms/edit-grid-rows-action-form-6.png[]
+
+* Add a button to cancel the license (for one or more records in the table, provided the `Multiple-record selection` checkbox is used in Edit Grid).
++
+image:best-practices/edit-grid-rows-action/forms/edit-grid-rows-action-form-7.png[]
++
+image:best-practices/edit-grid-rows-action/forms/edit-grid-rows-action-form-8.png[]
+
+. Save the changes and apply the configuration to the master branch.
+
+TIP: Read about the capabilities of the Edit Grid component at
+xref:bp-modeling/forms/components/edit-grid/edit-grid.adoc[].
+
+== Usage in user portals
+
+The modeled business process can be found in the list of available services in the *Officer Portal* under the authorized person in the demo registry.
+
+[TIP]
+====
+The Officer portal is available via the pattern link:
+
+----
+https://officer-portal-<registry-name>-main.<dns-wildcard>
+----
+
+where `<registry-name>` is the name for your registry and `<dns-wildcard>` designates the domain and subdomain names for the cluster instance.
+
+For example, for the `demo-registry`, deployed on the `example.com` Platform instance, the route to the *Officer Portal* service is:
+
+https://officer-portal-demo-registry-main.example.com
+
+//https://officer-portal-{{{registry-name}}}-main.{{{dns-wildcard}}}
+====
+
+.Бізнес-процес у Кабінеті
+.Business process in the user portal
+image::release-notes:wn-1-9-4/whats-new-1-9-4-8.png[]
+
+.Виконання дії над одним рядком у таблиці
+.Performing an action on a single row in the table
+image::release-notes:wn-1-9-4/whats-new-1-9-4-5.png[]
+
+.Виконання дії над декількома рядками у таблиці
+.Performing an action on multiple rows in the table
+image::release-notes:wn-1-9-4/whats-new-1-9-4-9.png[]

@@ -1,0 +1,3 @@
+***** xref:arch:architecture/registry/operational/digital-signatures/overview.adoc[Digital signatures subsystem]
+****** Subsystem services
+include::arch:partial$architecture/registry/operational/digital-signatures/services/nav.adoc[]

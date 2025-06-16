@@ -1,0 +1,30 @@
+= Uploading business processes
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+You can upload a business process to the regulation by copying and pasting the XML schema of the ready process in the *Code* tab. The direct option of `Drag & Drop` (dragging a file with the schema) is not available.
+
+.Inserting BPMN diagram code in the *Code* tab
+image::registry-develop:registry-admin/admin-portal/process-models/process-models-12-2.png[]
+
+TIP: For more details on working with the code of a business process, please refer to
+xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-code.adoc[].
+
+[CAUTION]
+====
+Editing components of the registry regulations is only possible within change candidate versions. For the master version, only the viewing option is available.
+
+For more information on working with registry regulations versions, please refer to xref:registry-admin/admin-portal/version-control/version-control-overview.adoc[].
+====
+
+
+
+
+
+
+
+
+
+
+

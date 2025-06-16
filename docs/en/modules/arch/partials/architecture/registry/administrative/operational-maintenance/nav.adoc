@@ -1,0 +1,3 @@
+***** xref:arch:architecture/registry/administrative/operational-maintenance/overview.adoc[Registry's operational zone service subsystem]
+****** Subsystem services
+include::arch:partial$architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/nav.adoc[]

@@ -1,0 +1,1 @@
+*** xref:arch:architecture/platform-backup-storage/overview.adoc[Platform backup storage]

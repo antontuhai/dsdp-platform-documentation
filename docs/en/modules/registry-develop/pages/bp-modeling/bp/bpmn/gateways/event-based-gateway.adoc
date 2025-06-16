@@ -1,0 +1,56 @@
+= Exclusive event-based gateway
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+An _exclusive event-based gateway_ is an exclusive `OR` operator where alternative paths of a process are determined by events (such as a message, timer, or condition).
+
+TIP: Simply put, this operator enables you to make decisions based on certain events.
+
+image:bp-modeling/bp/gateways/event-based-gw/event-based-gw-01.png[]
+
+An exclusive event-driven gateway must have at least two output sequence flows. The output control flows of this gateway should be associated only with _Intermediate Catching Events_ or _Receive Tasks_.
+
+NOTE: The Platform supports two event types for event-based gateways: Timer and Message, plus a Receive Task.
+
+When the gateway is activated, the process waits for the gateway to select one of the events. The business process flow is directed by the branch where the event occurred or the task was completed first. The rest of the events are ignored.
+
+== Modeling an exclusive event-based gateway
+
+To model a business process using an exclusive event-based gateway, perform these steps:
+
+. Open the *Camunda Modeler* app and create a new BPMN diagram by clicking the *`BPMN diagram`* button.
++
+A new diagram window opens.
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-1.png[]
+
+. Model a start event and a task of any type, for example, a user task.
+. Attach and configure an *Event-based Gateway* element:
+
+* From the toolbar on the left, drag the *Create Gateway* element to the diagram canvas.
++
+image:bp-modeling/bp/gateways/event-based-gw/event-based-gw-1.png[]
+
+* Select the event, click the wrench icon (*Change type*), and select the *Event-based Gateway* item from the menu.
++
+image:bp-modeling/bp/gateways/event-based-gw/event-based-gw-2.png[]
+
+* Select the gateway one more time and switch to the properties panel.
+* Enter a gateway name (_optional_) and attach one of the available elements:
+** ReceiveTask;
+** MessageIntermediateCatchEvent;
+** TimeIntermediateCatchEvent;
+** ConditionIntermediateCatchEvent;
+** SignalIntermediateCatchEvent.
++
+IMPORTANT: An event-based gateway element can only interact with _Intermediate Catching Events_ or _Receive Tasks_.
++
+image:bp-modeling/bp/gateways/event-based-gw/event-based-gw-3-1.png[]
+
+As a result, an exclusive event-based gateway is configured.
+
+.An example of a business process using an exclusive event-based gateway
+image:bp-modeling/bp/gateways/event-based-gw/event-based-gw-4.png[]

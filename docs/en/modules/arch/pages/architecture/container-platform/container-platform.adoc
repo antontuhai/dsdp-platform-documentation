@@ -1,0 +1,139 @@
+= Container orchestration platform
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+*_OpenShift_* is an open-source container management platform that provides advanced orchestration capabilities and
+deployment of containerized software. It is developed on the basis of Kubernetes, provides a full stack of solutions
+and abstractions for developing, deploying, managing, and monitoring containers. This platform provides an opportunity to deploy your software
+provision in any public cloud environment, private cloud environment or on your own local infrastructure,
+providing resilience, reliability and security for deployed software.
+
+OpenShift is a flexible platform that can be easily extended, supplemented and integrated with other tools,
+platforms and software. This allows you to have:
+
+* monitoring and logging capabilities that provide information about the health and performance of software and infrastructure
+* network security policies and role-based access control (RBAC) to enable secure publishing and end-user access
+* backup and scaling of the platform and deployed software, allowing for rapid recovery of the system state
+and respond to load increases or decreases.
+* distributed data stores for storing state and information of stateful applications.
+
+OpenShift is an ideal solution for organizations looking to modernize their software infrastructure
+and accelerate digital transformation processes. In Registry Platform, OpenShift is used as the main platform
+for deploying and managing containerized applications.
+
+== Main features
+
+* [*] Container orchestration
+* [*] Load balancing
+* [*] Application scaling
+* [*] Application monitoring
+* [*] Ensuring safety and reliability
+
+.The high-level architecture of the container orchestration platform
+image::architecture/container-platform/container-orchestration.svg[width=750,float="center",align="center"]
+
+The OpenShift architecture consists of several virtual machines, including:
+
+* *Master virtual machines*. Responsible for managing the overall health of the cluster, including application planning and deployment.
+* *Infrastructure and Platform virtual machines*. They contain system operators and applications that provide work for
+_Container orchestration Platform_ and _Registries Platforms_.
+* *Registry virtual machines*. Run containers with registry software.
+
+== Technology stack
+
+During the design and development of the subsystem, the following technologies were used:
+
+* xref:arch:architecture/platform-technologies.adoc#okd[OKD]
+* xref:arch:architecture/platform-technologies.adoc#kubernetes[Kubernetes]
+
+=== Scalability
+
+OpenShift container orchestration platform has the ability to scale efficiently as application requirements change.
+This includes the ability to automatically create and deploy additional resources such as new containers or virtual machines,
+to handle an increased load, and the ability to remove resources during periods of reduced demand for optimization
+use of resources and funds.
+
+The platform achieves scalability through a combination of declarative configuration, auto-scaling (HPA)
+and automatic scaling of the cluster itself. Declarative configuration allows administrators to define and manage
+application resources in a consistent and repeatable manner that facilitates scaling as needed. HPA
+monitors the resource usage of individual applications and scales their amount up or down depending on the previous
+given rules, such as CPU or memory usage. Cluster autoscaling, on the other hand, is automatic
+ and creates or deletes virtual machines in the cluster depending on demand, allowing efficient use of resources
+and optimizing costs.
+
+=== Availability
+* Openshift supports automatic load balancing and failover of application instances on
+different virtual machines of the cluster. This ensures that if the virtual machine is not working correctly, then it can work
+smoothly transfer to other healthy machines without affecting the availability of the application.
+* Openshift supports the concept of replicas, which allows multiple instances of applications to run simultaneously.
+This ensures that even if one or more instances fail, the application will still be available to users
+through working instances.
+* Openshift allows you to use rolling updates to deploy new versions of applications with minimal impact
+on users. This ensures that updates can be made without interruptions or service interruptions.
+
+=== Portability
+
+The Openshift container orchestration platform and the software
+deployed on it are installable and portable in various infrastructure environments,
+from public and private cloud platforms to own local infrastructure
+without requiring significant changes to software or underlying infrastructure.
+
+The container orchestration platform is built by abstracting away from the infrastructure details and provides a standard
+runtime environment for applications regardless of where they are deployed. This is achieved through containerization, which
+allows packaging of applications in self-contained and portable containers, and the use of declarative configuration that
+automates the provision and configuration of infrastructure resources.
+
+In addition, the Container Orchestration Platform provides a set of APIs and abstractions that allow teams to
+operations to manage and orchestrate containerized applications in a standard and platform-independent manner.
+
+Thus, the container orchestration platform allows you to deploy and run applications in any environment without
+source code changes, reducing the time and effort to deploy applications and ensuring their portability.
+
+=== Operability
+
+Openshift's container orchestration platform provides a set of admin tools and APIs for management, operation, and resolution
+problems with clusters and applications on it, including visual interfaces, the `oc' utility console, and the OpenShift API.
+
+These tools allow administrators to view and manage cluster health, deploy new applications or upgrades,
+monitor performance metrics and logs, perform various checks, audits, and scaling.
+
+Platform interoperability is also achieved through infrastructure as code (IaC) practices and automation tools
+Terraform, which enables consistent and repeatable deployment and configuration of OpenShift clusters and related resources.
+
+=== Security
+
+The Openshift container orchestration platform provides a wide range of security features and capabilities for
+applications and their data. These include role-based access control (RBAC), network policies, secret management,
+container image security, audit logging, and security context constraints (SCC).
+
+Role-based access control allows administrators to define access controls and permissions for users and
+applications, providing access to resources only to authorized users.
+Network policies allow you to restrict network traffic between applications and apply enforcement rules
+network segmentation.
+
+Secret management provides a secure mechanism for storing and using sensitive data such as passwords and
+certificates
+
+Thus, using these security features of the OpenShift Platform, it is possible to ensure the security of applications deployed in
+OpenShift, protecting them from unauthorized access, data breaches and other security threats.
+
+=== Observability
+
+Openshift container orchestration platform provides performance, behavior, and health insights
+containerized applications running on the cluster. This includes the ability to monitor and analyze metrics related to
+application and infrastructure performance, as well as collection and analysis of application logs and traces. The platform has
+built-in observability capabilities, including support for a variety of monitoring solutions and the ability to
+integration with external logging and tracing systems. In addition, it provides APIs and tools to configure and
+manage observability, enabling operations teams to gain deep insights into the behavior and
+state of their applications and infrastructure.
+
+=== Extensibility
+
+The Openshift container orchestration platform provides extensive customization and extensibility of the platform itself to
+it met specific needs and requirements. It provides a rich list of extension points such as definitions
+own resources (CRD), admission controllers and operators that allow you to create your own controllers and other
+components that integrate with the platform itself. This allows you to build and deploy your own solutions based on
+OpenShift, while ensuring the use of the main functionality and advantages of the platform.

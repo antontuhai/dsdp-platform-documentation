@@ -1,0 +1,478 @@
+= Updating registry digital signature keys and certificates
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+When you deploy xref:admin:registry-management/control-plane-create-registry.adoc[a registry instance], you must configure the digital signature key. After that, you can update key information as part of the registry editing. The configuration mechanism on the part of the administrator is the same both when initially adding and updating the key data.
+
+To replace the digital key of the registry, follow the steps hereunder.
+
+== Editing key data
+
+. Log in to *Control Plane*, the administrative control panel of the registries, using the previously received login and password.
++
+image:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-01.png[]
+
+. Go to the `Registries` section and select the corresponding registry in which you want to change the system key.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-01.png[]
+
+. Click the `Edit` button in the upper right corner.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-02.png[]
+
+. Go to the *Key data* section and make further settings.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-03.png[]
+
+[#setting_key]
+== Setting keys
+
+You can configure two types of keys:
+
+* `file key`: stored in the user storage in the `*.dat` format.
+
+* `hardware key`: stored in the network cryptomodule and controlled by the corresponding software.
+
+=== Setting the file keys
+
+. Select `Storage type` -- `File-based key storage` (default).
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-04.png[]
+
+. Press the kbd:[Select file] button to add the new system key. In the new window, navigate to the folder where the key file in the `*.dat` format is stored, select it, and click kbd:[Open].
++
+[NOTE]
+====
+Accredited key certification centers (AKCC) are state-accredited organizations that provide digital signature services, secure key information carriers, or use the applicant’s carriers like USB flash drives. They play a vital role in maintaining the security and integrity of digital transactions and communications, ensuring the authenticity of digital signatures, and thus enabling secure and trustworthy electronic interactions.
+====
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-05.png[]
+
+. The following step is to enter the name of the Accredited key certification center (AKCC) in the `AKCC that issued the key` field. The name of the AKCC that issued the key can be found in the certificate of the key.
+
+. Enter the password of the selected system key into the corresponding field.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-06.png[]
+
+. Enter the list of certificates from the appropriate key certification centers (_.p7b_). You can get your _.p7b_ file on the site of your regional competent authority.
++
+[NOTE]
+====
+When deploying and working with the test registry, use the certificates of the test AKCC, otherwise the registry deployment pipeline will not work, and you will receive the `digital-signature-ops` cryptoservice initialization error. This happens because the certificate files for the production environment simply do not contain data about the test AKCC.
+
+include::ROOT:partial$admonitions/ua-specific.adoc[]
+
+For the prod environment, use the appropriate prod certificates.
+
+* AKCC certificates for the test environment: https://iit.com.ua/download/productfiles/CACertificates.Test.All.p7b[].
+
+* AKCC certificates for the prod environment: https://iit.com.ua/download/productfiles/CACertificates.p7b[].
+
+====
++
+Add the certificate file by clicking the kbd:[Select File] button in the `AKCC public certificates (.p7b extension)` field. In the new window, navigate to the folder where the certificate file is stored, select it, and click kbd:[Open].
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-14.png[]
+
+. Add the parameters to interact with the compatible key certification centers (_.json_).
++
+[NOTE]
+====
+When deploying and working with the test registry, use the certificates of the test AKCC, otherwise the registry deployment pipeline will not work, and you will receive the `digital-signature-ops` cryptoservice initialization error. This happens because the certificate files for the production environment simply do not contain data about the test AKCC.
+
+include::ROOT:partial$admonitions/ua-specific.adoc[]
+
+For the prod environment, use the appropriate prod certificates.
+
+* AKCC certificates for the test environment: https://iit.com.ua/download/productfiles/CAs.Test.All.json[].
+
+* AKCC certificates for the prod environment: https://iit.com.ua/download/productfiles/CAs.json[].
+
+====
++
+Add the certificate file by clicking the kbd:[Select File] button in the `AKCC list (extension .json)` field. In the new window, navigate to the folder where the file containing parameters is stored, select it, and click kbd:[Open].
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-15.png[]
+
+. Next, indicate the `List of allowed keys` whose signature can be considered true.
++
+[NOTE]
+This block specifies a list of keys, including the old ones _(for example, when replacing keys)_, so that everything previously signed with the old key is verified (validated). That is, the list of allowed keys must contain the data history of all keys used in the system for signing.
++
+The list of allowed keys contains the following key data:
+
+* `"Key issuer"`
+* `"Key serial number"`
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-16.png[]
++
+[#issuer_key]
+. Finally, check the entered information and click *`Confirm`*.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-20.png[]
++
+[NOTE]
+====
+As a result of updating the key data in the Control Plane interface, a new request is created to update the *`cluster-mgmt`* configuration, which xref:#confirm-changes[must be confirmed].
+====
+
+=== Setting the hardware key
+
+. Select `Storage type` -- `Hardware-based key storage`.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-21.png[]
+
+. By default, the value of the `Key type` field is set to the `cryptomod. IIT Hryada-301` value.
+IIT Hryada-301 is a hardware cryptomodule.
++
+include::ROOT:partial$admonitions/ua-specific.adoc[]
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-22.png[]
+
+. Enter the hardware key password into the corresponding field.
++
+[NOTE]
+====
+The key password has the following structure `&#35;&#35;User&#35;&#35;Password`.
+
+include::ROOT:partial$admonitions/ua-specific.adoc[]
+====
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-23.png[]
+
+. Then, enter the name of your Accredited key certification center (AKCC) into the `AKCC name` field.
++
+For example, the AKCC's name is in your key's digital signature certificate.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-28-01.png[]
+
+. In the next step, enter the `AKCC host` parameter.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-28.png[]
++
+[TIP]
+====
+You can find the value in the file of interaction parameters provided by your corresponding accredited key certification center (example: https://iit.com.ua/downloads).
+
+include::ROOT:partial$admonitions/ua-specific.adoc[]
+
+* AKCC certificates for the test environment: https://iit.com.ua/download/productfiles/CAs.Test.All.json[].
+
+* AKCC certificates for the prod environment: https://iit.com.ua/download/productfiles/CAs.json[].
+
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-26.png[]
+====
+
+. Then, enter the `AKCC port` parameter.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-29.png[]
++
+[TIP]
+====
+You can find the value in the file of interaction parameters provided by your corresponding accredited key certification center (example: https://iit.com.ua/downloads).
+
+include::ROOT:partial$admonitions/ua-specific.adoc[]
+
+* AKCC certificates for the test environment: https://iit.com.ua/download/productfiles/CAs.Test.All.json[].
+
+* AKCC certificates for the prod environment: https://iit.com.ua/download/productfiles/CAs.json[].
+
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-27.png[]
+====
+
+. Enter the `Device serial number` (the hardware key serial number).
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-32.png[]
++
+include::ROOT:partial$admonitions/ua-specific.adoc[]
++
+[NOTE]
+====
+The following parameters are specified when creating and configuring a network cryptographic module.
+
+.Configuring Ukrainian network cryptographic module IIT Hryada-301
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-31.png[]
+====
++
+[TIP]
+====
+The device serial number is shown in the key name, for example:
+
+`001:3016(10.0.200.102)`, where
+
+* `001`: serial device number.
+
+* `3016`: key port.
+
+* `10.0.200.102`: key host.
+
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-30.png[]
+====
+
+. Enter `Key port`.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-33.png[]
+
+. Enter `Key host` (IP address).
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-34.png[]
+
+. Enter `Key mask`.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-35.png[]
++
+[TIP]
+====
+The default value is `255.255.255.255`.
+
+====
+
+. Based on all the previously entered parameters, the `INI` file will be automatically configured. Detailed information on its content and additional parameters is displayed in the corresponding `*INI* configuration` editable field.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-36.png[]
+
+. Next, add the list of certificates from the appropriate key certification centers (_.p7b_).
++
+You can get your _.p7b_ file on the site of your regional competent authority.
++
+[NOTE]
+====
+When deploying and working with the test registry, use the certificates of the test AKCC, otherwise the registry deployment pipeline will not work, and you will receive the `digital-signature-ops` cryptoservice initialization error. This happens because the certificate files for the production environment simply do not contain data about the test AKCC.
+
+include::ROOT:partial$admonitions/ua-specific.adoc[]
+
+For the prod environment, use the appropriate prod certificates.
+
+* AKCC certificates for the test environment: https://iit.com.ua/download/productfiles/CACertificates.Test.All.p7b[].
+
+* AKCC certificates for the prod environment: https://iit.com.ua/download/productfiles/CACertificates.p7b[].
+
+====
++
+Add the certificate file by clicking the kbd:[Select File] button in the `AKCC public certificates (.p7b extension)` field. In the new window, navigate to the folder where the certificate file is stored, select it, and click kbd:[Open].
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-14.png[]
+
+. Add the parameters to interact with the compatible key certification centers (_.json_).
++
+You can get your _.json_ file from your corresponding local provider.
++
+[NOTE]
+====
+When deploying and working with the test registry, use the certificates of the test AKCC, otherwise the registry deployment pipeline will not work, and you will receive the `digital-signature-ops` cryptoservice initialization error. This happens because the certificate files for the production environment simply do not contain data about the test AKCC.
+
+include::ROOT:partial$admonitions/ua-specific.adoc[]
+
+For the prod environment, use the appropriate prod certificates.
+
+* AKCC certificates for the test environment: https://iit.com.ua/download/productfiles/CAs.Test.All.json[].
+
+* AKCC certificates for the prod environment: https://iit.com.ua/download/productfiles/CAs.json[].
+
+====
++
+Add the certificate file by clicking the kbd:[Select File] button in the `AKCC list (extension .json)` field. In a new window, navigate to the folder where the file containing parameters is stored, select it, and click kbd:[Open].
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-15.png[]
+
+. Enter the `List of allowed keys` whose signature can be considered true.
++
+[NOTE]
+This block specifies a list of keys, including the old ones _(for example, when replacing keys)_, so that everything previously signed with the old key is verified (validated). That is, the list of allowed keys must contain the data history of all keys used in the system for signing.
++
+The list of allowed keys contains the following key data:
+
+* `"Key issuer"`
+* `"Key serial number"`
+
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-16.png[]
+
+. Finally, check the entered information and click *`Confirm`*.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-37.png[]
++
+[NOTE]
+====
+As a result of updating the key data on the Control Plane interface, a new request is created to update the registry configuration that you need to xref:#confirm-changes [confirm].
+====
+
+== Confirming changes and applying configuration
+
+Platform keys are updated by changing the configuration of the Digital signature service.
+
+=== Digital signature key configuration algorithm
+
+The general configuration algorithm is as follows for Platform and registry keys: ::
+
+* The administrator edits the Platform or registry's digital signature keys in the Control Plane administrative interface.
+
+* The Control Plane web interface stores changes made by the administrator to the HashiCorp Vault service of the Secret and encryption management subsystem or to the Gerrit service of the Platform and registries deployment and configuration subsystem.
+
+* The Control Plane web interface displays the path to values and files in the corresponding _values.yaml_ configurations.
+
+* The pipeline takes the required data from HashiCorp Vault or Gerrit and creates the necessary secrets in OpenShift.
+
+Below is the diagram for updating the Platform and registry's keys and the configuration of the digital signature service.
+
+image::arch:architecture/platform/administrative/config-management/keys-update-subsystem.svg[registry-platform-keys]
+.Updating platform and registry keys and digital signature service configuration
+
+image::arch:architecture/platform/administrative/config-management/keys-update-config.svg[registry-platform-keys]
+
+=== Configuration and secret creation parameters
+
+The Control Plane administration panel stores the following data in the vault for the Digital signatures service (DSS):
+
+* AKCC list
+
+* `KeySecretData`
+* `CASecretData`
+* `AllowedKeysSecretData`
+* `osplm.ini`
+* Data of the DSS environment variables
+
+The path to the engine for the Platform keys looks as follows:
+
+----
+registry-kv/registry/<назва-реєстру>/key-management/
+----
+
+Parameters and paths are added to the *_deploy-templates/values.yaml_* registry configuration.
+
+.Configuration of the registry's values.yaml for updating data about a file key
+====
+[source,yaml]
+----
+digital-signature:
+  data:
+    CACertificates: <path to vault>
+    CAs: <path to vault>
+    Key-6-dat: <path to vault>
+    allowed-keys-yml: <path to vault>
+    osplm.ini: ""
+  env:
+    sign.key.device-type: file
+    sign.key.file.issuer: <path to vault>
+    sign.key.file.password: <path to vault>
+    sign.key.hardware.device: ""
+    sign.key.hardware.password: ""
+    sign.key.hardware.type: ""
+----
+====
+
+.Configuration of the registry's values.yaml for updating data about a hardware key
+====
+[source,yaml]
+----
+digital-signature:
+  data:
+    CACertificates: <path to vault>
+    CAs: <path to vault>
+    Key-6-dat: ""
+    allowed-keys-yml: <path to vault>
+    osplm.ini: <path to vault>
+  env:
+    sign.key.device-type: hardware
+    sign.key.file.issuer: ""
+    sign.key.file.password: ""
+    sign.key.hardware.device: <path to vault>
+    sign.key.hardware.password: <path to vault>
+    sign.key.hardware.type: <path to vault>
+----
+====
+
+The *`MASTER-Build-<registry-name>`* pipeline creates secrets for *`digital-signature-env-vars`* and *`digital-signature-data` and stores them in OpenShift.
+
+[NOTE]
+====
+* The Control Plane administrative panel overwrites the data in Vault when updating the key data.
+
+* The pipeline recreates secrets when updating the key data. Therefore, it is idempotent.
+====
+
+The pipeline creates the following secrets based on values.yaml: configuration::
++
+.Secrets for a file key
+====
+----
+digital-signature-data:
+    CACertificates.p7b
+    CAs.json
+    Key-6.dat
+    allowed-keys.yml
+    osplm.ini -- empty
+digital-signature-env-vars:
+    sign.key.device-type
+    sign.key.file.issuer
+    sign.key.file.password
+    sign.key.hardware.device -- empty
+    sign.key.hardware.password -- empty
+    sign.key.hardware.type -- empty
+----
+====
++
+.Secrets for a hardware key
+====
+----
+digital-signature-data:
+    CACertificates.p7b
+    CAs.json
+    Key-6.dat -- empty
+    allowed-keys.yml
+    osplm.ini -- generated from a template
+digital-signature-env-vars:
+    sign.key.device-type
+    sign.key.file.issuer -- empty
+    sign.key.file.password -- empty
+    sign.key.hardware.device
+    sign.key.hardware.password
+    sign.key.hardware.type
+----
+====
+
+[#confirm-changes]
+=== Confirming changes and launching the pipeline
+
+As a result of updating the key data on the Control Plane interface, a new request is created to update the registry configuration, which you have to confirm.
+
+. In the Control Plane admin panel interface, return to the [.underline]#Platform management# section, scroll down to the bottom of the page, and find the *Update Requests* section.
++
+image:registry-management/cp-submit-mr/cp-submit-mr-1.png[]
+
+. Open the generated request by clicking the view icon: 👁.
++
+NOTE: The suggested changes are made to the _deploy-templates/values.yaml_ file configuration when confirmed.
+
+. In the new window, compare 2 versions of the changes, ensuring the data you entered is correct, and click kbd:[Confirm].
++
+.Applying data about a file key to the values.yaml configuration
+image::admin:infrastructure/cluster-mgmt/change-key/change-key-38.png[]
++
+.Applying data about a hardware key to the values.yaml configuration
+
+image::admin:infrastructure/cluster-mgmt/change-key/change-key-39.png[]
++
+image:registry-management/cp-submit-mr/cp-submit-mr-3.png[]
++
+As a result, the request becomes `Confirmed` and the changes take effect.
+
++
+image:registry-management/cp-submit-mr/cp-submit-mr-4.png[]
++
+Next, the *`MASTER-Build-<registry-name>`* pipeline automatically starts, which applies the parameters of the specified configuration and creates secrets for the digital signature keys.
+
+. Wait while the code is compiled. This may take about 15 minutes, but this time depends on the configuration of a particular registry.
++
+You can check the current status and the result of the execution using the *`CI`* link on the interface.
++
+image:registry-develop:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-6.png[]
++
+image:registry-develop:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-7.png[]
++
+image:registry-develop:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-8.png[]
+
+== Related pages
+
+* xref:admin:registry-management/system-keys/create-qes-keys-test-ca-iit.adoc[]

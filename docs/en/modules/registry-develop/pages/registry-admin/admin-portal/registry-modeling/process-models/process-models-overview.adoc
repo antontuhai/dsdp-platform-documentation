@@ -1,0 +1,66 @@
+= Managing business process models
+:sectlinks:
+:sectanchors:
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+This section demonstrates the functionality of modeling and managing business process diagrams the Administrative portal for registry regulations developers.
+
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-1.png[]
+
+The functionality allows you to: ::
+
+* Create processes
+* Edit processes
+* Search for processes by name
+* Copy processes
+* Upload processes
+* Sort processes
+* Categorize processes
+* Delete processes
+* View and edit process components, namely:
+
+** Manage process names
+** View and edit the processes XML representation code
+** Build processes in the BPMN constructor
+
+[CAUTION]
+====
+Editing the components of the registry regulations is only possible within change candidate versions. For the master version, only the view option is available.
+
+Within the master version, the regulation modeler can:
+
+* View available business processes
+* Sort business processes
+* View components of business processes on the *General*, *Code*, and *Builder* tabs
+
+For more information on working with regulation versions, please refer to the page:
+
+* xref:registry-admin/admin-portal/version-control/version-control-overview.adoc[]
+====
+
+[WARNING]
+====
+Recommendations for saving and deleting objects in the Regulations administrator portal:
+
+* Please note that there are no warning windows in the Regulations administrator portal, so be particularly careful when working with objects.
+* Exercise caution and attentiveness when saving or deleting objects such as business processes, forms, and so on.
+* Before creating or deleting an object, it is recommended to check it to avoid unforeseen consequences.
+* Please be aware that deleting or modifying an object may result in data loss and disruption of business processes.
+====
+
+== Section overview
+
+* xref:registry-admin/admin-portal/registry-modeling/process-models/create-process.adoc[Create processes]
+* xref:registry-admin/admin-portal/registry-modeling/process-models/edit-process.adoc[Edit processes]
+* xref:registry-admin/admin-portal/registry-modeling/process-models/search-process.adoc[Search for processes by name]
+* xref:registry-admin/admin-portal/registry-modeling/process-models/copy-process.adoc[Copy processes]
+* xref:registry-admin/admin-portal/registry-modeling/process-models/upload-process.adoc[Upload processes]
+* xref:registry-admin/admin-portal/registry-modeling/process-models/sorting-process.adoc[Sort processes]
+* xref:registry-develop:registry-admin/admin-portal/registry-modeling/process-models/process-groups.adoc[Categorize services]
+* xref:registry-admin/admin-portal/registry-modeling/process-models/delete-process.adoc[Delete processes]
+* xref:registry-admin/admin-portal/registry-modeling/process-models/components/process-components-overview.adoc[View and edit process components]
+
+
+
+

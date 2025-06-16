@@ -1,0 +1,105 @@
+= Manual backing up and restoring central components
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Central components backup
+
+include::partial$templates/snippets/backup-restore-planning-en.adoc[]
+
+The platform administrator has the ability to create a backup of central components, which will be stored in a secure backup repository—*MinIO*.
+
+Follow these steps to create a backup: ::
+
+. Log into the OpenShift of the respective cluster.
+
+. Copy the login command—click the *`Copy login command`* button under the user profile name.
++
+image:admin:backup-restore/central/backup-restore-central-copy-login-command.png[]
+
+. After being redirected to the token display page, click the *`Display Token`* link.
++
+image:admin:backup-restore/central/backup-restore-oauth-display-token.png[]
+
+. Copy the access token to the **OpenShift** of the cluster into which the backup will be performed.
++
+image:admin:backup-restore/central/backup-restore-openshift-token.png[]
+
+. Open **Git Bash**, paste the copied token, and press `Enter`.
++
+[source,bash]
+----
+$ oc login --token=sha256~NyHYErh_JwJQаааааyIfmbbE-UY_Y3s_diQG422v9Rw --server=https://api.backup.mdtu-ddm.projects.epam.com:6443
+----
+
+. To check for existing backups, execute the following command:
++
+[source,bash]
+----
+$ velero get backups
+----
+
+. To create a new backup, execute the following command:
++
+[source,bash]
+----
+$ velero backup create control-plane-nexus-release1-4-backup-28-10 --include-namespaces control-plane-nexus --ttl 120h
+----
++
+[TIP]
+====
+where:
+
+* `control-plane-nexus-release1-4-backup-28-10` — is the folder name in the backup repository where the backup will be stored (_the cluster name and backup creation date are provided for convenience_); +
+* `control-plane-nexus` -- is the name of the central component for which the backup will be performed; +
+* `--ttl 120h` -- is the backup retention time.
+====
+
+. To verify if the backup has been successfully created, execute the following command:
++
+[source,bash]
+----
+$ velero backup get
+----
++
+image:admin:backup-restore/central/backup-restore-central-get.png[]
++
+[TIP] 
+====
+where:
+
+* Status `New` -- the backup request is new and is in the queue +
+* Status `InProgress` -- the backup creation is in progress +
+* Status `Completed` -- the backup has been created.
+====
+
+[buckup-bucket-delete]
+=== Deleting backup from storage
+
+Execute the following command to delete a backup from storage:
+
+[source,bash]
+----
+$ velero backup delete control-plane-nexus-release1-4-backup-28-10
+----
+
+TIP: where the `control-plane-nexus-release1-4-backup-28-10` is the name of the backup to be deleted.
+
+== Central components restoring
+
+CAUTION: Before starting the process of restoring the central components, ensure that their backup has been created and these components have been removed.
+
+Execute the following command to restore a central component for which the backup has been created:
+
+[source,bash]
+----
+$ velero restore control-plane-nexus --from-backup control-plane-nexus-backup-25-10
+----
+
+[TIP]
+====
+where:
+
+* `control-plane-nexus` -- is the name of the central component to be restored; +
+* `backup control-plane-nexus-backup-25-10` -- is the folder name in the backup repository where the backup is stored and from which the central component will be restored.
+====

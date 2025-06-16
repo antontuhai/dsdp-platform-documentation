@@ -1,0 +1,19 @@
+= Operability
+include::ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+_The quality attribute defines the existence and extent of the capabilities for maintenance and system configuration management during operation._
+
+The _Registry Platform_ provides technical administrators with a wide variety of capabilities for _Platform_ central components and Registry components management, using service web interfaces of the _Platform and registries management subsystem_.
+
+[TIP]
+--
+Find more details on relevant subsystems and component technical design in the following chapters:
+
+* xref:arch:architecture/platform/administrative/control-plane/overview.adoc[]
+* xref:arch:architecture/platform/administrative/control-plane/configuration-structure/platform-configuration-structure.adoc[]
+* xref:arch:architecture/platform/administrative/control-plane/configuration-structure/registry-configuration-structure.adoc[]
+--

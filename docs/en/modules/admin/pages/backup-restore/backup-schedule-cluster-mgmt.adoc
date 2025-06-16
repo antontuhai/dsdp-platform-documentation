@@ -1,0 +1,186 @@
+= Setting up the central components backup schedule and retention time
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+The platform allows for [.underline]#managing the schedule of creating backups for central components and the time for storing such backups in the backup repository#.
+
+The backups of components are created using the *`velero`* tool and stored in a secure backup repository called *`minio`*, located outside the Platform cluster.
+
+[NOTE]
+====
+The backup schedule is configured in the https://uk.wikipedia.org/wiki/Cron[*unix-cron*] format on the *Control Plane* administrative panel interface.
+
+The retention time for backups must be greater than or equal to one, be a whole number, and not contain special characters.
+====
+
+The list of central components for which backup scheduling and retention time can be configured includes: ::
+
+* [*] Artifact repository - central component *`nexus`*.
+* [*] Control panel for the Platform and registries—central component *`control-plane`*.
+* [*] User Management - central component *`user-management`*.
+* [*] Monitoring - central component *`monitoring`*.
+
+The values are stored in the *_values.yaml_* configuration file in the *_cluster-mgmt_* repository.
+
+The corresponding parameters are applied through the `*MASTER-Build-cluster-mgmt*` Jenkins pipeline.
+
+[#schedule-setup]
+== Setting up a schedule
+
+include::partial$templates/snippets/backup-restore-planning-en.adoc[]
+
+. Log in to the *Control Plane* console as the Platform administrator.
++
+image:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-01.png[]
+
+. Go to the [.underline]#Platform management# section and click on *`Edit`*.
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-1.png[]
+
+. Navigate to the [.underline]#Backup schedule# section and configure the settings for the required central components.
++
+[TIP]
+====
+
+Currently, they are:
+
+. Artifact repository - central component *`nexus`*.
+. Control panel for the Platform and registries -- central component *`control-plane`*.
+. User Management - central component *`user-management`*.
+. Monitoring - central component *`monitoring`*.
+====
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-2.png[]
++
+[NOTE]
+====
+The backup schedule is configured in the https://uk.wikipedia.org/wiki/Cron[*unix-cron*] format and is determined by the server's time in https://24timezones.com/chasovyy-poyas/utc[UTC].
+
+If you are configuring the schedule for Ukraine, take into account the +2 hours https://24timezones.com/%D0%9A%D0%B8%D1%97%D0%B2/%D1%87%D0%B0%D1%81[offset] (`UTC+2`) in winter time and +3 hours offset (`UTC+3`) in summer time.
+
+Use the https://crontab.guru/[] resource, a simple and convenient cron expression editor, to better understand the logic of schedule settings.
+====
+
+. Configure the schedule for the *Nexus* component and set the backup retention time in days:
+
+* In the `Schedule` field, enter, for example, the following value: `5 11 * * MON-FRI`. Use a space as a separator.
++
+This means that a backup for the `*nexus*` component will be created every day from Monday to Friday at 11:05 UTC time (13:05 Kyiv time).
+
+* In the `Retention time (days)` field, enter, for example, the following value: `5`. This means that the backup will be stored in the repository for 5 days.
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-3.png[]
+
+. Configure the schedule for the *Control Plane* component and set the backup retention time in days:
+
+* In the `Schedule` field, enter, for example, the following value: `6 11 * * MON-FRI`. Use a space as a separator.
++
+This means that a backup for the *control-plane* component will be created every day from Monday to Friday at 11:06 UTC time (13:06 Kyiv time).
+
+* In the `Retention time (days)` field, enter, for example, the following value: `6`. This means that the backup will be stored in the repository for 6 days.
+
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-4.png[]
+
+. Configure the schedule for the *User Management* component and set the backup retention time in days:
+
+* In the `Schedule` field, enter, for example, the following value: `7 11 * * MON-FRI`. Use a space as a separator.
++
+This means that a backup for the *user-management* component will be created every day from Monday to Friday at 11:07 UTC time (13:07 Kyiv time).
+
+* In the `Retention time (days)` field, enter, for example, the following value: `7`. This means that the backup will be stored in the repository for 7 days.
+
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-5.png[]
+
+. Set up the schedule for the *Monitoring* component and specify the backup retention period in days:
+
+* In the `Schedule` field, enter, for example, the following value: `7 11 * * MON-FRI`. Use a space as a separator.
++
+
+This means that a backup for the *monitoring* component will be created every day from Monday to Friday at 11:07 UTC time (13:07 Kyiv time).
+
+* In the `Retention time (days)` field, enter, for example, the value 8. This means that the backup will be stored in the repository for 8 days
+
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-6.png[]
+
+. Click *`Confirm`* to save the changes.
++
+As a result, a request for update with the status `New` will be generated.
+
+. Go back to the [.underline]#Platform management# section, scroll down the page, and find the `Update requests` section.
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-7.png[]
+
+. Open the generated request by clicking the view icon  -- 👁.
++
+NOTE: The proposed changes will be saved to the *values.yaml* configuration file in the *cluster-mgmt* repository upon confirmation.
+
+. In the new window, compare the two versions of the changes, make sure the data you entered is correct, and click `Confirm`. You can also reject the changes to the configuration immediately by clicking `Reject`.
++
+TIP: The comparison window allows you to conveniently check the two versions of the changes: the current one (on the left) and the new one (on the right).
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-8.png[]
++
+image:registry-management/cp-submit-mr/cp-submit-mr-3.png[]
++
+As a result, the request will change the state to  `confirmed`. At the specified time, the `*MASTER-Build-cluster-mgmt*` Jenkins pipeline will be triggered. It applies the parameters of the specified configuration and creates backups in the backup repository.
+
+. Wait until the code build is completed. This may take a few minutes.
++
+You can check the current status and execution result by clicking the *`CI`* link on the interface.
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-9.png[]
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-10.png[]
+
+== Checking the created backups
+
+At the specified date and time, backups should be created according to the schedule specified in the configuration (see -- xref:#schedule-setup[]_).
+
+You can check this as follows: ::
+
+. Log in to the Openshift console as the Platform administrator.
+. Obtain an API token for cluster access via `oc login`:
+
+* Click `*Copy login command*`.
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-11.png[]
+
+* Log in through *Keycloak*.
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-12.png[]
+
+* Click `*Display Token*`.
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-13.png[]
+
+* Copy the `oc login` API token.
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-14.png[]
+
+. Open a terminal/console, paste the obtained token, and execute the login.
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-15.png[]
+
+. Retrieve the list of backups using the command:
++
+[source,bash]
+----
+velero get backups
+----
++
+As a result, you will get a list of backups for central components, including their names, statuses, creation dates and times, as well as the retention period for these backups in the repository.
++
+image:admin:backup-restore/backup-schedule-cluster-mgmt/cp-backup-schedule-16.png[]
++
+[NOTE]
+====
+Note that the backup creation time is shown in the target time zone (UTC+2, Kyiv time), not the server time (UTC).
+====
+
+IMPORTANT: After the retention period expires, the backup system deletes outdated backups.

@@ -1,0 +1,130 @@
+= Viewing and editing registry configuration
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Editing general settings
+
+After successfully xref:registry-management/control-plane-create-registry.adoc[deploying your registry], you can view and edit its settings. You can do this in two simple steps:
+
+. Sign in to the Control Plane admin console as the xref:registry-develop:registry-admin/create-users/create-registry-admins.adoc[registry administrator].
+
+. Open the *Registries* section, find the registry you wish to edit, and click the edit icon (🖉).
+
+image:registry-management/registry-edit/cp-edit-registry-1.png[]
+
+As a result, the *Edit registry* page opens. Here you can update the following settings:
+
+* xref:admin:registry-management/control-plane-create-registry.adoc#general-settings[General settings]
+* xref:registry-develop:registry-admin/create-users/create-registry-admins.adoc[Adding or removing administrators]
+* xref:registry-develop:registry-admin/user-notifications/email/config-smtp-server.adoc[]
+* xref:registry-management/system-keys/control-plane-registry-keys.adoc[]
+* xref:registry-management/control-plane-registry-resources.adoc[]
+* xref:admin:registry-management/custom-dns/custom-dns-overview.adoc[]
+* xref:admin:registry-management/control-plane-cidr-access-endpoints.adoc[]
+* xref:registry-develop:registry-admin/cp-auth-setup/cp-auth-setup-officers.adoc[Service providers authentication]
+* xref:registry-develop:registry-admin/cp-auth-setup/cp-auth-setup-citizens.adoc[Service recipients authentication]
+* xref:admin:backup-restore/backup-schedule-registry-components.adoc[Backup]
+
+NOTE: Updating the registry configuration follows the GitOps approach, similar to the xref:registry-management/control-plane-create-registry.adoc[deployment] process.
+
+You can open the *Edit registry* page either from the list of registries (using the edit icon) or the registry details page (using the *`Edit`* button in the upper-right corner).
+
+image:registry-management/registry-edit/cp-edit-registry-2.png[]
+
+== Viewing registry details, access settings, and external integrations
+
+You can view basic information about the registries deployed on the Platform, manage access to your registry, configure external SOAP or REST integrations, view registry configuration, and approve or reject configuration update requests.
+
+. Sign in to the *Control Plane* admin console as the xref:registry-develop:registry-admin/create-users/create-registry-admins.adoc[registry administrator].
+
+. Go to the *Registries* section and click the name of your registry.
++
+The registry details page contains two tabs:
++
+[tabs]
+====
+
+Registry information::
++
+--
+
+[#sections]
+
+This tab contains the following sections: ::
+
+* *General information*. You can view and edit it if needed.
++
+image:registry-management/registry-edit/cp-edit-registry-3.png[]
++
+WARNING: The registry name cannot be changed.
+
+* *Setting up interaction with registries via Trembita*. You can set up interaction with other registries that are part of the SEI SEIR Trembita system via the *SOAP* protocol.
++
+image:registry-management/registry-edit/cp-edit-registry-4.png[]
++
+TIP: For details, see xref:registry-develop:registry-admin/external-integration/cp-integrate-trembita.adoc[].
+
+* *Setting up interaction with other systems*. You can set up interaction with other registries and external systems via the *REST* protocol.
++
+image:registry-management/registry-edit/cp-edit-registry-5.png[]
++
+TIP: For details, see xref:registry-develop:registry-admin/external-integration/cp-integrate-ext-system.adoc[].
+
+* *Access to Platform registries and external systems*. You can configure access to your registry for other registries on the Platform or external systems.
++
+image:registry-management/registry-edit/cp-edit-registry-6.png[]
++
+TIP: For details, see xref:registry-management/control-plane-registry-grant-access.adoc[].
+
+* *Configuration*. This section contains the following links:
+** **VCS**footnote:[*Version Control System* (VCS) is a software tool for managing versions of information units such as the source code of a program, script, web page, website, 3D model, text document, and so on. VCS enables multiple people to collaborate on the same project without interfering with each other.]: Regulations changes review and storage service (Gerrit).
+** **CI**footnote:[*Continuous Integration* (CI) is a software development practice involving frequent automated project builds to identify and resolve integration issues as quickly as possible.]: Regulations deployment service (Jenkins).
++
+image:registry-management/registry-edit/cp-edit-registry-7.png[]
+
+* *Update requests*. You can change your registry configuration by editing any of its settings. These changes go to the *Update requests* section, where you can review and either xref:registry-management/control-plane-submit-mr.adoc[approve or reject] them.
++
+image:registry-management/registry-edit/cp-edit-registry-8.png[]
+--
+
+Quick links ::
++
+
+This tab contains links to the web interfaces of the various services with brief descriptions.
++
+TIP: For details, see xref:registry-management/control-plane-quick-links.adoc[].
+====
+
+[#registry-deploy-status]
+== Monitoring the deployment of changes
+
+Deploying configuration changes takes some time. The Jenkins service starts the deployment automatically by running the *Master-Build-`<registry-name>`* pipeline, where `<registry-name>` is the name of your registry. To monitor the deployment process, go to the *Registries* section and open the registry you modified, then scroll down to the *Configuration* section and click the *Jenkins* link icon in the *CI* column.
+
+image:admin:registry-management/registry-create/cp-create-registry-12-1.png[]
+
+image:admin:registry-management/registry-create/cp-create-registry-12-3.png[]
+
+The central Jenkins component provides several out-of-the-box processes (pipelines):
+
+Service processes ::
+Service processes perform various auxiliary functions and set the stage for the main pipelines. These include:
+
+* *Create-release-`<registry-name>`* performs several service operations, including cloning the repository and creating a new branch. Starts a service pipeline named `job-provisions` > `ci` > `default-<codebase.version>` (where `<codebase.version>` is the version number of the build that corresponds to the Git tag in Gerrit), which prepares the stage for the subsequent CI/CD process.
+
+* *MASTER-Code-review-`<registry-name>`* is a system process of code quality review that is launched automatically via `git push` to the `master` branch of the Gerrit repository.
+
+
+Main processes ::
+Main processes build the code used to deploy various functional components of the registry. These include:
+
+* *Master-Build-`<registry-name>`* is the primary code build process for deploying or updating the registry configuration. This includes resource allocation, deployment of registry services such as user portals, Business Process Management System (BPMS), database, data factory components, empty regulations deployment, and so on.
+
+* *Create-registry-backup-`<registry-name>`* is a process that creates registry backups and puts them in the *MinIO* object storage.
+
+* *Restore-registry-`<registry-name>`* is a process that enables you to create (restore) a registry from a backup copy.
+
+* *Delete-release-`<registry-name>`* is a process that enables you to delete a registry.
+
++
+image:registry-management/registry-edit/cp-edit-registry-9.png[]

@@ -1,0 +1,9 @@
+== Solution design
+
+The following diagram displays the Platform components involved in requirement implementation and interaction between them.
+
+image::architecture/platform/administrative/config-management/secure-endpoints/design.png[secure-endpoints,float="center",align="center"]
+
+The diagram shows the main traffic flows to the main operational zones (each zone has its list of allowed CIDRs):
+
+image::architecture/platform/administrative/config-management/secure-endpoints/operational-zones.png[operational-zones,float="center",align="center"]

@@ -1,0 +1,56 @@
+= Viewing and editing a UI form JSON representation
+include::platform:ROOT:partial$templates/document-attributes/default-set-ua.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-ua.adoc[]
+
+The platform provides the ability to view and edit the JSON representation of a form on the *Code* tab.
+
+This functionality allows for quick and easy changes to the form data without using the modeling builder.
+
+CAUTION: Editing the components of a registry regulation is only possible within change candidate versions. The master version only allows viewing.
+
+. Go to the section for managing UI forms.
+
+. Open any form.
++
+image:registry-admin/admin-portal/ui-forms/json-code/form-json-code-view-edit-1.png[]
++
+Let's assume you have noticed an error in the label of a text field and would like to correct it.
++
+image:registry-admin/admin-portal/ui-forms/json-code/form-json-code-view-edit-2.png[]
+
+. Go to the *Code* tab and make changes to the respective field (in our example, the value of the `label` parameter in the `components` array).
++
+image:registry-admin/admin-portal/ui-forms/json-code/form-json-code-view-edit-3.png[]
++
+IMPORTANT: The *General*, *Code*, and *Builder* tabs are interconnected. Changes made on one of these tabs will appear on the others as well.
+Open a preview of the form and ensure that the changes have been applied correctly.
+
+. Open a preview of the form and ensure that the changes have been applied correctly.
++
+image:registry-admin/admin-portal/ui-forms/json-code/form-json-code-view-edit-4.png[]
+
+. Click `Save changes` to apply the updated form code.
+
+[IMPORTANT]
+====
+When a user attempts to save changes during the creation or editing of a business process or UI form and is on any tab within the *Process models* or *UI Forms* sections, validation is triggered if:
+
+* The UI form with the same system name already exists. In this case, the user will see the following validation message in the top right corner:
+
+** `Form with this system name already exists`.
+
+* Validation rules are violated. In this case, the user will see the validation message in the top right corner:
+
+** `Check the format of required fields`.
+
+* For the business name of the UI form:
+
+** Validation rules are violated. In this case, the user will see the validation message in the top right corner:
+
+** `Check the format of required fields`.
+
+image:registry-develop:registry-admin/admin-portal/ui-forms/json-code/form-json-code-view-edit-5.png[]
+
+During validation checks, the user remains on the current page/tab.
+====

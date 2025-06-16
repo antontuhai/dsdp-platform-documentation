@@ -1,0 +1,43 @@
+= Viewing and editing business process XML code representation
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+Utilize the capabilities of the *Code* tab to model business processes. This functionality allows you to work directly with the code of the process, namely its XML representation.
+
+.XML representation of a business process on the *Code* tab
+image::registry-develop:registry-admin/admin-portal/process-models/process-models-11.png[]
+
+include::partial$snippets/admin-portal-master-candidate-edit-en.adoc[]
+
+Creating BPMN models directly in the code is generally challenging and impractical when there is a xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-bpmn-editor.adoc[visual editor] at hand. However, access to the XML code opens up new possibilities and simplifies modeling when, for example, you need to:
+
+* quickly adjust parts of the diagram (process name, tasks, etc.).
+
+* migrate old business processes modeled in other editors and systems (such as Camunda Modeler).
+
+* rapidly integrate a process into the registry if it was sent via email or chat.
+
+* utilize useful examples while developing a business process: code snippets from various thematic communities (Stack Overflow, Camunda, BPMN communities, etc.) or ready-made solutions for your business processes and tasks.
+
+Simply copy the ready BPMN diagram and paste the XML description into the corresponding field on the *Code* tab.
+
+[CAUTION]
+====
+The XML code of business processes is validated against an XSD schema.
+
+When transferring code to a process, the system validator kicks in. If the *Business-process code* field is empty or contains syntax errors, you will see a corresponding warning on the screen, indicating a validation error:
+
+`Attention! The XML representation of the business process contains errors.`
+====
+
+.Copying BPMN diagram code in a text editor
+image::registry-develop:registry-admin/admin-portal/process-models/process-models-12.png[]
+
+.Field for inserting BPMN diagram code on the *Code* tab
+image::registry-develop:registry-admin/admin-portal/process-models/process-models-12-1.png[]
+
+.Inserting BPMN diagram code on the *Code* tab
+image::registry-develop:registry-admin/admin-portal/process-models/process-models-12-2.png[]
+
+NOTE: All changes on the xref:registry-admin/admin-portal/registry-modeling/process-models/create-process.adoc#tab-general[General], xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-code.adoc[Code], and xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-bpmn-editor.adoc[Builder] tabs are synchronized. This means that if you modify an element in the Builder, it will be reflected in the code and vice versa.

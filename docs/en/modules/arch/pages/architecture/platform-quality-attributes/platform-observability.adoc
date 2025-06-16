@@ -1,0 +1,19 @@
+= Observability
+include::ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+_The quality attribute defines the existence and extent of the system capability to monitor the current system state during operation, using system-generated event data, metrics, and tracing data._
+
+The _Registries Platform_ provides the administrators and support service a wide variety of capabilities for Platform subsystem state and deployed Registries monitoring thanks to metrics gathering of metrics, events and tracing data with further storing for analysis via visual dashboards of service interfaces. Incident reaction speed is achieved with the mechanism of notification sending, according to rules set by the administrator.
+
+[TIP]
+--
+Find more details on relevant subsystems and component technical design in the following chapters:
+
+* xref:arch:architecture/platform/operational/monitoring/overview.adoc[Event monitoring and notification subsystem]
+* xref:arch:architecture/platform/operational/logging/overview.adoc[Event logging subsystem]
+* xref:arch:architecture/platform/operational/distributed-tracing/overview.adoc[Request tracing subsystem]
+--

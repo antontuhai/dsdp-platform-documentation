@@ -1,0 +1,59 @@
+//https://jiraeu.epam.com/browse/MDTUDDM-13355
+:toc-title: On this page:
+:toc: auto
+:toclevels: 5
+:experimental:
+:sectnums:
+:sectnumlevels: 5
+:sectanchors:
+:sectlinks:
+:partnums:
+
+= Creating merge requests
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+After deploying the registry regulations, only one version of changes is available -- the xref:registry-admin/admin-portal/version-control/master-version-settings.adoc[master version].
+
+Users have the ability to create a new merge request. This operation will create a new merge request based on the current master version of the regulations. _Each request creates a new branch, which *represents a candidate version*, for making changes to the regulations_.
+
+IMPORTANT: Any new version of changes is always created based on the latest changes in the master version. So, even if you are on a candidate version and want to create a new merge request, the new candidate version will still be created based on the master version.
+
+== Creating a request
+
+To create a merge request, follow these steps:
+
+. Expand the drop-down menu for version control in the top left corner of the page.
++
+image:registry-admin/admin-portal/new-admin-portal-2.png[]
+. Select *Create new request*.
+. In the new window, fill in the required fields:
+* In the *Version name* field, enter the name of the change. This will be the name of your candidate version. For example, `candidate-version-01`.
++
+NOTE: Length: 3-32 characters. Allowed characters are "`a-z`", "`а-я`", `0-9`, "`-`".
++
+image:registry-admin/admin-portal/new-admin-portal-3.png[]
+
++
+* In the *Change description* field, briefly describe the proposed changes for this candidate version. For example, `Test changes to the registry regulations`.
++
+[NOTE]
+====
+Length up to 512 characters. All characters are allowed except `""` (double quotes), use `''` (single quotes) instead.
+
+If the *Change description* field contains double quotes (" "), you will not be able to create the merge request due to validation. The same logic applies to the validation rules described in the tooltip for each field. In this case, you will see an error prompt on the interface: "Check the format of the field":
+
+image:registry-admin/admin-portal/new-admin-portal-3-1.png[]
+
+====
++
+. Click `Create`.
++
+As a result, a new candidate version will be created. The user will automatically switch to the newly created version.
++
+image:registry-admin/admin-portal/new-admin-portal-4.png[]
+
+After creating a new candidate version, you can xref:registry-admin/admin-portal/version-control/overview-new-change-request.adoc[view its status and settings].
+
+
+

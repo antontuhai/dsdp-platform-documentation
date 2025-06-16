@@ -1,0 +1,124 @@
+= Security audit
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+|===
+|Name |Criticality
+
+|<<_sc_01>> |High
+|<<_sc_02>> |High
+|<<_sc_03>> |High
+|<<_sc_04>> |High
+|===
+
+When designing a registry regulation, a developer can globally affect two security aspects:
+
+* Storing certain information in the system.
+* Granting access rights to certain information in the system.
+
+The services where information can be stored depending on the developer’s decisions:
+
+* _Registry data management subsystem_ — the direct registry data, whose schema is defined by the data model. Data modification occurs through business processes executed in the _Business processes management subsystem_. Data reading can occur:
+** Through business processes in the _Business processes management subsystem_.
+** Through user portals to populate components like _Select_ in user forms. Any authenticated user can thus send API requests from the browser to fetch data from search criteria or tables if access is granted—even if it’s not provided explicitly through a form.
+** Through the _External integrations subsystem_:
+*** Using Trembita secure exchange bus as a secure transport.
+*** Setting up direct integrations with external systems outside the Trembita framework.
+*** Setting up direct integrations with registries deployed on the same Platform instance.
+*** Through publicly accessible APIs.
+
+* _Users and roles management subsystem_ — storing certain information in user attributes.
+* _Business processes management subsystem_ — storing information in persistent variables.
+* _Registry audit events logging subsystem_ — logging information via business process script tasks.
+
+Access rights must and can be configured at the level of:
+
+* Business processes — granting specific roles access to specific processes.
+* Data model:
+** RBAC — granting roles permissions for specific operations on tables, columns, and search criteria.
+** RLS — forced data filtering based on user attributes.
+
+When modeling, follow these principles:
+
+* Principle of least privilege:
+** Ensure that each role only has the minimum permissions needed to perform its functions, both in business processes and data access. This minimizes the risk of unauthorized changes or data leaks.
+
+* Minimization of roles with elevated privileges:
+** Limit the number of roles with broad access. Regularly review roles and reduce privileges where possible to minimize risks.
+
+* Principle of separation of duties:
+** Ensure that critical operations require multiple roles or individuals to minimize the risk of fraud, errors, or abuse.
+
+* Minimization of stored personal data:
+** Store only essential personal data. Centralize storage within the _Registry data management subsystem_ to simplify data control and security.
+
+== Audit cases
+
+[#_sc_01]
+=== SC-01. RBAC (role-based access control) in the data model
+IMPORTANT: Criticality: High
+
+Description ::
+To ensure data security and granular access control, implement RBAC at the data model level. RBAC restricts access to tables, search criteria, and specific attributes based on user roles.
+
+Impact ::
+* **Reduced risk of unauthorized access:** Adds an extra layer of validation both at the API and business process levels.
+* **Reduced risk of unauthorized data modification:** Ability to set read-only access minimizes risks of unauthorized changes.
+
+Recommendations ::
+* Create an access control matrix for all roles specifying access to tables, columns, and search criteria.
+* Review and minimize permissions per role as needed.
+* Apply RBAC rules at the data model level using appropriate tags.
+
+[#_sc_02]
+=== SC-02. RLS (row-level security) in the data model
+IMPORTANT: Criticality: High
+
+Description ::
+To enforce granular control over record access, implement RLS (row-level security) rules based on user attributes, such as organization or individual ownership.
+
+Impact ::
+* **Reduced data leakage risk:** Limits exposure of sensitive information.
+* **Improved access control enforcement:** Automatically restricts query results based on user attributes.
+
+Recommendations ::
+* Identify tables and search criteria where RLS is necessary.
+* Set RLS rules for personal data (e.g., DRFO) or organization-specific data (e.g., EDRPOU).
+* Apply RLS rules at the data model level using appropriate tags.
+
+[#_sc_03]
+=== SC-03. Personal data
+IMPORTANT: Criticality: High
+
+Description ::
+Minimize the storage and usage of personal data to only what is strictly necessary. Centralize storage and restrict access to improve data protection and compliance.
+
+Impact ::
+* **Data leakage risk:** Greater quantities of personal data increase vulnerability.
+* **Compliance risks:** Failure to adhere to data protection laws.
+
+Recommendations ::
+* **Identify personal data** in the registry: names, addresses, phone numbers, DRFO, passport numbers, financial, or health-related data.
+* **Minimize stored data:** Only keep necessary information.
+* **Centralize storage** in the _Registry data management subsystem_.
+* **Avoid persistent variables** for storing personal data in the _Business processes management subsystem_.
+* **Avoid logging personal data** unless anonymized or encrypted.
+* **Limit access** through business processes, RBAC, and RLS.
+
+[#_sc_04]
+=== SC-04. Access configuration for business processes
+IMPORTANT: Criticality: High
+
+Description ::
+Configure role-based access for business processes to ensure that each role only has access to the processes necessary for its tasks.
+
+Impact ::
+* **Unauthorized access risk:** Overly broad permissions could lead to access or disclosure of sensitive information.
+* **Risk of data modification:** Unauthorized changes by improperly privileged roles.
+
+Recommendations ::
+* Develop a regular review process for role permissions.
+* Apply the principle of least privilege when granting access to business processes.

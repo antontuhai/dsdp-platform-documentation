@@ -1,0 +1,22 @@
+= Deleting UI forms
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+Registry regulations developers can delete UI forms. To do so, follow these steps
+
+. Open the *UI forms* section in the left-hand menu.
++
+image:registry-admin/admin-portal/ui-forms/ui-forms-1.png[]
+
+. Select the context menu *Three dots* and click on `Delete`.
++
+image:registry-admin/admin-portal/ui-forms/ui-forms-8.png[]
+
+[NOTE]
+====
+After completion, you will receive a notification of the successful deletion.
+
+image:registry-admin/admin-portal/ui-forms/ui-forms-9.png[]
+====
+

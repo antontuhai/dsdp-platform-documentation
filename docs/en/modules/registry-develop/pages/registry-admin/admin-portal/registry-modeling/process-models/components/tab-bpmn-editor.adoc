@@ -1,0 +1,65 @@
+= Modeling business processes in BPMN editor
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+The Regulations administrator portal allows easy and straightforward modeling of business processes using the built-in web editor https://bpmn.io/[BPMN.io] in your browser. This tool enables you to view, create, and edit diagrams in BPMN 2.0 notation based on XML.
+
+.Visual representation of a business process in the web editor on the *Builder* tab
+image::registry-develop:registry-admin/admin-portal/process-models/process-models-9.png[]
+
+The functionality offers a standard solution that enables modeling of business processes in BPMN 2.0 notation with the use of built-in integration extensions-connectors within the administrator portal.
+
+[NOTE]
+====
+The catalog includes typical integration extensions (delegates) that allow you to create predefined configurations for BPMN elements (conditional notation system and their description for business process modeling), such as service and user tasks, and more. After applying them through the properties panel, they provide customized parameters for the user.
+
+These typical extensions simplify the modeling process, reduce large diagrams, scripts, and save your time.
+
+TIP: The latest versions of typical business process extensions will be automatically available in the Regulations administrator portal after updating the registry.
+A detailed description of available integration extensions can be found at
+xref:bp-modeling/bp/element-templates/element-templates-overview.adoc[].
+====
+
+The use of scripts also facilitates working with business processes. Scripts are executed directly by the process engine (BPMN Engine). The main scripting language for the Platform is https://uk.wikipedia.org/wiki/Groovy[*Groovy*]. Scripts are used within the *Script Task* element.
+
+Alongside scripts, support for https://juel.sourceforge.net/[JUEL] functions has been implemented to streamline modeling.
+
+TIP: For more information on the use of JUEL functions in business processes, please refer to
+xref:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[].
+
+You can xref:registry-admin/admin-portal/registry-modeling/process-models/create-process.adoc[create new], or xref:registry-admin/admin-portal/registry-modeling/process-models/edit-process.adoc[edit] an existing business process diagram on the *Builder* tab, in the built-in web editor BPMN.io.
+
+.Editing a business process diagram in the web editor
+image::registry-develop:registry-admin/admin-portal/process-models/process-models-10.png[]
+
+The modeler can utilize both the capabilities of the Regulations administrator portal and model business processes in any other BPMN editor, such as Camunda Modeler, and more.
+
+[TIP]
+====
+The process modeling is illustrated at
+xref:bp-modeling/bp/bp-modeling-instruction.adoc[].
+
+Additional useful links for working with business processes and the registry:
+
+* xref:study-project/study-tasks/task-2-bp-modeling-without-integration.adoc[]
+* xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc[]
+* xref:study-project/study-tasks/task-4-bp-modeling-with-start-form-and-depending-components.adoc[]
+* xref:study-project/study-tasks/task-5-bp-modeling-multiple-participants.adoc[]
+====
+
+[NOTE]
+====
+The principle of process modeling based on the BPMN 2.0 standard is the same for all editors.
+
+At the same time, working with processes on the *Builder* tab in the registry administrator interface does not require additional software installation, such as a modeler, extension libraries, and plugins, as it is an out-of-the-box solution.
+====
+
+[TIP]
+====
+Developers can model a new business process using the capabilities of the *Code* tab. The tab allows direct work with the process code, i.e., its XML representation.
+
+For more information on working with process code, please refer to xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-code.adoc[]
+====
+
+NOTE: All changes on the xref:registry-admin/admin-portal/registry-modeling/process-models/create-process.adoc#tab-general[General], xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-code.adoc[Code], and xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-bpmn-editor.adoc[Builder] tabs are synchronized. This means that if you modify an element in the constructor, it will be reflected in the code and vice versa.

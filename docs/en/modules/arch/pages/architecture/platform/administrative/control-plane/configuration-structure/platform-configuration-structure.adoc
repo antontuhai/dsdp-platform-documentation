@@ -1,0 +1,642 @@
+= Platform configuration structure
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+include::common/description.adoc[]
+
+[caption=]
+.Platform configuration
+|===
+|Configuration level |Repository |Path |Description
+
+.3+|_Platform_
+.3+|`cluster-mgmt`
+|`<<yaml,/deploy-templates/values.yaml>>`
+|Contains general Platform settings. Configured by the administrator through the admin console.
+
+|`<<gotmpl,/deploy-templates/values.gotmpl>>`
+|Contains templates and default values for system parameters. In most cases, no adjustments are required.
+
+|`<<console-versions,/deploy-templates/console-versions.yaml>>`
+|Contains information about the versions of the Platform and registries management console.
+
+|===
+
+TIP: For details on configuration deployment processes, see xref:architecture/platform/administrative/config-management/overview.adoc[] and
+xref:architecture/platform/administrative/control-plane/overview.adoc[].
+
+== Platform custom yaml configuration specification (values.yaml)
+[[yaml]]
+
+This section provides a list of general Platform settings that administrators configure via the admin console or a commit to the repository.
+
+=== General Platform settings
+
+The following table provides the Platform's root parameters.
+
+TIP: Use links to the corresponding child tables for convenient navigation through the object specification hierarchy.
+
+[[root]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.General Platform settings
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<global,global>>`
+|object
+|❌
+|✅
+|Global Platform settings.
+
+|`cdPipelineName`
+|string
+|platform
+|✅
+|The name of the Platform CD pipeline. This is an xref:arch:architecture/platform-technologies.adoc#edp-codebase-operator[EDP] entity and part of the servicing pipeline of the Platform deployment processes.
+
+|`cdPipelineStageName`
+|string
+|main
+|✅
+|The name of the Platform CD pipeline stage. This is an xref:arch:architecture/platform-technologies.adoc#edp-codebase-operator[EDP] entity and part of the servicing pipeline of the Platform deployment processes.
+
+|`source_catalog_version`
+|string
+|4.6
+|✅
+|❌ A deprecated parameter. Will be discontinued in the future Platform versions.
+
+|`<<administrators,administrators>>`
+|[]object
+|❌
+|✅
+|The list of users with the Platform administrator role (`cp-cluster-mgmt-admin`).
+
+|`<<keycloak,keycloak>>`
+|object
+|❌
+|❌
+|General Keycloak component settings.
+
+|`<<digital-signature,digitalSignature>>`
+|object
+|❌
+|✅
+|The Users and roles management subsystem's _Digital signature service_ settings.
+
+|`<<backup,velero>>`
+|object
+|❌
+|❌
+|Velero Platform backup service settings.
+
+|===
+
+=== Global Platform settings
+
+The `global` group contains the Platform's global parameters that are not classified into separate groups.
+
+[[global]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`deploymentMode`
+|string
+|development
+|✅
+|The Platform deployment mode. Determines whether `external-integration-mocks` are present or not.
+
+|`language`
+|string
+|❌
+|✅
+|The Platform language setting. The specified language must be added to the `supportedLanguages` list.
+
+|`supportedLanguages`
+|list
+|['uk', 'en']
+|✅
+|Determines the list of languages supported by the Platform.
+
+|`<<whitelistip,whiteListIP>>`
+|object
+|❌
+|✅
+|Platform services access parameters.
+
+|===
+
+=== Platform service access parameters
+
+The `whiteListIP` group contains access parameters for the administrative service routes.
+
+[[whitelistip]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.whiteListIP | <<global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`adminRoutes`
+|string
+|0.0.0.0/0
+|✅
+|The Platform's administrative service route access parameters.
+
+|===
+
+[source,yaml]
+.global specification example
+----
+deploymentMode: production
+language: uk
+supportedLanguages:
+  - uk
+  - en
+whiteListIP:
+    adminRoutes: 0.0.0.0/0
+----
+
+=== Platform administrators configuration parameters
+
+The `administrators` group contains a list of Platform administrators.
+
+[[administrators]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.administrators | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`email`
+|string
+|❌
+|✅
+|The email address that identifies the user.
+
+|`firstName`
+|string
+|❌
+|✅
+|User's first name.
+
+|`lastName`
+|string
+|❌
+|✅
+|User's last name.
+
+|`passwordVaultSecret`
+|string
+|❌
+|✅
+|The path to the temporary password in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`passwordVaultSecretKey`
+|string
+|❌
+|✅
+|The key to finding the temporary password in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`username`
+|string
+|❌
+|✅
+|User account name. Equals the `email` field.
+
+|===
+
+[source,yaml]
+.Administrators configuration example
+----
+administrators:
+    - email: user@company.com
+      firstName: user
+      lastName: user
+      passwordVaultSecret: registry-kv/cluster/user@company.com
+      passwordVaultSecretKey: password
+      username: user@company.com
+----
+
+=== User and role management service configuration parameters
+
+The `customHosts` group contains a list of alternative DNS names for Keycloak.
+
+[[keycloak]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.keycloak | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<customHosts,customHosts>>`
+|[]object
+|❌
+|❌
+|A list of alternative DNS names for Keycloak.
+
+|===
+
+The `customHosts` group contains a list of alternative DNS names for Keycloak and paths to their certificates.
+
+[[customHosts]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.keycloak.customHosts | <<keycloak,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`certificatePath`
+|string
+|❌
+|✅
+|The path to the TLS/SSL certificate in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`host`
+|string
+|❌
+|✅
+|The hostname of the alternative DNS name.
+
+|===
+
+[source,yaml]
+.Secrets and encryption management service configuration example
+----
+keycloak:
+  customHosts:
+    - certificatePath: registry-kv/cluster/domains/example-keycloak.openshift.company.com/20230505T085919Z
+      host: example-keycloak.openshift.company.com
+----
+
+=== Digital signature service configuration parameters
+
+The `digitalSignature` group contains the Platform's _Digital signature service_ settings.
+
+[[digital-signature]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.digitalSignature | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<digital-signature-data,data>>`
+|object
+|❌
+|✅
+|The Platform's _Digital signature service_ key settings.
+
+|`<<digital-signature-env,env>>`
+|object
+|❌
+|✅
+|The Platform's _Digital signature service_ environment settings.
+
+|===
+
+[[digital-signature-data]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.digitalSignature.data | <<digital-signature,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`Key-6-dat`
+|string
+|❌
+|✅
+|The path to the organization's private file key in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`allowed-keys-yml`
+|string
+|❌
+|✅
+|The path to the file listing the attributes of authorized or previously issued keys in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`osplm.ini`
+|string
+|❌
+|✅
+|The path to the configuration file of the hardware and software cryptomodule in the Hashicorp Vault _Secrets and encryption management service_. Only used with the hardware key type.
+
+|===
+
+[[digital-signature-env]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.digitalSignature.env | <<digital-signature,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`sign.key.device-type`
+|string
+|❌
+|✅
+|The type of the key used by the Platform. Possible values are `file` or `hardware`.
+
+|`sign.key.file.issuer`
+|string
+|❌
+|✅
+|The path to information about the issuer of the organization's private key in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`sign.key.file.password`
+|string
+|❌
+|✅
+|The path to the organization's private key password in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`sign.key.hardware.device`
+|string
+|❌
+|✅
+|The path to information about the serial number, host, and port of the hardware cryptomodule device in the Hashicorp Vault _Secrets and encryption management service_. Only used with the hardware key type.
+
+|`sign.key.hardware.password`
+|string
+|❌
+|✅
+|The path to the hardware cryptomodule device password in the Hashicorp Vault _Secrets and encryption management service_. Only used with the hardware key type.
+
+|`sign.key.hardware.type`
+|string
+|❌
+|✅
+|The path to the hardware crypto-module device type in the Hashicorp Vault _Secrets and encryption management service_. Only used with the hardware key type.
+
+|===
+
+[source,yaml]
+.Platform's Digital signature service configuration example
+----
+digital-signature:
+    data:
+        Key-6-dat: registry-kv/cluster/key-management-20231608T063220Z
+        allowed-keys-yml: registry-kv/cluster/key-management-20231608T063220Z
+        osplm.ini: ""
+    env:
+        sign.key.device-type: file
+        sign.key.file.issuer: registry-kv/cluster/key-management-20231608T063220Z
+        sign.key.file.password: registry-kv/cluster/key-management-20231608T063220Z
+        sign.key.hardware.device: ""
+        sign.key.hardware.password: ""
+        sign.key.hardware.type: ""
+----
+
+=== Backup and restore service configuration parameters
+
+The `velero` group contains the _Backup and restore service_ settings.
+
+[[backup]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.velero | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<backup-control-plane,backup>>`
+|object
+|❌
+|❌
+|The backup configuration of the Platform components.
+
+|===
+
+[[backup-control-plane]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.velero.backup | <<backup,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<backup-params,controlPlane>>`
+|object
+|❌
+|❌
+|The backup configuration of the _Platform and registries management subsystem's_ components.
+
+|`<<backup-params,controlPlaneNexus>>`
+|object
+|❌
+|❌
+|The backup configuration of the Platform artifacts repository in the _Platform and registries deployment and configuration subsystem_.
+
+|`<<backup-params,monitoring>>`
+|object
+|❌
+|❌
+|The backup configuration of the _Event monitoring and notification subsystem's_ components.
+
+|`<<backup-params,userManagement>>`
+|object
+|❌
+|❌
+|The backup configuration of the _Users and roles management subsystem's_ components.
+
+|===
+
+[[backup-params]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.velero.backup.<component_name> | <<backup-control-plane,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`expires_in_days`
+|string
+|❌
+|❌
+|The number of days to store the backup copy of the Platform service.
+
+|`schedule`
+|string
+|❌
+|❌
+|The backup schedule definition in the UNIX cron format.
+
+|===
+
+[source,yaml]
+.Velero Platform backup service configuration example
+----
+velero:
+    backup:
+        controlPlane:
+            expires_in_days: 7
+            schedule: 15 9 * * *
+        controlPlaneNexus:
+            expires_in_days: 7
+            schedule: 0 9 * * *
+        monitoring:
+            expires_in_days: 7
+            schedule: 45 9 * * *
+        userManagement:
+            expires_in_days: 7
+            schedule: 30 9 * * *
+----
+
+== Platform technical yaml configuration specification (values.gotmpl)
+[[gotmpl]]
+
+This section lists the technical parameters of the Platform. Their values are set using parameterization templates, which can take one of the following forms:
+
+* `{{ env "<variable_name>" }}` to get values from environment variables.
+* `{{ $cluster_version := exec ... }}` to execute a command during pipeline execution.
+
+IMPORTANT: We do not recommend making changes to this file manually.
+
+[[parent-tech-params]]
+[cols="20%,10%,10%,60%",options="header",caption=]
+.Platform technical parameters
+|===
+|Name |Type |Required |Description
+
+|`<<tech-global,global>>`
+|object
+|✅
+|Global Platform settings.
+
+|`<<vault,vault>>`
+|object
+|✅
+|Contains settings for the Platform's central _Secrets management service_.
+
+|`namespace`
+|string
+|✅
+|Defines the name of the OKD namespace for deploying subsystem components and configurations from the `codebase` specification based on whether they belong to the Platform or registry.
+
+|`baseDomain`
+|string
+|✅
+|Receives and sets the base domain of the OKD cluster -- for example, `openshift.example.com`. All managed DNS records in the cluster become subdomains of the base domain. After the OKD cluster is deployed, this value cannot be changed.
+
+|`dnsWildcard`
+|string
+|✅
+|A subdomain of the base domain of the OKD cluster for routing traffic to Platform and registry applications -- for example, `apps.openshift.example.com`.
+
+|`cdPipelineName`
+|string
+|✅
+|The name of the Platform CD pipeline. This is an xref:arch:architecture/platform-technologies.adoc#edp-codebase-operator[EDP] entity and part of the servicing pipeline of the Platform deployment processes.
+
+|`dockerRegistry`
+|string
+|✅
+|The URL for the `control-plane-nexus` Platform artifacts repository.
+
+|`dockerProxyRegistry`
+|string
+|✅
+|The URL for the `control-plane-nexus` Platform artifacts repository.
+
+|`edpProject`
+|string
+|✅
+|Defines the name of the OKD namespace for deploying subsystem components and configurations from the technical pipeline parameters based on whether they belong to the Platform or registry.
+
+|`globalNexusNamespace`
+|string
+|✅
+|The OKD namespace for the Platform artifacts repository.
+
+|`ACCESS_KEY_ID`
+|string
+|✅
+|❌ A deprecated parameter. Will be discontinued in the future Platform versions.
+
+|`SECRET_ACCESS_KEY`
+|string
+|✅
+|❌ A deprecated parameter. Will be discontinued in the future Platform versions.
+
+|`backupBucket`
+|string
+|✅
+|❌ A deprecated parameter. Will be discontinued in the future Platform versions.
+
+|===
+
+[[tech-global]]
+[cols="20%,5%,5%,60%",options="header",caption=]
+.global | <<parent-tech-params,Return to parent table>>
+|===
+|Name |Type |Required |Description
+
+|`clusterVersion`
+|string
+|✅
+|Automatically determines the current version of the OKD cluster.
+
+|`storageClass`
+|string
+|✅
+|Contains the `StorageClass` name used in the OKD cluster by default.
+
+|`imageRegistry`
+|string
+|✅
+|The URL for the `control-plane-nexus` Platform artifacts repository.
+
+|===
+
+[[vault]]
+[cols="20%,5%,5%,60%",options="header",caption=]
+.vault | <<parent-tech-params,Return to parent table>>
+|===
+|Name |Type |Required |Description
+
+|`platformVaultToken`
+|string
+|✅
+|The access token for the Platform's central _Secrets management service_.
+
+|`openshiftApiUrl`
+|string
+|✅
+|The OKD API server URL.
+
+|`centralVaultUrl`
+|string
+|✅
+|The Platform's central _Secrets management service_ URL.
+
+|===
+
+=== Admin console settings
+
+The `consoleVersions` group contains the registry-version-to-admin-console-version mapping parameters for the release.
+
+[[console-versions]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.consoleVersions | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`consoleVersion`
+|string
+|❌
+|✅
+|The admin console version.
+
+|`stream`
+|string
+|❌
+|✅
+|The console deployment branch.
+
+|`registryVersion`
+|string
+|❌
+|✅
+|The registry version.
+
+|===
+
+NOTE: The `consoleVersion` parameter contains technical values that are updated together with the Platform, so there is no need to change them.
+
+[source,yaml]
+.consoleVersions specification example
+----
+consoleVersions:
+    - consoleVersion: 1.9.0.67
+      registryVersion: 1.9.4
+      stream: master
+    - consoleVersion: 1.9.6.33
+      registryVersion: 1.9.6
+      stream: master
+----

@@ -1,0 +1,186 @@
+= Automatic validation of registry regulations changes
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+This document illustrates how the changes to registry regulations are validated using *MASTER-build-registry-regulations* pipeline errors.
+
+[TIP]
+====
+Utilize the reference examples of regulations modeling in the demo registry.
+
+Please get in touch with the Platform administrator to deploy such a registry or gain access if the registry already exists.
+
+You can find instructions for deploying the demo registry and obtaining modeling examples on page xref:registry-develop:registry-admin/cp-deploy-consent-data.adoc[].
+====
+
+According to the security architecture of the Platform and the registries deployed on it, the regulations of each registry must go through a code review procedure before updating the target repository.
+
+A code review procedure provides a reliable way of detecting errors when modeling the regulations' elements before the changes are applied. Still, there is always a possibility of human error. For example, when working with the regulations configuration files, someone may use the wrong letter case, provide non-unique values, or duplicate attributes.
+
+To avoid similar mistakes, the Platform performs additional automatic validation of changes.
+
+Automatic validation of the regulations changes currently includes the following checks: ::
+
+. Checking that the foreign keys in the data model use the correct letter case.
+
+. Checking that the officer roles use the correct letter case.
++
+IMPORTANT: Attribute values must use a lower case. The validation works the same in both situations.
+
+. Checking that the attributes in the business process forms are not duplicated and have unique values.
+
+. Checking that the business process identifiers have unique values.
+
+. Checking that the business processes with the specified identifiers are present in the regulations.
+
+Merging changes to the regulations automatically starts the regulations' files build process titled *MASTER-build-registry-regulations*. For details, see xref:registry-admin/regulations-deploy/registry-admin-deploy-regulation.adoc[].
+
+IMPORTANT: If the registry regulations' data is not correct, the build will fail.
+
+== Checking the foreign keys letter case
+
+When building the regulations, the system performs letter case validation of the `foreignKeyName` attribute value as part of the registry data structures modeling in the _data-model_ directory.
+
+If in one of the files at the data factory level (for example, _data-model/tablesSubjects.xml_, which defines the structure of the tables and the relationships between them) the value of the foreign key attribute `foreignKeyName` is specified in uppercase (for example `foreignKeyName="FK_suBject_subject_id"`), the build will fail at the `registry-regulations-validation` step.
+
+[#example-validation-fk-name]
+.Automatic validation for the foreignKeyName attribute
+====
+
+Consider an example of automatic validation triggering when you update the _data-model/tablesSubjects.xml_ file.
+
+Perform these steps: ::
+
+. Open the _data-model/tablesSubjects.xml_ file in the regulations development and modeling environment.
+
+. When modeling your data structures, provide a value that contains uppercase letters (`"Fk_subject_subject_id"`) for the `foreignKeyName` attribute in the `<constraints>` tag.
+
+. Push local changes to the target repository in Gerrit (for details, see xref:registry-admin/regulations-deploy/registry-admin-deploy-regulation.adoc[]).
+
+. Go through the code review procedure in Gerrit.
++
+image:registry-admin/regulations-deploy/auto-validation/registry-regulations-auto-validation-4.png[]
+
+. Merge the changes (via `git merge`) with the `master` branch of the repository.
++
+image:registry-admin/regulations-deploy/auto-validation/registry-regulations-auto-validation-3.png[]
++
+Merging the changes with the `master` branch of the Gerrit repository automatically starts the build process in Jenkins.
+
+. To monitor the build process, go to *Jenkins* using a corresponding link.
++
+image:registry-admin/regulations-deploy/auto-validation/registry-regulations-auto-validation-5.png[]
++
+The build fails with a validation error at the `registry-regulations-validation` step.
+
+. Click the build number to open its details and select the *Console Output* section in the leftmost menu.
++
+image:registry-admin/regulations-deploy/auto-validation/registry-regulations-auto-validation-8.png[]
++
+image:registry-admin/regulations-deploy/auto-validation/registry-regulations-auto-validation-7.png[]
+
+. Find out what is causing the validation error. The log contains a corresponding error message and mentions the value of the parameter that triggered the validation check.
++
+----
+[ERROR] The following foreign keys contain uppercase letters, which is not allowed: [Fk_subject_subject_id]
+----
++
+image:registry-admin/regulations-deploy/auto-validation/registry-regulations-auto-validation-1.png[]
+
+. Scroll to the bottom of the page and look for the build failed message:
++
+----
+ERROR: Registry regulations files did not pass validation
+Finished: FAILURE
+----
++
+image:registry-admin/regulations-deploy/auto-validation/registry-regulations-auto-validation-2.png[]
+====
+
+== Checking the officer roles letter case
+
+When building the regulations, the system performs letter case validation of the `name` parameter value in the _roles/officer.yml_ file. Only lowercase letters are allowed.
+
+If the value of the `name` parameter in the _roles/officer.yml_ file at the business processes level contains uppercase letters (for example, `name: Officer`), the build will fail at the `registry-regulations-validation` step.
+
+TIP: For an example of how validation triggers when checking the letter case in the _data-model_ directory, see the xref:#example-validation-fk-name[previous section].
+
+== Checking the uniqueness of attributes in the business process forms
+
+When building the regulations, the system checks the uniqueness of the `name`, `display`, `title`, and `type` attributes in the _forms_ directory. This validation ensures that the name, type, and path to the form in user portals are generated correctly.
+
+If the attributes are duplicated and their values are not unique, the build will fail at the `registry-regulations-validation` step.
+
+There are two main criteria for this type of validation: ::
+
+. The `name`, `display`, `title`, and `type` attributes cannot be duplicated in the `forms` directory.
++
+.The attribute is duplicated
+====
+[source,json]
+----
+{
+"path": "add-lab-bp-add-lab",
+"path": "add-lab-bp-add-lab"
+}
+----
+====
+
+. The `name`, `display`, `title`, and `type` attributes must have unique values in the  `forms` directory when the registry regulations are deployed.
++
+.The attribute value is not unique
+====
+[source,json]
+----
+{
+"title": "Add lab info",
+"title": "Add lab address"
+}
+----
+====
+
+TIP: For an example of how validation triggers when checking the letter case in the _data-model_ directory, see the xref:#example-validation-fk-name[previous section].
+
+== Checking the uniqueness of business process identifiers
+
+When building the regulations, the system checks the uniqueness of the `process_definition_id` attribute value is unique in the _bp-auth_ directory. This validation ensures the correct identification of the business process to which access is given.
+
+If the value of the `process_definition_id` attribute in the `process_definitions` array is not unique, the build will fail on the `registry-regulations-validation` step. The log will display the following error message: `"[Process_id] Process_id is not unique"`
+
+.The process_definition_id value is not unique
+====
+[source,yaml]
+----
+process_definitions:
+    - process_definition_id: 'add-lab'
+    - process_definition_id: 'add-lab'
+----
+====
+
+TIP: For an example of how validation triggers when checking the letter case in the _data-model_ directory, see the xref:#example-validation-fk-name[previous section].
+
+== Checking the existence of business processes in the regulations
+
+When building the regulations, the system checks that a business process with a specified `process_definition_id` in the _bp-auth_ directory exists. This validation ensures that the registry administrator only grants access to business processes that exist in the system.
+
+If the `process_definition_id` attribute value in the `process_definitions` array does not match any of the available business processes, the build will fail at the `registry-regulations-validation` step.
+
+.The process_definition_id value does not match any business processes in the registry
+====
+[source,yaml]
+----
+authorization:
+    realm: 'officer'
+    process_definitions:
+        - process_definition_id: 'add-lab777777777777777'
+        process_name: 'Create lab'
+        process_description: 'Regulations for creating a lab'
+        roles:
+          - officer
+----
+====
+
+TIP: For an example of how validation triggers when checking the letter case in the _data-model_ directory, see the xref:#example-validation-fk-name[previous section].

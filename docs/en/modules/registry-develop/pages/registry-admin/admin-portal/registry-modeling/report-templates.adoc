@@ -1,0 +1,89 @@
+= Managing registry report templates
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+The *Report templates* section of the Regulations administrator portal contains a list of the registry's analytical reports in JSON format developed in the corresponding instance of the Report modeling service (Redash Admin).
+
+Here you can view and download these objects for further publication in the regulations.
+
+IMPORTANT: This section does not depend on the selected version of the regulations. Any changes apply to all versions of the registry regulations, including the `master` version.
+
+[TIP]
+====
+
+* For details on developing analytical reports, see xref:registry-develop:data-modeling/reports/reports-overview.adoc[].
+
+* For details on publishing analytical reports to the regulations, see the study task for developing analytical reports, xref:registry-develop:study-project/study-tasks/task-6-registry-reports-modeling.adoc#reports-publication[Publishing the objects to users] section.
+====
+
+== Navigation and search
+
+You can view the analytical reporting objects in the Regulations administrator portal.
+
+. Sign in to the Regulations administrator portal.
+
+. Open the *Report templates* section.
++
+image:registry-develop:registry-admin/admin-portal/report-templates/report-templates-section.png[]
+
+. On the *Modeled reports* page, browse the analytical reporting objects using navigation and search.
+
+=== Search
+
+You can search objects by the report name. For this, enter the report name into the search field.
+
+NOTE: You can search by the report's business name or service name.
+
+image:registry-develop:registry-admin/admin-portal/report-templates/report-templates-search.png[]
+
+=== Sorting
+
+You can sort objects by any of the table's columns. For this, perform the following steps:
+
+. Click the name of the column by which you wish to sort the objects.
++
+image:registry-develop:registry-admin/admin-portal/report-templates/report-templates-sort.png[]
++
+
+. Select the sorting option:
+
+* `↓` -- Sort ascending. String values sort alphabetically A through Z, numbers sort lowest to highest, and dates sort latest to earliest (latest on top).
+
+* `↑` -- Sort descending. String values sort alphabetically Z through A, numbers sort highest to lowest, and dates sort earliest to latest (earliest on top).
+
+=== Pagination
+
+You can switch between pages and adjust the number of rows displayed on a page. For this, scroll down to the bottom of the page.
+
+* To switch between pages, use the `>` (next) or `<` (previous) icons.
+
+* Here you can also change the number of rows displayed on a page (10 by default).
+
+image:registry-develop:registry-admin/admin-portal/report-templates/report-templates-pagination.png[]
+
+== Downloading objects
+
+After you find the object on the *Modeled reports* page, you can download it for further publication in the regulations. For this, perform the following steps:
+
+. Click the download icon (`&#10515;`) next to the object.
++
+image:registry-develop:registry-admin/admin-portal/report-templates/report-templates-download.png[]
+
+. Unzip the archive.
+
+[TIP]
+====
+The archive contains two entities:
+
+* Dashboards in JSON format. Each dashboard is stored in a separate file with a unique name (for example, _dashboard_1.json_, _dashboard_2.json_, _dashboard_3.json_, and so on).
+
+* The _queries.json_ file containing the queries that define the selected report.
+====
+
+== Related topics
+
+* xref:registry-develop:data-modeling/reports/reports-overview.adoc[]
+* xref:registry-develop:study-project/study-tasks/task-6-registry-reports-modeling.adoc[]

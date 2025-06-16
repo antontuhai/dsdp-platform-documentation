@@ -1,0 +1,213 @@
+= Registry regulations development training course
+include::ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::ROOT:partial$admonitions/language-en.adoc[]
+
+This section contains xref:study-project/study-tasks/overview.adoc[educational] and xref:study-project/control-tasks/overview.adoc[testing] materials for developing practical skills when working with registry regulations.
+
+The course consists of a set of training tasks for the regulations administrators to complete one by one, from simple to complex.
+
+Practical assignments are developed to reinforce the learning materials.
+
+== Overview
+
+=== What are registry regulations
+
+_Registry regulations_ are a set of entities collected in a separate Git directory according to a particular structure. Each entity is a folder with a group of files (such as templates, schemas, and configuration files) that perform specific tasks according to the rules within the business processes framework.
+
+TIP: For details, see xref:registry-develop:registry-admin/regulations-deploy/registry-regulations-structure.adoc[].
+
+=== How are the regulations deployed
+
+Registry regulations deployment is automated by the CI/CD tools. The `*MASTER-Build-registry-regulations*` Jenkins pipeline and related pipelines are responsible for deploying the regulations.
+
+TIP: For details, see xref:arch:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[].
+
+[NOTE]
+====
+
+Code build applies only to the files that were in the latest commit.
+
+For example: ::
+
+* In the first commit (`git commit`), you modified two files (_form.json_ for the UI form and _process.bpmn_ for the process) and saved the changes to the master version of the Gerrit repository (`git push` + `git merge`).
+
+* The regulations publication pipeline failed the validation step.
+
+* In the second commit, you make changes to the _form.json_ file, fixing the error.
+
+* This time the publication pipeline goes through, but your business process is not deployed and does not appear in the user portal, even though it is present in the Gerrit repository.
+
+To solve this issue, ensure that the next commit after a failed build contains all the files you previously tried to deploy.
+
+Going back to our example, your second commit must include both the UI form file that you patched *and* the business process schema file that failed to deploy previously.
+
+To ensure a file that had no fixable errors gets into the new commit, make minor changes, such as an indent or a space at the end.
+
+====
+
+[#preconditions-setup]
+== Getting started
+
+=== Local environment setup
+
+include::partial$snippets/study/local-environment-setup-en.adoc[]
+
+=== Development tools: work environment
+
+include::partial$snippets/study/platform-tools-en.adoc[]
+
+== Registry regulations modeling roadmap
+
+The regulations modeling roadmap shows high-level stages of working with the main elements of the regulations and provides a general context for the registry development and maintenance teams.
+
+[NOTE]
+====
+
+The diagram shows only the main elements of the regulations.
+
+The Platform provides flexible customization options for a wide range of features related to working with the regulations—for example, modeling excerpts in different formats, configuring notifications through various communication channels, managing registry settings, and so on.
+====
+
+image:study-project/registry-regulations-roadmap.png[]
+
+== Study tasks
+
+This section goes over the training stages and introduces the practical tasks that the registry regulations developer is required to perform.
+
+=== Create the registry data model
+
+As part of this task, the modeler needs to: ::
+
+. Create a logical data model and an ERD diagram.
+
+. Create a physical data model based on the logical model:
++
+
+* Create a physical model development plan:
+
+** Define primary keys for each of the entities.
+
+** Define secondary keys if the entity has them.
+
+** Identify mandatory fields.
+
+** Identify fields or a combination of fields that have unique values.
+
+** Define the names of tables and fields in Latin characters.
++
+
+* Create tables and relationships between them.
+
+* Create search conditions (view tables).
+
+
+* Perform an initial data load for reference tables.
+
+. Apply the developed model via the regulations.
+
+TIP: For details, see xref:study-project/study-tasks/task-1-registry-db-modeling.adoc[].
+
+=== Model a simple business process without integration
+
+As part of this task, the modeler needs to: ::
+
+. Model a simple business process without integration with the data factory or other registries.
+
+. Create data entry UI forms for the business process.
+
+. Define the roles and grant access to the business process.
+
+. Apply changes to the regulations.
+
+TIP: For details, see xref:study-project/study-tasks/task-2-bp-modeling-without-integration.adoc[].
+
+=== Model a business process with integration
+
+As part of this task, the modeler needs to: ::
+
+. Model a business process integrated with the data factory.
+
+* Model business process branches.
+
+* Model unified steps in the business processes using `Call Activity`.
+
+. Model the UI forms for entering data into the business process and configure the `Select` components to retrieve data from the data factory.
+
+. Define the roles and grant access to the business process.
+
+. Apply changes to the regulations.
+
+TIP: For details, see xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc[].
+
+=== Model a business process with a start form and dependent components on forms
+
+As part of this task, the modeler needs to: ::
+
+. Model a business process that has a start form.
+
+. Model data entry UI forms with dependent components and an *Edit Grid* component.
+
+. Define the roles and grant access to the business process.
+
+. Apply changes to the regulations.
+
+TIP: For details, see xref:study-project/study-tasks/task-4-bp-modeling-with-start-form-and-depending-components.adoc[].
+
+=== Model a business process with multiple participants
+
+As part of this task, the modeler needs to: ::
+
+. Model a business process that has multiple participants.
+
+. Model data entry UI forms and configure them using *formVariables*.
+. Define the roles and grant access to the business process.
+. Apply changes to the regulations.
+
+TIP: For details, see xref:study-project/study-tasks/task-5-bp-modeling-multiple-participants.adoc[].
+
+=== Prepare analytical reports
+
+As part of this task, the modeler needs to: ::
+
+. Model an analytics view.
+
+. Provide access to the analytics view.
+
+. Create three queries in Redash.
+
+. Create a dashboard in Redash.
+
+. Download the archive with the dashboard and unpack it in the regulations.
+
+. Apply the changes to the remote Gerrit repository.
+
+. Verify the report in the officer's portal.
+
+TIP: For details, see xref:study-project/study-tasks/task-6-registry-reports-modeling.adoc[].
+
+=== Model a business process with a call to Secure exchange gateway
+
+As part of this task, the modeler needs to: ::
+
+. Model one business process.
+
+. Model three data entry UI forms for the business process.
+
+. Grant access to the business process for corresponding roles.
+
+. Save the created artifacts to the local Git repository.
+
+. Apply local changes to the remote Gerrit repository.
+
+. Check the functionality of the business process.
+
+== Tests
+
+This section covers the self-assessment tests you can take after completing the learning part of the training. Tests go from simple to complex.
+
+* xref:registry-develop:study-project/control-tasks/control-task-1.adoc[]: Gain in-depth practical knowledge of creating business processes on the Platform.
+
+* xref:registry-develop:study-project/control-tasks/control-task-2.adoc[]: Deepen your practical skills in developing business processes.
+
+* xref:registry-develop:study-project/control-tasks/control-task-3.adoc[]: Deepen your business process creation skills even further by mastering nested entities.

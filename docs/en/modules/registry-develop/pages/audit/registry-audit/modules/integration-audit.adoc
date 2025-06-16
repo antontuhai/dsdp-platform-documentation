@@ -1,0 +1,72 @@
+= External integrations audit
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+|===
+|Name |Criticality
+
+|<<_in_01>> |Medium
+|<<_in_02>> |Medium
+|<<_in_03>> |Medium
+|===
+
+== Audit cases
+
+[#_in_01]
+=== IN-01. Separate business processes and search conditions
+IMPORTANT: Criticality: Medium
+
+Description ::
+Create dedicated business processes and search conditions for inbound external integrations from third-party systems.
+Using shared business processes that can be triggered both by portal users and external systems is considered a bad practice and may lead to maintenance and upgrade issues. The same applies to search conditions.
+
+Impact ::
+* Violates the single responsibility principle.
+* Changes requested by one stakeholder (e.g., a portal user) may unintentionally affect others (e.g., external systems).
+
+Recommendations ::
+* Create dedicated business processes for external integrations.
+* Create dedicated search conditions for external integrations.
+* When updating the interaction contract, release a new version of the business process and search condition, keeping the old versions temporarily for backward compatibility.
+
+[#_in_02]
+=== IN-02. Simulation of external system APIs
+IMPORTANT: Criticality: Medium
+
+Description ::
+Test outbound integrations with external systems using external API simulation capabilities before going live.
+Avoid postponing full end-to-end validation until the production environment.
+
+Impact ::
+* Unvalidated integration scenarios may cause unpredictable issues in production.
+
+Recommendations ::
+* Perform testing using external API simulation capabilities.
+* Test outbound integrations against the external system’s test environment if available.
+
+[#_in_03]
+=== IN-03. Error handling
+IMPORTANT: Criticality: Medium
+
+Description ::
+When using outbound external integrations, define a proper error-handling strategy.
+The default behavior may not meet business process requirements and should be adapted if necessary.
++
+NOTE: At the time of writing, HTTP status codes 4xx and 5xx are treated as errors and throw exceptions.
+When using the appropriate delegate, the call will be made, an error will be generated, and the business process token will roll back to the last wait state. In case of asynchronous invocation, retry policies are also applied.
+
+Impact ::
+* Temporary or persistent issues on the external system side can cause process behavior deviations from business expectations.
+* Critical or non-critical service calls must be clearly distinguished to ensure optimal error handling.
+
+Recommendations ::
+* Define the criticality of each outbound call and select an appropriate error-handling strategy.
+* Possible strategies include:
+** Rollback to the last wait state. If the last wait state is a user task, the user will see the error and must retry manually. For asynchronous calls, the retry policy will be triggered first, followed by an incident, which will require administrator intervention.
+** Handle errors with an _Error Boundary Event_ attached to the external call service task. If the error is predictable and can be handled explicitly, implement this logic inside the business process.
+
+TIP: Learn more about wait states in the
+https://docs.camunda.org/manual/7.19/user-guide/process-engine/transactions-in-processes/#wait-states[official Camunda documentation].

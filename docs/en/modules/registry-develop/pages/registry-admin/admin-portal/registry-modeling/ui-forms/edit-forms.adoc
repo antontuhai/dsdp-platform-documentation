@@ -1,0 +1,23 @@
+= Editing UI forms
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+Regulation developers can edit UI forms for business processes. To edit a form, follow these steps:
+
+. Open the *UI forms* section in the left-hand menu.
++
+image:registry-admin/admin-portal/ui-forms/ui-forms-1.png[]
+
+. Click on the _edit icon_ &#9998;
++
+image:registry-admin/admin-portal/ui-forms/ui-forms-2.png[]
+
+. Make the necessary changes to the components of the UI form and click `Save changes`.
++
+image:registry-admin/admin-portal/ui-forms/ui-forms-3.png[]
+
+TIP: Learn more about the components of UI forms on the page
+xref:registry-admin/admin-portal/registry-modeling/ui-forms/form-tabs.adoc[]
+
+include::partial$snippets/admin-portal-master-candidate-edit-en.adoc[]

@@ -1,0 +1,70 @@
+= Secrets and encryption management subsystem
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+The _Secrets and encryption management subsystem_ handles the encryption of sensitive registry data and synchronizes secrets upon request from the target registry services by creating and monitoring the `ExternalSecret` resource.
+
+== Subsystem functions
+
+* Storing the encryption/decryption keys.
+* Synchronizing and updating secrets between xref:arch:architecture/platform-technologies.adoc#vault[HashiCorp Vault] storage and the container orchestration platform.
+
+== Technical design
+
+image::architecture/registry/operational/secret-management/secret-and-cipher-management.drawio.svg[width=600,float="center",align="center"]
+
+[#subsystem-components]
+== Subsystem components
+
+|===
+|Component name |Registry representation |Source |Repository |Function
+
+|_Secrets and encryption management service_
+|`hashicorp-vault`
+|3rd-party
+|https://github.com/epam/edp-ddm-hashicorp-vault[github:/epam/edp-ddm-hashicorp-vault]
+|Secure storage of encryption keys for other subsystems to support data encryption and decryption.
+
+|_Platform secrets management subsystem and OpenShift secrets synchronization service_
+|`external-secrets-operator`
+|3rd-party
+|https://github.com/external-secrets/external-secrets[github:/external-secrets/external-secrets]
+|Automating the process of securely retrieving and synchronizing sensitive data between HashiCorp Vault and OKD Secrets.
+
+|_Secrets update service for target registry services_
+|`reloader`
+|3rd-party
+|https://github.com/stakater/Reloader[github:/stakater/Reloader]
+|Monitoring the changes in the configuration and secrets of registry components and updating the pods via `Rolling Update`.
+|===
+
+== Technology stack
+
+The following technologies were used when designing and developing the subsystem:
+
+* xref:arch:architecture/platform-technologies.adoc#vault[HashiCorp Vault]
+* xref:arch:architecture/platform-technologies.adoc#reloader[Reloader]
+* xref:arch:architecture/platform-technologies.adoc#ext-secrets-operator[External Secrets Operator]
+
+== Subsystem quality attributes
+
+=== _Security_
+
+The subsystem uses strong encryption algorithms to store sensitive data and implements reliable access control.
+
+=== _Observability_
+
+The subsystem records detailed information about authentication attempts, secrets retrieval, and other operations, enabling you to meet compliance requirements.
+
+Also, the subsystem supports incoming requests logging and collecting performance metrics for analysis through the web interfaces of respective Platform subsystems.
+
+[TIP]
+--
+For details on the subsystem design, see:
+
+* xref:arch:architecture/platform/operational/logging/overview.adoc[]
+* xref:arch:architecture/platform/operational/monitoring/overview.adoc[]
+--

@@ -1,0 +1,431 @@
+= Granting organization access to business process tasks at the level of user attributes
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Abstract
+
+In order to support the functionality of organization access granting to business processes at the level of user attributes, a standard extension to business processes has been developed -- the `${getUsersByAttributesFromKeycloak}` delegate. For that, the *Get users by attributes from keycloak* template with the same name is implemented as a JSON file _getUsersByAttributesFromKeycloak.json_.
+
+The delegate is required in order to receive a list of users (officers) by certain attributes from the Keycloak identity and access management service when performing a business process.
+
+You can search in Keycloak using the following attributes: ::
+
+* `edrpou`: The identification number of an entity in the Unified state register of enterprises and organizations of Ukraine (EDRPOU).
+
+* `drfo`: The identification number of a natural person in the State Register of Individuals – Taxpayers (DRFO).
+
+Each officer of a certain organization has such attributes in the Keycloak service. As a result of the query, a list of usernames is returned to the business process.
+
+CAUTION: This is NOT the full name of a user, but a `username`. For example, `username1, username2` etc.
+
+This list of names can be used later on in the *Candidate users* field when performing a user task in a business process.
+
+*Candidate users* are the users authorized to perform the task. This parameter is required to control user access to specific tasks of a business process.
+
+The list of Keycloak users is saved to the result variable in a service task of a business process. This variable is further processed by the groovy script when executing the scripting task. As a result, the list becomes a string that can be used in Candidate users.
+
+TIP: So, we get the _list_ object from the Keycloak service using the `edrpou` and `drfo` attributes and use the script to convert it into a _string_, which values are comma separated and used in the `Candidate users` parameter for granting access to a specific task of a business process.
+
+== Business process modeling and configuration
+
+Let's consider setting up a delegate to search for user attributes in the Keycloak service as part of the process when transferring a student from one school to another.
+
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-1.png[]
+
+We have a complex business process of transferring a student from one school to another. The student must first be excluded from the first school, and then enrolled at the second.
+
+From the point of the security architecture, each organization (herein _educational institution_) in the Keycloak service has its own EDRPOU code. Therefore, two business processes in our example are different organizations, each one having its own employees and corresponding level of access within the organization.
+
+
+We have to automatically launch the business process of the second school after the first process finishes. The end of the business process in the first school (_School 1_) launches the second process (_School 2_) xref:bp-modeling/bp/bpmn/events/message-event.adoc#message-end-event[by the _Message_ event].
+
+In the business process of the second school, the officer must perform the task (User Task) of transferring the student, that is, it is necessary to appoint a performer of the task in the new organization (school). To do this, you need first to get a list of potential users in the relevant organization (performers) from the Keycloak service, and then use this list to grant task access to users in the second business process.
+
+That means that each officer in the relevant organization can see the task in the citizen portal and appoint himself/herself as the performer.
+
+[#create-pool-bp-1]
+=== Creating a pool for the first school business process
+
+First of all, _model the pool for the business process of the first school_. To do this, follow the steps below:
+
+NOTE: Modeling of the business process diagram has to be made within the *Create Pool/Participant* element.
+
+. Open the *Camunda Modeler* application and create a new BPMN diagram. To do this, click *File* -> *New File* -> *BPMN Diagram* in the upper left-hand side corner.
+
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-1.png[]
+
+. In the toolbar on the left-hand side, find the *Create pool/Participant* item and drag it to the modeling panel.
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-2.png[]
+
+. Enter the corresponding values into the following fields:
+
+
+* In the `Participant Name` field, enter the name of the pool to be displayed in the modeler -- `School 1`.
+
+* In the `Process id` field, enter the business process ID -- `firstversa`.
+
+* In the `Process Name` field, enter the process business name, optional.
+
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-1-1.png[]
+
+[#bp-1-start-event]
+==== Modeling of the start event
+
+_Create a start event_. To do this, follow the following steps:
+
+. On the toolbar on the left-hand side, find the *CreateStartEvent* element (circle) and drag it to the modeling panel.
+
+. In the settings panel on the right-hand side, enter the corresponding values for the following parameters:
+
+* In the `Name`  field, enter the name of the start event -- `Start`;
+
+* In the `Initiator` field, enter `initiator`.
+
++
+TIP: `initiator` is a special variable set for the user who initiated the process.
+
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-2.png[]
+
+==== Modeling of the user task for data entering
+
+Next, _create a user task for entering data by a user_. To do this, follow these steps:
+
+. Create a new task, enter its type by clicking the wrench icon and selecting *User Task* from the menu.
+
+. In the settings panel on the right-hand side, click `Open Catalog`, select the *User Form* template and click `Apply` to confirm.
+
+. In the settings panel, configure the following parameters:
+
+* In the `Id` field, enter the task identifier -- `Zayava`.
+
++
+TIP: Task ID is assigned automatically by default. Enter the value manually, if necessary.
+
+* In the `Name` field, enter the name of the task -- `Enter application data`.
+* In the `Form key` field, enter the form key that corresponds to the service name of the data entry form -- `add-keyapp`.
+* In the `Assignee` field, enter the variable used to store the user who launched the process instance -- `${initiator}`.
+
++
+TIP: On the UI, after launching the business process, the officer can see a form for entering application data. The data are passed to the business process via the `Form key` parameter and will be used in the next task of the process.
+
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-3.png[]
+
+==== Modeling of the user task to sign the data using QES
+
+Model a _user task (*User form*) for signing the application data using QES_ and link it to the business process form using the `Form key` parameter.
+
+. In the `Id` field, enter the task identifier -- `Sign`. It is a task definition key.
+
+. In the `Name` field, enter the task name. For example, `Sign the application data`.
+
+. In the `Form key` field, enter the business process form key -- `add-zayavasign`.
+
+. In the `Assignee` field, enter the variable used to store the user who launched the process instance -- `${initiator}`.
+
++
+TIP: On the UI, after data entered by the user, a new form appears for data signing using QES. The data are passed to the business process via the `Form key` parameter and will be used in the next task of the process.
+
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-4.png[]
+
+==== Modeling of a user task for searching an officer
+
+Model a _user task (*User form*) to search for officers or for a specific officer by attributes_ and associate it with the business process form using the `Form key` parameter.
+
+. In the `Id` field, enter the task identifier -- `Search`. It is a task definition key.
+. In the `Name` field, enter the name of the task. For example, `Search for an officer`.
+. In the `Form key` field, enter the business process form key -- `add-zayavasearch`.
+. In the `Assignee` field, enter the variable used to store the user who launched the process instance -- `${initiator}`.
+
++
+TIP: On the UI, after the user signs the data, a new form appears for searching officers / an officer by attributes. That means, the user must enter the values of the `edrpou` and `drfo` attributes into the corresponding fields of the form. The data are passed to the business process via the `Form key' parameter and will be used in the next task of the process.
+
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-5.png[]
+
+==== Modeling a service task for getting a list of users by their attributes
+
+Later on, the data is used in the service task "Get a list of users by attributes".
+
+In the task, you need to use a delegate to get a list of users by their attributes (*Get users by attributes from keycloak*).
+
+As a result, you get a list of users by their attributes.
+
+. Model a new task.
+. Define its type by clicking the wrench icon and selecting *Service Task* from the menu.
+. Go to the settings panel on the right-hand side and apply the *Get users by attributes from keycloak* delegate. To do this, select the corresponding template from the catalog (`Open Catalog').
+
+. Make further settings:
+
+* Enter the task name in the `Name` field. For example, `Get a list of users by attributes`.
+* In the `Edrpou attribute value` field, enter the value of the `edrpou` attribute -- `${submission('Search').formData.prop('edrpou').value()}`.
++
+[NOTE]
+====
+The value of the `edrpou` attribute is required. It can be submitted both directly (by entering the EDRPOU code, for example, `11111111`), and using the `submission()` function, specifying the ID of the last user task (herein `Search`).
+====
+
+* In the `Drfo attribute value` field, enter the value of the `drfo` attribute -- `${submission('Search').formData.prop('drfo').value()}`.
+
++
+[NOTE]
+====
+The value of the `drfo` attribute is optional. You can pass it both directly (by entering the DRFO code, for example, `2222222222`), and using the `submission()` function, by entering the ID of the last user task (herein `Search`).
+
+====
+
+* In the `Result variable` field, enter the name of the variable where you want to save the response -- `usersByAttributes`.
+
++
+[CAUTION]
+====
+As a result of the inquiry, you receive a list of users from Keycloak by their attributes. This list is stored in the `usersByAttributes` variable.
+
+
+* If the user passes only the value of the `edrpou` parameter, the service returns a list of _all officers_ in the corresponding organization.
+
+* If the user passes the values of the `edrpou` and `drfo` parameters, the service returns a list with a name of a _particular officier_ in the corresponding organization.
+====
+
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-6.png[]
+
+==== Modeling the "Message" end event
+
+At this stage, it is necessary to pass the received list of users to another business process. For this, the "Message" end event is used. That means that the termination of one process initiates another process by passing certain data in a message.
+
+We need to create a local variable, and pass the list of users and QES to another process in it.
+
+. Model the end message event.
++
+TIP: To find out more about the "Message" event, read xref:bp-modeling/bp/bpmn/events/message-event.adoc[this information].
+
+. Go to the settings panel on the right-hand side and configure the options:
+
+* In the `General` tab, configure the following settings:
+
+** In the `Implementation` field, select the `Delegate Expression` type.
+** In the `Delegate Expression` field, enter the delegate to pass the message -- `${startProcessByMessageDelegate}`.
+** In the `Global Message Name` field, enter the global name for establishing communication between message events -- `Startprocessmessage`.
+** In the `Global Message referenced` field, select `Startprocessmessage`. The value is filled in automatically, according to the `Global Message Name` parameter.
+
++
+NOTE: The values of the `Global Message Name` and `Global Message referenced` parameters must match the corresponding values of the message-receiving event.
+
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-7.png[]
+
+* In the `Input/Output` tab, configure a local variable as an input parameter:
+
+** In the `Local Variable Name` field, enter the name of the local variable -- `messagePayload`.
+** In the `Variable Assignment Type' field, enter the type of parameter passing using a variable -- `Map' (key-value).
+** Add entries for two parameters by clicking the plus sign (`+`):
+
+*** For the first entry, enter  the `users` parameter and its value `${usersByAttributes}` in the `Key` field.
++
+TIP: The user must pass a name of the variable where the array of users, obtained in the previous service task, is stored.
+
+*** For the second entry, enter the `task` parameter and its `${submission('Sign').formData}` value in the `Key` field.
++
+TIP: The user must pass QES used in the last user task for data signing (herein, `Sign`) using the `submission()` function.
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-7-1.png[]
+
+[#create-pool-bp-2]
+=== Creating a pool for the second school business process
+
+Model the pool for the business process of the second school_. To do this, follow the steps below:
+
+NOTE: Modeling of the business process diagram has to be made within the *Create Pool/Participant* element.
+
+. Open the *Camunda Modeler* application and create a new BPMN diagram. To do this, click *File* > *New File* > *BPMN Diagram* in the upper left-hand side corner.
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-1.png[]
+
+. In the toolbar on the left-hand side, find the *Create pool/Participant* item and drag it to the modeling panel.
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-2.png[]
+
+. Enter the corresponding values into the following fields:
+
+* In the `Participant Name` field, enter the name of the pool to be displayed in the modeler -- `School 2`.
+* In the `Process id` field, enter the business process ID -- `secondversa`.
+* In the `Process Name` field, enter the process business name, optional.
+
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-7-2.png[]
+
+==== Modeling of the message start event
+
+At this stage, it is necessary to get a list of users from the business process of the first school. This is done using the initial "Message" event.
+
+. Model the start message event.
++
+TIP: To find out more about the "Message" event, read xref:bp-modeling/bp/bpmn/events/message-event.adoc[this information].
+
+. Go to the settings panel on the right-hand side and configure the parameters:
+
+* In the `Id` field, enter the event identifier -- `Two`.
+* In the `Global Message Name` field, enter the global name for establishing communication between message events -- `Startprocessmessage`.
+* In the `Global Message referenced` field, select `Startprocessmessage`. The value is filled in automatically, according to the `Global Message Name` parameter.
+
++
+NOTE: The values of the `Global Message Name` and `Global Message referenced` parameters must match the corresponding values of the message sending event.
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-8.png[]
+
+==== Modeling the scripting task for downloading a list of officers
+
+At this stage, it is necessary to create a script based on the data from the business process of the first school. This script converts the list of users received from the Keycloak service into a string of comma-separated values. These values can be used later on for granting access to the student transfer task in the business process of the second school.
+
+. Create a new task, define its type by clicking the wrench icon and selecting *Script Task* from the menu.
+
+. In the settings panel on the right-hand side, fill in the following fields:
+
+* In the `Name` field, enter the task name  -- `Download the list of officers`.
+* In the `Script Format` field, specify the script format -- `groovy`.
+* In the `Script Type` field, enter the script type -- `Inline Script`.
+* Enter the groovy script directly into the `Script` field:
+
++
+.Приклад. Groovy-скрипт, що конвертує об'єкт зі списком користувачів у рядок значень, розділених комами
+.Example. The groovy script to convert an object containing a list of users into a comma-separated string of values
+====
+[source,groovy]
+----
+def users = message_payload('Two').data['users']
+def usersstring = ''
+users.each {
+ usersstring=usersstring+it+','
+
+}
+set_variable('users',users)
+----
+====
+
+. The result of script execution is written to the `users` variable.
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-9.png[]
+
+==== Modeling a user task to view application data
+
+Model a _user task (*User form*) for viewing application data_ and connect it to the business process form using the `Form key` parameter.
+
+. In the `Name` field, enter the name of the task. For example, `View application data`.
+
+. In the `Form key` field, enter the business process form key -- `add-zayavaview`.
+
+. In the `Candidate users` field, use the variable that stores the received list of users from Keycloak as a comma-separated string of values -- `${users}`.
++
+[NOTE]
+====
+The list of usernames can be passed both directly (for example, `username1, username2, username3, ...`) and using a variable (herein, `${users}`) where this list is stored.
+====
++
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-10.png[]
+
+In this case, each officer in the corresponding organization (_School 2_) has access to review this task in the personal portal, and will also be able to appoint himself/herself as a performer.
+
+IMPORTANT: An officer may NOT have access to a business process, but only to a specific task. That means that such a user is not able to start a business process, but is able to perform a certain task within such a process.
+
+==== Simulation of the process end event
+
+Model the process end event:
+
+In the `Name` field, enter the name of the event -- `End`.
+
+image:bp-modeling/bp/keycloak-attributes-access/bp-keycloak-attributes-access-11.png[]
+
+== Access settings in Keycloak
+
+Let's see what users and their attributes look like from the perspective of the Keycloak service.
+
+All users of the Platform and registry, as well as their attributes, are stored in specific Keycloak realmsfootnote:[*Realm* is a concept in https://www.keycloak.org/[Keycloak] that refers to an entity that manages a set of users and their credentials, roles, and groups.], according to their roles.
+
+There are four main realms:
+
+* `-admin`
+* `-officer-portal`
+* `-citizen-portal`
+* `-external-system`.
+
+TIP: To find out more about creating users and granting them access rights, see xref:registry-admin/create-users/overview.adoc[this link].
+
+CAUTION: You have to get the list of users by their attributes from the `-officer-portal` realm, because access to a task is granted to users having the "Officer" role.
+
+. Enter the `-officer-portal` realm.
++
+image:bp-modeling/bp/keycloak-attributes-access/keycloak-attributes-access-1.png[]
+
+. In the sidebar on the left-hand side, go to the *Users* section. Click `View all users` to display the list of all users in this realm.
++
+image:bp-modeling/bp/keycloak-attributes-access/keycloak-attributes-access-2.png[]
+
+. Go to the settings of a particular user. To do this, click the user ID.
++
+image:bp-modeling/bp/keycloak-attributes-access/keycloak-attributes-access-3.png[]
+
+. In the *Details* tab, find the username returned in a list to the business process. It corresponds to the `Username` parameter.
++
+image:bp-modeling/bp/keycloak-attributes-access/keycloak-attributes-access-4.png[]
+
+. Open the *Attributes* tab.
++
+User attributes are defined as pairs of keys and their values in the `Key` and `Value` fields.
++
+image:bp-modeling/bp/keycloak-attributes-access/keycloak-attributes-access-5.png[]
+
+So we can see that the user with the `auto-user-data` name has the `edrpou` and `drfo` attributes configured. The parameters have the values of the EDRPOU and DRFO codes -- `11111111` and `2222222222`, respectively. The `edrpou` attribute defines that this user belongs to the organization with the `11111111` code. The `drfo` attribute defines the identification number of this user.
+
+NOTE: Keycloak does not have a clear distribution into organizations. Such distribution is set by the `edrpou` attribute. That means, if a certain organization has the EDRPOU code `11111111`, then every user with the attribute `"edrpou":"11111111"` belongs to that organization.
+
+== Implementation at API level
+
+For the functioning of the `${getUsersByAttributesFromKeycloak}` delegate, an additional endpoint has been developed at the Java API level to receive a list of users from the Keycloak service by `edrpou` and `drfo` attributes.
+
+.A request to the Keycloak API resource
+====
+Resource: ::
++
+----
+POST /realms/{realm}/users/search
+----
+
+* `POST`: HTTP method.
+* `{realm}`: The realm in Keycloak. For example, `-officer-portal`.
+* `/users/search`: The resource/endpoint.
+
+Request body: ::
+
++
+[source,json]
+----
+{
+   "attributes":{
+      "edrpou":"edrpou",
+      "drfo":"drfo"
+   }
+}
+----
+====
+
+The API returns an object with a list of users based on the specified attributes.
+
+.Example. Response from Keycloak API
+====
+[source,json]
+----
+{
+   "id":"userId",
+   "username":"username",
+   "firstName":"firstName",
+   "lastName":"lastName"
+...
+}
+----
+====

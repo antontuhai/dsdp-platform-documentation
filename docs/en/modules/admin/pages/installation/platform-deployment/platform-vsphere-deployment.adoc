@@ -1,0 +1,614 @@
+= Deploying the Platform from scratch in a private _vSphere_ cloud environment
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+IMPORTANT: Please contact your provider to obtain the necessary _vSphere_ installer.
+
+== Prerequisites
+
+Before deploying and configuring the platform, be sure to check the following documentation artifacts:
+
+* [*] xref:release-notes:release-notes.adoc[]
+* [*] xref:release-notes:breaking-changes.adoc[]
+* [*] xref:update/overview.adoc[Updating] documents section -- needed only for the Platform updating procedure.
+
+== Preparing the vSphere infrastructure for OKD installation
+
+*_OKD_* is a Kubernetes distribution optimized for continuous application development and deployment of multiple instances of isolated container environments (in our case, registry instances). For detailed information, refer to the https://docs.okd.io/[official source].
+
+=== Configuring the trusted vCenter API interface
+
+The installer requires access to the trusted vCenter API interface, which allows downloading trusted vCenter root CA certificates.
+
+Before connecting to the API, the vCenter root CA certificates must be added to the system from which the OKD installer will be run.
+
+=== Downloading CA certificates
+
+The certificates can be downloaded from the vCenter home page.
+
+By default, certificates are stored at the link `<vCenter>/certs/download.zip`. After downloading and unpacking, a directory containing certificates for Linux, macOS, and Windows operating systems will be created.
+
+==== Example of viewing the structure
+
+The directory structure with the certificates can be viewed using the command:
+
+[source,bash]
+----
+$ tree certs
+----
+
+The result will show the following structure:
+
+[source,bash]
+----
+certs
+
+├── lin
+
+│   ├── 108f4d17.0
+
+│   ├── 108f4d17.r1
+
+│   ├── 7e757f6a.0
+
+│   ├── 8e4f8471.0
+
+│   └── 8e4f8471.r0
+
+├── mac
+
+│   ├── 108f4d17.0
+
+│   ├── 108f4d17.r1
+
+│   ├── 7e757f6a.0
+
+│   ├── 8e4f8471.0
+
+│   └── 8e4f8471.r0
+
+└── win
+
+    ├── 108f4d17.0.crt
+
+    ├── 108f4d17.r1.crl
+
+    ├── 7e757f6a.0.crt
+
+    ├── 8e4f8471.0.crt
+
+    └── 8e4f8471.r0.crl
+
+3 directories, 15 files
+----
+
+==== Example of adding certificates
+
+The corresponding certificates for your operating system need to be added.
+
+**Example for Fedora OS**:
+
+[source, bash]
+----
+$ sudo cp certs/lin/* /etc/pki/ca-trust/source/anchors
+
+$ sudo update-ca-trust extract
+----
+
+=== Standard installation resources
+
+A standard installation (Installer-Provisioned Infrastructure) creates the following infrastructure resources:
+
+* one folder (1 Folder)
+* one tag category (1 Tag Category)
+* 1 tag (1 Tag)
+* virtual machines (Virtual machines):
+- one template (1 template)
+- one temporary bootstrap node (1 temporary bootstrap node)
+- three control-plane nodes for Platform management (3 control-plane nodes)
+- three compute machines (3 compute machines)
+
+==== Required resource specifications
+
+===== Data storage
+
+Along with the resources described above, a standard OKD deployment requires a minimum of 800 GB of data storage space.
+
+===== DHCP
+
+Deployment requires the configuration of a DHCP server for network configuration.
+
+== Deploying and configuring DNS and DHCP components
+
+=== IP addresses
+
+Deploying the vSphere infrastructure (Installer-provisioned vSphere) requires two static IP addresses:
+
+* **API address**—used for accessing the cluster's API.
+* **Ingress IP address**—used for the cluster's incoming traffic.
+
+The virtual IP addresses for each of these must be specified in the xref:create-install-config-yml[`install-config.yaml`] file.
+
+=== DNS records
+
+DNS records must be created for the two IP addresses on any DNS server designated for the environment. The records should contain the values described in the table:
+
+[options="header"]
+|================================================
+|Name| Value
+|`api.${cluster-name}.${base-domain}`|API VIP
+|`*.apps.${cluster-name}.${base-domain}`|Ingress VIP
+|================================================
+
+NOTE: `${cluster-name}` and `${base-domain}` are variables taken from the corresponding values specified in the xref:create-install-config-yml[`install-config.yaml`] file.
+
+[#create-install-config-yml]
+== Creating the install-config.yaml configuration file
+
+[WARNING]
+====
+Prerequisites:
+. Log in to your Red Hat account. If you do not have an account, you need to create one.
+. Purchase a paid DockerHub subscription if you do not have one.
+. Generate and add an SSH key to your configuration file. This is necessary for accessing your node consoles.
+====
+
+Create the `install-config.yaml` file necessary for deploying the OKD cluster by executing the following command:
+
+[source,bash]
+$ openshift-installer create install-config
+
+After creating the file, fill in the required parameters, which will be presented in the context menu. The created configuration file includes only the necessary parameters for minimal cluster deployment. For customization settings, refer to the official documentation.
+
+._Configuration of install-config.yaml_
+[%collapsible]
+====
+[source,yaml]
+----
+apiVersion: v1
+baseDomain: eua.gov.ua
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  platform: {}
+  replicas: 3
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  platform: {}
+  replicas: 3
+metadata:
+  creationTimestamp: null
+  name: mdtuddm
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineNetwork:
+  - cidr: 10.0.0.0/16
+  networkType: OVNKubernetes
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  vsphere:
+    apiVIP: 10.9.1.110
+    cluster: HX-02
+    datacenter: HXDP-02
+    defaultDatastore: NCR_Data2
+    ingressVIP: 10.9.1.111
+    network: EPAM_OKD_Vlan9_EPG
+    password: <password>
+    username: epam_dev1@vsphere.local
+    vCenter: vcsa.ncr.loc
+publish: External
+pullSecret: '{"auths":{"fake":{"auth":"aWQ6cGFzcwo="}}}'
+sshKey: |
+  <ssh_key>
+----
+====
+
+[NOTE]
+====
+* When creating the configuration file, replace *`<password>`* with your password, and *`<ssh_key>`* with your generated SSH key.
+* Also, copy the authentication parameters from your Red Hat account and insert them into the *`pullSecret`* field.
+* Note that some parameters may need to be adjusted to match your infrastructure and requirements.
+====
+
+[#launch-okd-installer-deploy-empty-okd]
+== Running the OKD4 installer and deploying an empty OKD4 cluster
+
+After creating the `install-config.yaml` file, execute the following command to deploy the OKD cluster:
+
+[source,bash]
+----
+$ openshift-installer create cluster
+----
+
+NOTE: The cluster deployment process usually takes up to 1.5 hours.
+
+Upon successful deployment, the following cluster access parameters will be provided as a result of the command execution:
+
+* login;
+* password;
+* link to the cluster web console.
+
+In the directory where the command was executed, a number of files will be created that store the cluster status necessary for its uninstallation.
+
+Also, in this directory, a `/auth` folder will appear, containing two files for authentication for working with the cluster through the **web console** and the **OKD command line interface** (OKD CLI).
+
+NOTE: After starting the cluster deployment process, the Installer deletes the `install-config.yaml`, so it is recommended to back up this file if there is a need to deploy multiple clusters.
+
+== Replacing self-signed certificates with trusted certificates
+
+To replace self-signed certificates with trusted ones, you first need to obtain these certificates.
+
+This section discusses obtaining free certificates from https://letsencrypt.org/[Let's Encrypt] and installing them on the server.
+
+Let’s Encrypt certificates are obtained using the https://github.com/acmesh-official/acme.sh[acme.sh] utility.
+
+TIP: For detailed information on using Let’s Encrypt based on the ACME protocol, refer to the https://letsencrypt.org/docs/client-options/[official source].
+
+=== Preparation
+You need to clone the acme.sh utility from the GitHub repository:
+
+[source,bash]
+----
+$ cd $HOME
+$ git clone https://github.com/neilpang/acme.sh
+$ cd acme.sh
+----
+
+=== Requesting certificates
+
+. To simplify the process of obtaining certificates, set two environment variables. The first variable should point to the API Endpoint. Make sure you are logged into OKD as `system:admin` and use the Openshift CLI console to find the API Endpoint URL.
++
+[source,bash]
+----
+$ oc whoami --show-server
+----
++
+.Example of the obtained response
+----
+https://api.e954.ocp4.opentlc.com:6443
+----
+
+. Now set the `LE_API` variable to the fully qualified domain name of the API:
++
+[source,bash]
+----
+$ export LE_API=$(oc whoami --show-server | cut -f 2 -d ':' | cut -f 3 -d '/' | sed 's/-api././')
+----
+
+. Set the second variable `LE_WILDCARD` for your Wildcard Domain:
++
+[source,bash]
+----
+$ export LE_WILDCARD=$(oc get ingresscontroller default -n openshift-ingress-operator -o jsonpath='{.status.domain}')
+----
+
+. Run the `acme.sh` script:
++
+[source,bash]
+----
+$ ${HOME}/acme.sh/acme.sh --issue -d ${LE_API} -d *.${LE_WILDCARD} --dns
+----
++
+.Example of the obtained response
+[source, bash]
+----
+$  ./acme.sh --issue -d  ${LE_API} -d \*.${LE_WILDCARD} --dns --yes-I-know-dns-manual-mode-enough-go-ahead-please
+[Wed Jul 28 18:37:33 EEST 2021] Using CA: https://acme-v02.api.letsencrypt.org/directory
+[Wed Jul 28 18:37:33 EEST 2021] Creating domain key
+[Wed Jul 28 18:37:33 EEST 2021] The domain key is here: $HOME/.acme.sh/api.e954.ocp4.opentlc.com/api.e954.ocp4.opentlc.com.key
+[Wed Jul 28 18:37:33 EEST 2021] Multi domain='DNS:api.e954.ocp4.opentlc.com,DNS:*.apps.e954.ocp4.opentlc.com'
+[Wed Jul 28 18:37:33 EEST 2021] Getting domain auth token for each domain
+[Wed Jul 28 18:37:37 EEST 2021] Getting webroot for domain='cluster-e954-api.e954.ocp4.opentlc.com'
+[Wed Jul 28 18:37:37 EEST 2021] Getting webroot for domain=‘*.apps.cluster-e954-api.e954.ocp4.opentlc.com’
+[Wed Jul 28 18:37:38 EEST 2021] Add the following TXT record:
+[Wed Jul 28 18:37:38 EEST 2021] Domain: '_acme-challenge.api.e954.ocp4.opentlc.com'
+[Wed Jul 28 18:37:38 EEST 2021] TXT value: 'VZ2z3XUe4cdNLwYF7UplBj7ZTD8lO9Een0yTD7m_Bbo'
+[Wed Jul 28 18:37:38 EEST 2021] Please be aware that you prepend _acme-challenge. before your domain
+[Wed Jul 28 18:37:38 EEST 2021] so the resulting subdomain will be: _acme-challenge.api.e954.ocp4.opentlc.com
+[Wed Jul 28 18:37:38 EEST 2021] Add the following TXT record:
+[Wed Jul 28 18:37:38 EEST 2021] Domain: '_acme-challenge.apps.e954.ocp4.opentlc.com'
+[Wed Jul 28 18:37:38 EEST 2021] TXT value: 'f4KeyXkpSissmiLbIIoDHm5BJ6tOBTA0D8DyK5sl46g'
+[Wed Jul 28 18:37:38 EEST 2021] Please be aware that you prepend _acme-challenge. before your domain
+[Wed Jul 28 18:37:38 EEST 2021] so the resulting subdomain will be: _acme-challenge.apps.e954.ocp4.opentlc.com
+[Wed Jul 28 18:37:38 EEST 2021] Please add the TXT records to the domains, and re-run with --renew.
+[Wed Jul 28 18:37:38 EEST 2021] Please add '--debug' or '--log' to check more details.
+----
++
+CAUTION: The DNS records from the previous response must be added to the DNS server responsible for the `e954.ocp4.opentlc.com` zone (**the zone value here is an example**). Thus, the TXT records should look like this:
++
+.TXT record 1
+[source,bash]
+----
+_acme-challenge.api.e954.ocp4.opentlc.com TXT value: 'VZ2z3XUe4cdNLwYF7UplBj7ZTD8lO9Een0yTD7m_Bbo'
+----
++
+.TXT record 2
+[source,bash]
+----
+_acme-challenge.apps.e954.ocp4.opentlc.com TXT value: 'f4KeyXkpSissmiLbIIoDHm5BJ6tOBTA0D8DyK5sl46g'
+----
+
+. After this, rerun the `acme.sh` command:
++
+[source,bash]
+----
+$ acme.sh --renew -d e954.ocp4.opentlc.com --yes-I-know-dns-manual-mode-enough-go-ahead-please
+----
+
+. After successfully completing the previous steps, execute the following commands.
++
+Usually, a good approach is to move the certificates from the default acme.sh path to a more convenient directory. To do this, you can use the `—install-cert` key of the `acme.sh` script to copy the certificates to `$HOME/certificates`, for example:
++
+[source,bash]
+----
+$ export CERTDIR=$HOME/certificates
+
+$ mkdir -p ${CERTDIR} ${HOME}/acme.sh/acme.sh --install-cert -d ${LE_API} -d *.${LE_WILDCARD} --cert-file ${CERTDIR}/cert.pem --key-file ${CERTDIR}/key.pem --fullchain-file ${CERTDIR}/fullchain.pem --ca-file ${CERTDIR}/ca.cer
+----
+
+==== Installing certificates for the Router
+
+. Create a secret by executing the following command:
++
+[source,bash]
+----
+$ oc create secret tls router-certs --cert=${CERTDIR}/fullchain.pem --key=${CERTDIR}/key.pem -n openshift-ingress
+----
+
+. After completing the previous steps, update the Custom Resource:
++
+[source,bash]
+----
+$ oc patch ingresscontroller default -n openshift-ingress-operator --type=merge --patch='{"spec": 	{ "defaultCertificate": { "name": "router-certs" }}}'
+----
+
+== Preparing and launching the Installer for deploying the Platform on the target OKD cluster
+
+TIP: _Installer_ is a set of commands (script) for deploying the Platform.
+
+To run the Installer, several conditions must be met to prepare the workstation from which the Installer will be launched. Below is an example of such preparation based on Ubuntu 20.04 LTS.
+
+=== Prerequisites
+
+Install Docker from the official source: https://docs.docker.com/engine/install/[].
+
+=== Deploying and updating the Platform
+
+==== Deploying the Platform from scratch
+
+===== Prerequisites
+
+. After obtaining the required version of the vSphere installer, unpack the archive in the home directory. Execute the following command:
++
+[source,shellscript]
+----
+tar -xvzf /tmp/mdtu-ddm-platform-<VERSION>.tar.gz -d /home/<user>/workdir/installer-<version>
+----
+
+. Copy the _kubeconfig_ after installing the cluster:
++
+[source,shellscript]
+----
+cd /home/<user>/workdir/installer-<version>
+cp /path/to/kubeconfig ./
+----
+
+===== Adding a separate configuration file for deployment in the vSphere environment
+
+. Edit the _exports.list_ for vSphere. All values must be taken after the cluster installation.
++
+[source,shellscript]
+----
+vi exports.list
+
+### vSphere Credentials ###
+export VSPHERE_SERVER=""
+export VSPHERE_USER=""
+export VSPHERE_PASSWORD=""
+export VSPHERE_CLUSTER=""
+export VSPHERE_DATASTORE=""
+export VSPHERE_DATACENTER=""
+export VSPHERE_NETWORK=""
+export VSPHERE_NETWORK_GATEWAY=""
+export VSPHERE_RESOURCE_POOL="" #if not used, set to "/"
+export VSPHERE_FOLDER=""
+
+### Minio and Vault IPs ###
+export VSPHERE_VAULT_INSTANCE_IP=""
+export VSPHERE_MINIO_INSTANCE_IP=""
+----
+
+[#deploy-installer]
+===== Deploying the Installer
+
+. Execute the following commands:
++
+[source,shellscript]
+----
+IMAGE_CHECKSUM=$(sudo docker load -i control-plane-installer.img | sed -r "s#.*sha256:(.*)#\\1#" | tr -d '\n');
+echo $IMAGE_CHECKSUM
+sudo docker tag ${IMAGE_CHECKSUM} control-plane-installer:<version>;
+----
+
+. Deploy the new version of the Platform with images from scratch:
++
+[source,shellscript]
+----
+sudo docker run --rm \ <1>
+    --name control-plane-installer-<version> \
+    --user root:$(id -g) \
+    --net host \
+    -v $(pwd):/tmp/installer \
+    --env KUBECONFIG=/tmp/installer/kubeconfig \
+    --env PLATFORM_DEPLOYMENT_MODE=development \ <2>
+    --env PLATFORM_LANGUAGE=en \ <3>
+    --entrypoint "/bin/bash" control-plane-installer:<version> \
+    -c "./install.sh -i" <4>
+----
++
+[TIP]
+====
+<1> *`--rm`* -- this parameter will automatically delete the container after its work is completed. The parameter can be removed if you need to check the status and log of the completed container or if you have an unstable internet connection;
+
+<2> *`PLATFORM_DEPLOYMENT_MODE`*:
+** *`development`* -- for deployment in development mode;
+** *`production`* -- for deployment in production environment;
+
+<3> *`PLATFORM_LANGUAGE`* -- an optional parameter which indicates the language to be used for the web portals and the Control Plane interface. Has a default value of *`en`* and can be changed after the Platform is deployed in the Control Plane and the Administrative Portals. Supported values:
+** *`en`* -- indicates the use of English.
+** *`uk`* -- indicates the use of Ukrainian.
+
+<4> *`-i`* -- attribute indicates the installation of the Platform.
+====
+
+[#installer-update]
+==== Updating the Platform
+
+===== Prerequisites
+
+. After obtaining the required version of the vSphere installer, unpack the archive in the home directory. Execute the following command:
++
+[source,shellscript]
+----
+tar -xvzf mdtu-ddm-platform-(version).tar.gz -C ./installer-<VERSION>
+----
+
+. Copy the _kubeconfig_ after installing the cluster:
++
+[source,shellscript]
+----
+cd /home/<user>/workdir/installer-<version>
+cp /path/to/kubeconfig ./
+----
+
+===== Adding a separate configuration file for deployment in the vSphere environment
+
+. Copy the _exports.list_ from the previous release.
++
+[source,shellscript]
+----
+cp /home/<user>/workdir/installer-<previous_version>/exports.list ./
+----
+
+===== Configuring the MinIO component when updating the cluster in the vSphere environment
+
+. Copy the MinIO tfstate from the previous release for vSphere.
+
++
+[source,shellscript]
+----
+cp /home/<user>/workdir/installer-<version>/terraform/minio/vsphere/terraform.tfstate ./terraform/minio/vsphere/
+----
+
+. Copy the MinIO (Packer) tfstate from the previous release for vSphere.
+
++
+[source,shellscript]
+----
+cp /home/<user>/workdir/installer-<version>/terraform/minio/vsphere/packer/terraform.tfstate ./terraform/minio/vsphere/packer/
+----
+
+. Copy the public and private SSH keys for the MinIO instance from the previous release for vSphere.
+
++
+[source,shellscript]
+----
+cp /home/<user>/workdir/installer-<version>/terraform/minio/vsphere/packer/*.key ./terraform/minio/vsphere/packer/
+----
+
+===== Configuring the Vault component when updating the cluster in the vSphere environment
+
+. Copy the Vault tfstate from the previous release.
+
++
+[source,shellscript]
+----
+cp /home/<user>/workdir/installer-<version>/terraform/vault/vsphere/terraform.tfstate ./terraform/vault/vsphere/
+----
+
+. Copy the Vault (Packer) tfstate from the previous release.
+
++
+[source,shellscript]
+----
+cp /home/<user>/workdir/installer-<version>/terraform/vault/vsphere/packer/terraform.tfstate ./terraform/vault/vsphere/packer/
+----
+
+. Copy the public and private SSH keys for the Vault instance from the previous release for vSphere.
+
++
+[source,shellscript]
+----
+cp /home/<user>/workdir/installer-<version>/terraform/vault/vsphere/packer/*.key ./terraform/vault/vsphere/packer/
+----
+
+===== Deploying the Installer
+
+. Execute the following commands:
++
+[source,shellscript]
+----
+IMAGE_CHECKSUM=$(sudo docker load -i control-plane-installer.img | sed -r "s#.*sha256:(.*)#\\1#" | tr -d '\n');
+echo $IMAGE_CHECKSUM
+sudo docker tag ${IMAGE_CHECKSUM} control-plane-installer:<version>;
+----
+
+. Update the Platform version with the update images.
++
+[source,shellscript]
+----
+sudo docker run --rm \ <1>
+    --name control-plane-installer-<version> \
+    --user root:$(id -g) \
+    --net host \
+    -v $(pwd):/tmp/installer \
+    --env KUBECONFIG=/tmp/installer/kubeconfig \
+    --env PLATFORM_DEPLOYMENT_MODE=development \ <2>
+    --env PLATFORM_LANGUAGE=en \ <3>
+    --entrypoint "/bin/bash" control-plane-installer:<version> \
+    -c "./install.sh -u" <5>
+----
++
+[TIP]
+====
+<1> *`--rm`* -- this parameter will automatically delete the container after its work is completed. This parameter can be removed if you need to check the status and log of the completed container or if you have an unstable internet connection;
+
+<2> *`PLATFORM_DEPLOYMENT_MODE`*:
+** *`development`* -- for deployment in development mode;
+** *`production`* -- for deployment in production environment;
+
+<3> *`PLATFORM_LANGUAGE`* -- an optional parameter which indicates the language to be used for the web portals and the Control Plane interface. Has a default value of *`en`* and can be changed after the Platform is deployed in the Control Plane and the Administrative Portals. Supported values:
+** *`en`* -- indicates the use of English.
+** *`uk`* -- indicates the use of Ukrainian.
+
+<4> *`-u`* -- attribute indicates the updating of the Platform.
+====
+
+== Managing Platform settings
+
+Cluster management is carried out using the https://about.gitlab.com/topics/gitops/[GitOps] methodology. This means that any changes to the cluster configuration, cluster components, and Platform components are made by changing the cluster configuration in the git branch of the corresponding component.
+
+The metadata of all components managed using the GitOps approach is stored in the `cluster-mgmt` component.
+
+Below is a list of components for which the GitOps approach is currently implemented:
+
+- `catalog-source`
+- `monitoring`
+- `storage`
+- `logging`
+- `service-mesh`
+- `backup-management`
+- `user-management`
+- `control-plane-nexus`
+- `external-integration-mocks`
+- `cluster-kafka-operator`
+- `smtp-server`
+- `redis-operator`
+- `postgres-operator`

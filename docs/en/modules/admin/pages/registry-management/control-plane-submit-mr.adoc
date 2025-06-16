@@ -1,0 +1,64 @@
+= Approving registry configuration update requests
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+You can approve registry configuration update requests using the Control Plane admin console -- that is, perform a `git merge` to the repository from the Control Plane interface.
+
+TIP: This feature enables you to make and confirm any changes via the admin console. This article shows an example of adding a new registry administrator.
+
+. Sign in to the *Control Plane* admin console.
++
+image:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-01.png[]
+
+. Open the *Registries* section and select the registry you wish to edit.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-01.png[]
+
+. Click the *`Edit`* button in the upper-right corner.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-02.png[]
+
+. Open the *Administrators* section and add a new registry administrator.
++
+[TIP]
+====
+To learn more about adding Platform and registry administrators, see:
+
+* xref:admin:registry-management/control-plane-assign-platform-admins.adoc[]
+* xref:registry-develop:registry-admin/create-users/create-registry-admins.adoc[]
+====
++
+image:registry-management/cp-submit-mr/cp-add-registry-admin-1.png[]
++
+image:registry-management/cp-submit-mr/cp-add-registry-admin-2.png[]
+
+. Click *`Confirm`* to save your changes.
++
+image:registry-management/cp-submit-mr/cp-add-registry-admin-3.png[]
++
+As a result, the system generates a registry configuration update request with a `New` status.
+
+. Go back to the *Registries* section and scroll down to the *Update requests* section.
++
+image:registry-management/cp-submit-mr/cp-submit-mr-1.png[]
+
+. Click the view icon 👁 to open your request.
++
+NOTE: The proposed changes are applied to the _deploy-templates/values.yaml_ configuration file upon confirmation.
+
+. Compare the changes between the two versions that open in a new window and make sure the data you entered is correct. Click *`Approve`*.
++
+TIP: The comparison window provides a convenient way of reviewing the differences between the two versions: the current (left) and the new (right).
++
+image:registry-management/cp-submit-mr/cp-submit-mr-2.png[]
++
+image:registry-management/cp-submit-mr/cp-submit-mr-3.png[]
++
+As a result, your request gains an `Approved` status and your changes are applied.
++
+image:registry-management/cp-submit-mr/cp-submit-mr-4.png[]
++
+You can also reject the registry configuration changes by clicking *`Reject`* in the comparison window.
++
+image:registry-management/cp-submit-mr/cp-submit-mr-5.png[]

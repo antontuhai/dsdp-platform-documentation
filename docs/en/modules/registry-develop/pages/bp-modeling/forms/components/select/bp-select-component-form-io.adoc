@@ -1,0 +1,210 @@
+= Configuring the Select component to get and filter data from API resources
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+TIP: An _API endpoint_ is a service entry point that enables communication between different systems, allowing them to interact and exchange data.
+
+To integrate business process UI forms with the data factory, you need to use the *Select* component with additional settings.
+
+This topic shows how to configure a Select component to display data from an endpoint and filter data from another Select component.
+
+[NOTE]
+====
+
+You can configure the *Select* component to get data from internal and external resources (endpoints).
+
+To get data from an external resource, you need to specify an absolute URL. The resource must be a public API without authentication and return data in JSON format as an array of objects:
+
+[source,json]
+----
+[{},{},{}]
+----
+
+Here is an example of an absolute URL address that returns data in JSON format using the GET method and provides a list of objects:
+
+https://jsonplaceholder.typicode.com/comments
+
+This URL points to a public API called `JSONPlaceholder` that provides dummy data for testing and prototyping. In this case, the endpoint is `/comments`, which returns a list of comments. Here's an example of the data you can get:
+
+[source,json]
+----
+[
+  {
+    "postId": 1,
+    "id": 1,
+    "name": "id labore ex et quam laborum",
+    "email": "Eliseo@gardner.biz",
+    "body": "laudantium enim quasi est quidem magnam voluptate ipsam eos\ntempora quo..."
+  },
+  {
+    "postId": 1,
+    "id": 2,
+    "name": "quo vero reiciendis velit similique earum",
+    "email": "Jayne_Kuhic@sydney.com",
+    "body": "est natus enim nihil est dolore omnis voluptatem numquam\net omnis..."
+  },
+  {
+    "postId": 1,
+    "id": 3,
+    "name": "odio adipisci rerum aut animi",
+    "email": "Nikita@garfield.biz",
+    "body": "quia molestiae reprehenderit quasi aspernatur\naut expedita occaecati..."
+  }
+]
+----
+
+====
+
+== Configuring the Select component to get data from an endpoint
+
+. Sign in to the *Administrative portal* and create a form.
+
+. Open the *Components* tab and add a *Select* component.
+
+. Open component settings by clicking the gear icon.
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-1.png[]
+
+. In the *Display* tab > *Label* field, specify the component name.
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-2.png[]
+
+. Open the *API* tab and enter the component name for the API endpoint into the *Property Name* field--for example, `selectProcessInstanceId`.
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-3.png[]
+
+. Open the *Data* tab and choose the *URL* into the *Data Source Type* field.
+
+. Specify the value for the endpoint URL in the *Data Source URL* field. For example:
++
+[source,http]
+----
+https://<service-name>-<namespace>.<dns-wildcard>/api/process-instance
+----
++
+[TIP]
+====
+* `<service-name>` -- the name of the service. For instance, `test-service`.
+* `<namespace>` -- Openshift namespace/project. For instance, `test-project`.
+* `<dns-wildcard>` points to the domain and subdomain names for the Platform instance. For example, `example.com`.
+* `/api/process-instance` -- the specific API endpoint of the service.
+
+The final URL will look like:
+
+[source,http]
+----
+https://test-service-test-project.example.com/api/process-instance
+----
+====
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-5.png[]
+
+. Specify the name of the property from the endpoint's JSON response that will be stored as the value property after the select in the *Value Property* field--for example, `id`.
+
+. Define the HTML template to display values in a select in the *Item Template* field, as shown in the following example.
++
+NOTE: `processDefinitionName` and `id` are taken from the endpoint's response and shown in the select.
++
+.HTML template
+====
+[source,html]
+----
+<span>{{ item.processDefinitionName }}</span>
+<span>{{ item.id}}</span>
+----
+====
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-6.png[]
++
+.Request and response in Swagger (registry's "registry-rest-api" service)
+====
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-4.png[]
+====
+
+. Click *`Save`* to save changes to the component.
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-7.png[]
+
+As a result, the dropdown list will contain the names and IDs of all the services initiated by an officer.
+
+== Configuring a dependent Select component to filter data from another component
+
+. Open the form with the component whose data you need to filter.
+
+. Open the *Components* tab and add a *Select* component.
+
+. Open component settings by clicking the gear icon.
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-1.png[]
+
+. In the *Display* tab > *Label* field, specify the component name.
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-2.png[]
+
+. Open the *API* tab and enter the component name for the Form.io API endpoint into the *Property Name* field--for example, `selectRelatedTasks`.
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-8.png[]
+
+. Open the *Data* tab and choose the *URL* into the *Data Source Type* field.
+
+. Specify the value for the endpoint URL in the *Data Source URL* field. For example:
++
+[source,http]
+----
+https://<service-name>-<namespace>.<dns-wildcard>/api/task
+----
++
+[TIP]
+====
+* `<service-name>` -- the name of the service. For instance, `test-service`.
+* `<namespace>` -- Openshift namespace/project. For instance, `test-project`.
+* `<dns-wildcard>` points to the domain and subdomain names for the Platform instance. For example, `example.com`.
+* `/api/process-instance` -- the specific API endpoint of the service.
+
+The final URL will look like:
+
+[source,http]
+----
+https://test-service-test-project.example.com/api/task
+----
+====
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-9.png[]
+
+. Specify the name of the property from the endpoint's JSON response that will be stored as the value property after the select in the *Value Property* field--for example, `formKey`.
+
+. Enter the query with parameters to add to the endpoint and filter its response into the *Filter Query* field--for example, `processInstanceId={{data.selectProcessInstanceId}}`.
++
+NOTE: `data.selectProcessInstanceId` is the name (*Property Name* field in the *API* tab) of the component whose data needs to be filtered and which is stored in the `data` object.
+
+. Define the HTML template to display values in a select in the *Item Template* field, as shown in the following example.
++
+NOTE: `name` and `id` are taken from the endpoint's response and shown in the select.
++
+.HTML template
+====
+[source,html]
+----
+<span>{{ item.name}}</span>
+
+<span>{{ item.id}}</span>
+----
+====
+
+. In *Refresh Options On*, set the component which the current component should depend on when filtering data.
+
+. Select the *Clear Value On Refresh Options* checkbox.
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-11.png[]
++
+.Request in Swagger (registry's "registry-rest-api" service)
+====
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-10.png[]
+====
+
+. Click *`Save`* to save changes to the component.
++
+image:registry-develop:bp-modeling/forms/bp-select/bp-select-form-io-12.png[]
+
+As a result, the dropdown list will contain the names and IDs of all the tasks that belong to the service selected in the other Select component.

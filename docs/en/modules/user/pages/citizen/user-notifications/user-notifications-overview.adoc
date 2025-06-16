@@ -1,0 +1,14 @@
+:sectlinks:
+:sectanchors:
+= Sending messages to users
+
+The platform allows configuring the sending of messages in the User portals through communication channels such as `inbox` and `email`.
+
+== Section overview
+
+* xref:citizen/user-notifications/inbox-notifications.adoc[]
+
+//* xref:citizen/user-notifications/diia-push-otp.adoc[]
+
+* xref:citizen/user-notifications/email-otp.adoc[]
+

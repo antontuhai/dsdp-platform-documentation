@@ -1,0 +1,1028 @@
+= Task 5. Modeling a business process with multiple participants
+include::ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::ROOT:partial$admonitions/language-en.adoc[]
+
+== Goal
+
+.The objective of the task is to:
+
+* [*] Learn how to model a business process with multiple participants.
+* [*] Learn how to model forms and customize them using *formVariables*.
+
+.Within the scope of this task, the modelers are required to:
+
+[%interactive]
+* [ ] Model 1 business process.
+* [ ] Model 5 data entry forms for the business process.
+* [ ] Create the roles necessary for the functioning of the business process.
+* [ ] Provide access to the business process for respective roles.
+* [ ] Save the created artifacts to the local git repository.
+* [ ] Transfer local changes to the remote Gerrit repository.
+
+== Prerequisites
+
+include::partial$snippets/study/prerequisites-bp-forms-en.adoc[]
+
+== Task execution process
+
+=== Modeling the business process
+
+[TIP]
+====
+
+During the modeling phase of the business process, it is necessary to create and save the corresponding BPMN diagram.
+
+Use the file _link:{attachmentsdir}/study-project/task-5/bp-schema/citizen-add-lab.bpmn[citizen-add-lab.bpmn]_ with a ready-made business process schema as an example.
+====
+
+[checklist-bp-modeling]
+==== Business process modeling checklist
+
+Use the provided checklist with a list of steps to create the business process:
+
+[%interactive]
+* [ ] xref:#create-pool-participant[]
+* [ ] xref:#create-start-event[]
+* [ ] xref:#create-script-task-prepare-data-view[]
+* [ ] xref:#create-user-task-add-lab-data[]
+* [ ] xref:#create-service-task-search-lab-data-transient-var[]
+* [ ] xref:#create-xor-gateway[]
+* [ ] xref:#create-branch-validation-error[]
+* [ ] xref:#create-branch-continue-bp[]
+* [ ] xref:#create-user-task-sign-lab-data[]
+* [ ] xref:#create-service-task-get-users-officer-role[]
+* [ ] xref:#create-user-task-set-executor-validate-docs[]
+* [ ] xref:#create-script-task-prepare-doc-data-view[]
+* [ ] xref:#create-user-task-check-uniqueness-lab-record[]
+* [ ] xref:#create-xor-gw-lab-unique[]
+* [ ] xref:#create-branch-negative-bp-result[]
+* [ ] xref:#create-branch-continue-bp-1[]
+* [ ] xref:#create-user-task-sign-lab-data[]
+* [ ] xref:#create-script-task-prepare-data-record-transient-var[]
+* [ ] xref:#create-call-activity-sign-data-by-system-key[]
+* [ ] xref:#create-service-task-save-data-to-data-factory[]
+* [ ] xref:#create-error-intermediate-boundary-event[]
+* [ ] xref:#create-service-task-bp-result-lab-created[]
+* [ ] xref:#create-end-event[]
+* [ ] xref:#save-bp-schema[]
+
+CAUTION: *Important!* After completing all the stages, remember to save the modeled business process schema to the respective folder with the registry regulations (_see xref:#save-bp-schema[]_).
+
+[#create-pool-participant]
+==== Creating a pool for the business process
+
+First, _model a pool for the business process_. To do this, follow the steps below:
+
+NOTE: The modeling of the business process diagram should take place within the *Create Pool/Participant* element.
+
+. Open the *Camunda Modeler* application and create a new BPMN diagram. To do this, click on the menu *File* → *New File* → *BPMN Diagram* in the upper left corner:
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-1.png[]
+
+. On the left toolbar, find the element *Create pool/Participant* and drag it to the modeling panel:
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-2.png[]
+
+. Fill in the following fields with respective values:
+
+* In the *Name* field, enter `Lab creation`;
+* In the *Process id* field, specify `citizen-add-lab`;
+* In the *Process name* field, enter `Lab creation process`.
+
++
+image:study-project/task-5/task-5-bp-1.png[]
+
+[#create-start-event]
+==== Creating the initial event
+
+_Create the initial event_. To do this, follow these steps:
+
+. On the left toolbar, find the *CreateStartEvent* element (circle) and drag it to the modeling panel:
++
+image::registry-develop:bp-modeling/bp/bp-keys/bp-keys-create-start-event.png[]
++
+image::registry-develop:bp-modeling/bp/bp-keys/bp-keys-create-start-event-1.png[]
+
+. On the settings panel on the right, fill in the following parameters with the respective values:
+
+** In the *Name* field, enter `Start`;
+** In the *Initiator* field, enter `initiator`.
+
++
+image:study-project/task-5/task-5-bp-2.png[]
+
+[#create-script-task-prepare-data-view]
+==== Creating a script task "Prepare data for display"
+
+At this stage, it is necessary to _model a script task for preparing data for display_. To do this, follow these steps:
+
+. Select the circle with the start event modeled on the xref:#create-start-event[previous stage] and attach a new task by clicking the *Append Task* icon:
++
+image:study-project/task-5/task-5-bp-03.png[]
+
+. Specify the task type by clicking the key icon and selecting *Script Task* from the menu:
++
+image:study-project/task-5/task-5-bp-03-1.png[]
+
+. Highlight the added script task and configure the following parameters:
+
+* In the *Id* field, enter `convertSignFormDataToDataFactoryFormatActivity`;
+* In the *Name* field, enter `Prepare data for display`;
+* In the *Script Format* field, specify the format (language) of the script as `groovy`;
+* In the *Script type* field, select `InlineScript`;
+* In the *Script* field, insert the actual groovy script.
++
+====
+[%collapsible]
+
+.Click to expand or collapse
+=====
+[source,groovy]
+----
+def cephData = [:]
+
+cephData['edrpou'] = initiator().edrpou
+
+execution.removeVariable('payload')
+set_transient_variable('payload', S(cephData, 'application/json'))
+----
+=====
+====
++
+image:study-project/task-5/task-5-bp-3.png[]
+
+[#create-user-task-add-lab-data]
+==== Creating a user task "Add laboratory information"
+
+At this stage, it is necessary to _model a user task_ `Add laboratory information` for data entry by the user. To do this, follow these steps:
+
+Using the example from xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#create-task-add-lab-data[Task 3], create a new user task for data entry by the user. To do this, follow these steps:
+
+. Select the rectangle with the script task modeled on the xref:#create-script-task-prepare-data-view[previous stage] and attach a new task.
+
+. Specify the task type by clicking the key icon and selecting *User Task* from the menu.
+
+. On the settings panel on the right, click *`Open Catalog`*, select the *User Form* template from the catalog, and click *`Apply`* to confirm.
+
+. Fill in the following fields on the settings panel on the right:
+
+* In the *Id* field, specify `addLabCitizenActivity`;
+* In the *Name* field, enter `Add laboratory information`;
+* In the *Form key* field, enter `citizen-add-lab-bp-add-lab`;
+* In the *Assignee* field, enter `${initiator}`;
+* In the *Form data pre-population* field, enter `${payload}`.
+
++
+image:study-project/task-5/task-5-bp-4.png[]
+
+[#create-service-task-search-lab-data-transient-var]
+==== Creating a service task "Search for laboratory data (transient var)"
+
+At this stage, it is necessary to _create a service task_ `Search for laboratory data (transient var)` for searching laboratory data. To do this, follow these steps:
+
+Using the example from xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#create-service-task-search-lab-data[Task 3] model a service task for searching for laboratory data. To do this, follow these steps:
+
+. Select the rectangle with the user task `Add laboratory information` modeled in the xref:#create-user-task-add-lab-data[previous stage] and attach a new task by clicking the *Append Task* icon.
+
+. Specify the task type by clicking the key icon and selecting *Service Task* from the menu.
+
+. On the settings panel on the right, click *`Open Catalog`*, select the *Search for entities in data factory* template from the catalog, and click *`Apply`* to confirm.
+
+. Fill in the following fields on the settings panel on the right:
+
+* In the *Name* field, specify `Search for laboratory data (transient var)`;
+* In the section *Input Parameters* → *Resource*, specify the following:
+** In the *Variable Assignment Type* field, select `String or Expression`;
+** In the *Variable Assignment Value* field, specify `laboratory-equal-edrpou-name-count`.
+
++
+image:study-project/task-5/task-5-bp-5.png[]
+
+* In the section *Input Parameters* → *Search Variables*, specify the following:
+
+** In the *Variable Assignment Type* field, select *Map*.
+** In the *Add Entry* section, add parameters `name` and `edrpou` (UA-specific) by clicking the plus (+) icon and provide their corresponding values as follows:
++
+|===
+|Key |Value
+
+|`name` |`${submission('addLabCitizenActivity').formData.prop('name').value()}`
+
+|`edrpou`
+|`${submission('addLabCitizenActivity').formData.prop('edrpou').value()}`
+|===
++
+image:study-project/task-5/task-5-bp-6.png[]
+
+* In the section *Input Parameters* → *X-Access-Token*, specify the following:
+
+** In the *Variable Assignment Type* field, select `String or Expression`;
+** In the *Variable Assignment Value* field, specify `${completer('addLabCitizenActivity').accessToken}`.
++
+[WARNING]
+====
+After completing the first user task, try to use the function *`completer('<task_id>')`* to obtain user data instead of `initiator()`.
+
+The access token can be obtained either from the initiator (e.g.,`` $initiator().accessToken}``) or the executor of the last user task (e.g., `${completer('taskDefinitionId').accessToken}`).
+
+The JWT token has a validity period of 300 seconds. If you specify the initiator's token, who initiated the business process, and the user takes a long time to complete the task, the token's validity will expire, and the business process will need to be restarted.
+
+For more information about JUEL functions, you can refer to xref:registry-develop:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[].
+====
+
+* In the *Output Parameters* section -> *Result Variable*, fill in the parameter `Assign to Process Variable` with the value response:
++
+image:study-project/task-5/task-5-bp-7.png[]
+
+[#create-xor-gateway]
+==== Creating and configuring an XOR gateway "Are data present?"
+
+Using the example from xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#create-xor-gateway[Task 3] attach an XOR Gateway. Follow the steps below:
+
+. Select the rectangle with the service task `Search for laboratory data (transient var)` modeled on the xref:#create-service-task-search-lab-data-transient-var[previous stage] and attach an XOR Gateway by clicking the *Append Gateway* icon.
+
+. On the settings panel on the right, in the *Name* field, enter the name of the gateway -- `Are Data Present?`
++
+image:study-project/task-5/task-5-bp-8.png[]
+
+[#create-branch-validation-error]
+==== Creating a branch with a validation error
+
+Using the example from xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#create-validation-error-branch[Task 3], create a branch with a validation error. Follow the steps below:
+
+. Select the diamond with the `Are Data Present?` XOR Gateway modeled in the previous stage and create a new service task by clicking the "Append Task" icon.
+
+. Specify the task type by clicking the key icon and selecting *Service Task* from the menu.
+
+. Click *`Open Catalog`*, select the *Throw validation error* template, and click *`Apply`* to confirm.
+
+. On the settings panel on the right, fill in the following fields:
+
+* In the *Name* field, enter `Generating a validation error`;
+* In the section *Input Parameters* → *Validation Errors*, specify the following:
+
+** In the *Variable Assignment Type* field, select `List`;
+** For the *Value* field, add the following value:
++
+.Значення
+[source,json]
+----
+{"field": "name", "value": "${submission('addLabCitizenActivity').formData.prop('name').stringValue().replaceAll("\"", "\\\\\"")}", "message": "Data for this laboratory already exists"}
+----
+
++
+image:study-project/task-5/task-5-bp-9.png[]
+
+. On the branch that goes from the `Are data present?` gateway to the `Generating a Validation Error` service task, you need to configure the following:
+
+** In the *Name* field, enter `yes`;
+** In the *Condition Type* field, enter `Expression`;
+** In the *Expression* field, enter `${!response.value.responseBody.elements().isEmpty()}`.
+
++
+image:study-project/task-5/task-5-bp-10.png[]
+
+[#create-branch-continue-bp]
+==== Creating a branch with continuing the business process
+
+Using the example from xref:registry-develop:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#create-continuation-of-bp-branch[Task 3] _create a branch that continues the business process_.
+
+To do this, on the branch that goes from the `Are data present?` gateway to the `Sign laboratory data` user task (_see xref:#create-user-task-lab-data-signing[]_), configure the following:
+
+. Leave the *Id* field with the default value.
+. In the *Name* field, enter `No`.
+. In the *Condition Type* field, enter `Expression`.
+. In the *Expression* field, enter `${response.value.responseBody.elements().isEmpty()}`.
+
++
+image:study-project/task-5/task-5-bp-11.png[]
+
+[#create-user-task-lab-data-signing]
+==== Creating a user task for data signing
+
+Using the example from xref:registry-develop:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#create-task-lab-data-signing[Task 3], _create a user task for data signing_. Follow these steps:
+
+. Specify the task type by clicking the key icon and selecting *User Task* from the menu.
+
+. Click *`Open Catalog`*, select the *Citizen Sign Task* template, and click *`Apply`* to confirm.
+
+. On the settings panel on the right, fill in the following fields:
+
+* In the *Id* field, enter `signLabCitizenActivity`;
+* In the *Name* field, enter `Sign laboratory data`;
+* In the **Form ke**y field, enter `shared-citizen-sign-lab`;
+* In the *Assignee* field, enter `${initiator}`;
+* In the *Form data pre-population* field, enter `${submission('addLabCitizenActivity').formData}`.
++
+image:study-project/task-5/task-5-bp-12.png[]
+
+* Leave the *INDIVIDUAL* field with the value `disabled` (default);
+* For the *ENTREPRENEUR* field, choose the value `enabled`;
+* For the *LEGAL* field, choose the value `enabled`.
++
+image:study-project/task-5/task-5-bp-12-1.png[]
+
+[#create-service-task-get-users-officer-role]
+==== Creating a service task "Get users with the  Officer role"
+
+Using the example of xref:#create-service-task-search-lab-data-transient-var[], you need to _create a service task to get users with the role "Officer" from the Keycloak identity and access management service_. Follow these steps:
+
+. Select the rectangle with the user task `Sign laboratory data` modeled on the xref:#create-user-task-lab-data-signing[previous stage], and attach a new service task by clicking the *Append Task* icon.
+
+. Specify the task type by clicking the key icon and selecting *Service Task* from the menu.
+
+. Click `Open Catalog`, select the *Get users by role from Keycloak* template, and click *`Apply`* to confirm.
+
+. On the settings panel on the right, fill in the following fields:
+
+* In the *Name* field, enter `Get users with role 'officer'`;
+* In the *Result Variable* field, enter `officerUsers`.
+
++
+image:study-project/task-5/task-5-bp-13.png[]
+
+[#create-user-task-set-executor-validate-docs]
+==== Creating a user task "Assign a task executor for document validation"
+
+Using the example of xref:#create-user-task-lab-data-signing[], _create a new user task that allows assigning a executor for another task_. Follow these steps:
+
+. Select the rectangle with the user task `Get users with role 'officer'` modeled on the xref:#create-service-task-get-users-officer-role[previous stage], and attach a new user task by clicking the *Append Task* icon.
+
+. Specify the task type by clicking the key icon and selecting *User Task* from the menu.
+
+. Click `Open Catalog`, select the *User Form* template, and click *`Apply`* to confirm.
+
+. On the settings panel on the right, fill in the following fields:
+
+* In the *Id* field, enter `dispatchTaskActivity`;
+* In the *Name* field, enter `Assign a task executor for document validation`;
+* In the *Form key* field, enter `shared-dispatch-task`;
+* In the *Assignee* field, enter `${initiator}`;
+* In the *Candidate roles* field, enter `task-dispatcher` -- the role for which this task will be available;
+* In the *Form variables* field, enter `officerUsers` -- the variable that will be passed to the form.
+
++
+image:study-project/task-5/task-5-bp-14.png[]
+
+[#create-script-task-prepare-doc-data-view]
+==== Creating a script task "Prepare document data for display"
+
+Using the example of xref:#create-script-task-prepare-data-view[], _model and attach a new script task_. Follow these steps:
+
+. Select the rectangle with the user task modeled on the xref:#create-user-task-set-executor-validate-docs[previous stage], and attach a new script task by clicking the *Append Task* icon.
+
+. Specify the task type by clicking the key icon and selecting *Script Task* from the menu.
+
+. On the settings panel on the right, fill in the following fields:
+
+* In the *Name* field, enter `Prepare document data for display`;
+* In the *Script Format* field, select the type (language) of the script -- `groovy`;
+* In the *Script Type* field, select the type of the script -- `InlineScript`;
+* In the *Script* field, insert the actual groovy script.
++
+====
+[%collapsible]
+
+.Click to expand or collapse
+=====
+[source,groovy]
+----
+execution.removeVariable('officerAssignee')
+set_variable('officerAssignee', submission('dispatchTaskActivity').formData.prop('userTaskAssignee').prop('userName').value())
+
+----
+=====
+====
++
+image:study-project/task-5/task-5-bp-15.png[]
+
+[#create-user-task-check-uniqueness-lab-record]
+==== Creating a user task "Check the uniqueness of the laboratory record"
+
+Using the example of xref:#create-user-task-set-executor-validate-docs[], _create a new user task to check the uniqueness of the laboratory record_. Follow these steps:
+
+. Select the rectangle with the script task modeled in the previous stage, and attach a new user task by clicking the *Append Task* icon.
+
+. Specify the task type by clicking the key icon and selecting *User Task* from the menu.
+
+. Click `Open Catalog`, select the *User Form* template, and click *`Apply`* to confirm.
+
+. On the settings panel on the right, fill in the following fields:
+
+* In the *Id* field, enter `checkLabOfficerActivity`;
+* In the *Name* field, enter `Check the uniqueness of the laboratory record`;
+* In the *Form key* field, enter `shared-officer-check-lab`;
+* In the *Assignee* field, enter `${officerAssignee`};
+* In the *Form data pre-population* field, enter `${submission('signLabCitizenActivity').formData}`.
+
++
+image:study-project/task-5/task-5-bp-16.png[]
+
+[#create-xor-gw-lab-unique]
+==== Creating an XOR Gateway "Is the laboratory unique?"
+
+Using the example of xref:#create-xor-gateway[], model and connect a new XOR gateway. Follow the steps below:
+
+. Select the rectangle with the user task modeled on the xref:#create-user-task-check-uniqueness-lab-record[previous stage], and connect an XOR gateway by clicking the *Append Gateway* icon.
+
+. On the right-hand settings panel, in the *Name* field, specify the gateway name as "Is the laboratory unique?" `labUniqueCheckFlag`.
+
+image:study-project/task-5/task-5-bp-17.png[]
+
+[#create-branch-negative-bp-result]
+==== Creating a branch with a negative business process outcome
+
+Using the example of xref:#create-branch-validation-error[], create a new branch with a negative business process outcome. Follow the steps below:
+
+. Select the diamond with the XOR gateway "Is the laboratory unique?" modeled on the xref:#create-xor-gw-lab-unique[previous stage], and create a new service task by clicking the *Append Task* icon.
+
+. Determine the task type by clicking the key icon and selecting *Service Task* from the menu.
+
+. Click `*Open Catalog*`, select the *Define business process status* template, and click *`Apply`* to confirm.
+
+. On the right-hand settings panel, fill in the following fields:
+
+* In the *Name* field, enter the value `"Execution result "Laboratory not created -- Duplicate"`;
+* In the *Status* field, enter `"Laboratory not created -- Such a laboratory already exists"`.
+
++
+image:study-project/task-5/task-5-bp-18.png[]
+
+. Highlight the branch leading to the service task Execution result `"Laboratory not created -- Duplicate"` and configure the following parameters:
+
+* In the *Name* field, enter `No`;
+* In the *Condition Type* field, select `Expression`;
+* In the *Expression* field, enter the expression `${!submission('checkLabOfficerActivity').formData.hasProp('labUniqueCheckFlag') || submission('checkLabOfficerActivity').formData.prop('labUniqueCheckFlag').value() == false}`.
+
++
+image:study-project/task-5/task-5-bp-19.png[]
+
+[#create-branch-continue-bp-1]
+==== Creating a branch with further business process continuation
+
+Using the example of xref:#create-branch-continue-bp[], _create a new branch for continuing the process_.
+
+To do this, on the branch leading from the XOR gateway `Is the laboratory unique?` (_see xref:#create-xor-gw-lab-unique[]_), to the user task `Sign laboratory data` (_see  xref:#create-user-task-sign-lab-data[]_) configure the following parameters:
+
+. Leave the *Id* field with the default value.
+. In the *Name* field, enter `Yes`.
+. In the *Condition Type* field, select `Expression`.
+. In the *Expression* field, enter the expression `${submission('checkLabOfficerActivity').formData.hasProp('labUniqueCheckFlag') && submission('checkLabOfficerActivity').formData.prop('labUniqueCheckFlag').value() == true}`.
+
+image:study-project/task-5/task-5-bp-20.png[]
+
+[#create-user-task-sign-lab-data]
+==== Creating a user task for data signing
+
+It is necessary to _create a user task for data signing_. Follow these steps:
+
+. Specify the task type by clicking the key icon and selecting *User Task* from the menu.
+
+. On the right-hand settings panel, click *Open Catalog*, select the *Officer Sign Task* template, and click *`Apply`* to confirm.
+
+. Fill in the following fields with the appropriate values:
+
+* In the *Id* field, enter `signLabOfficerActivity`;
+* In the *Name* field, enter `Sign laboratory data`;
+* In the *Form key* field, enter `shared-officer-sign-lab`;
+* In the *Assignee* field, enter `${officerAssignee}`;
+* In the *Form data pre-population* field, enter `${submission('checkLabOfficerActivity').formData}`.
+
++
+image:study-project/task-5/task-5-bp-21.png[]
+
+[#create-script-task-prepare-data-record-transient-var]
+==== Creating a scripting task "Prepare data for recording (transient var)"
+
+Create a new scripting task to prepare data for recording. To do this, proceed with the following settings:
+
+. Select the rectangle with the user task modeled on the xref:#create-user-task-sign-lab-data[previous stage], and attach a new task by clicking the *Append Task* icon.
+
+. Specify the task type by clicking the key icon and selecting *Script Task* from the menu.
+
+. Highlight the added scripting task and configure the following parameters:
+
+* In the *Name* field, enter `Prepare data for recording (transient var)`;
+* In the *Script Format* field, specify the scripting language as `groovy`;
+* In the *Script Type* field, select the `InlineScript` script type;
+* In the *Script* field, insert the groovy script directly:
++
+[%collapsible]
+.Script. Click to expand or collapse
+====
+[source,groovy]
+----
+def signedFormData = submission('signLabOfficerActivity').formData
+
+signedFormData.prop('oblast', signedFormData.prop('oblast').prop('code'))
+
+signedFormData.prop('koatuuId', signedFormData.prop('koatuu').prop('koatuuId'))
+signedFormData.deleteProp('koatuu')
+signedFormData.prop('ownershipId', signedFormData.prop('ownership').prop('ownershipId'))
+signedFormData.deleteProp('ownership')
+
+if(signedFormData.hasProp('premisesFile') && !signedFormData.prop('premisesFile').isNull() &&
+!signedFormData.prop('premisesFile').elements().isEmpty()) {
+signedFormData.prop('premisesFile', signedFormData.prop('premisesFile').elements()[0])
+} else {
+signedFormData.prop('premisesFile', null as String)
+}
+
+if(signedFormData.hasProp('accreditationFile') && !signedFormData.prop('accreditationFile').isNull() && !signedFormData.prop('accreditationFile').elements().isEmpty()) {
+signedFormData.prop('accreditationFile', signedFormData.prop('accreditationFile').elements()[0])
+} else {
+signedFormData.prop('accreditationFile', null as String)
+}
+
+
+execution.removeVariable('dataPayload')
+set_transient_variable('dataPayload', signedFormData)
+----
+====
++
+image:study-project/task-5/task-5-bp-22.png[]
+
+[#create-call-activity-sign-data-by-system-key]
+==== Modeling a service task for data signing with system key
+
+Create a service task for data signing using a system key and configure the appropriate integration extension. Follow the steps below:
+
+. Select the rectangle with the [.underline]#scripting task# created in the previous stage, and attach a new task by clicking the *Append Task* icon.
+
+. Specify the task type by clicking the key icon and selecting *Service Task* from the menu.
+
+. On the right-hand settings panel, click *Open Catalog* to open the list of available delegate templates.
++
+image:study-project/task-5/task-5-bp-23.png[]
+
+. From the list received, select the *System signature by DSO service* template, which is required for data signing with a system key.
++
+image:study-project/task-5/task-5-bp-24.png[]
+
+. On the right-hand settings panel, open the *General* tab and configure the delegate parameters as follows:
+
+* In the *Name* field, enter the task name as `Sign data with system key`;
+* In the *Payload* field, provide the data to be digitally signed – `${dataPayload}`;
+* In the *X-Access-Token source* field, provide the access token of the person currently executing the task with ID '`signLabOfficerActivity`' -- `${completer('signLabOfficerActivity').accessToken}`.
++
+[WARNING]
+====
+After the execution of the first user task, try to use the function `*completer*('<*task_id*>')` to obtain user data, instead of `initiator()`.
+
+Access token is taken from either the initiator (e.g., `$initiator().accessToken} or the executor of the last user task (e.g., `${completer('taskDefinitionId').accessToken}`).
+
+JWT token has a validity period of 300 seconds. If you specify the token of the initiator who started the business process, and the user takes a long time to complete the task, the token's validity will expire, and the business process will need to be restarted.
+
+For more details on JUEL functions, you can refer to xref:registry-develop:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[].
+====
+
+* In the *Result variable* field, specify the variable name to store the digital signature of the provided data -- `system_signature_ceph_key`.
+
++
+image:study-project/task-5/task-5-bp-24-1.png[]
+
+[#create-service-task-save-data-to-data-factory]
+==== Creating a service task "Save data to data factory"
+
+At this step, you need to _create and configure a new service task to save data to the Data Factory_. Follow the steps provided below:
+
+. Select the rectangle with the Call Activity task created on the xref:#create-call-activity-sign-data-by-system-key[previous stage] and create a new service task `Save data to data factory` by clicking the key icon and selecting *Service Task* from the menu.
+
+. Click *`Open Catalog`*, select the C**reate entity in data factory** template, and click *`Apply`* to confirm.
+
+. On the right-hand settings panel, configure the following parameters:
+
+* In the *Name* field, enter `Save data to data factory`;
+* In the *Resource* field, specify `laboratory`;
+* In the *Payload* field, enter `${dataPayload}`;
+* In the *X-Access-Token* field, enter `${completer('signLabOfficerActivity').accessToken}`.
++
+[WARNING]
+====
+
+After the execution of the first user task, try to use the function *`completer('<task_id>')`* to obtain user data, instead of `initiator()`.
+
+Access token is taken from either the initiator (e.g., `$initiator().accessToken}`) or the executor of the last user task (e.g., `${completer('taskDefinitionId').accessToken}`).
+
+JWT token has a validity period of 300 seconds. If you specify the token of the initiator who started the business process, and the user takes a long time to complete the task, the token's validity will expire, and the business process will need to be restarted.
+
+For more details on JUEL functions, you can refer to xref:registry-develop:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[].
+====
+
+* In the *X-Digital-Signature source* field, enter `${sign_submission('signLabOfficerActivity').signatureDocumentId}`;
+* In the *X-Digital-Signature-Derived source* field, enter `${system_signature_ceph_key}`;
+* In the *Result Variable* field, enter `response`.
+
++
+image:study-project/task-5/task-5-bp-25.png[]
+
+[#create-error-intermediate-boundary-event]
+==== Creating an event for handling errors
+
+At this stage, you need to model and configure an intermediate boundary event for handling scenarios with anticipated errors. Follow the steps below:
+
+. Drag an *Intermediate/Boundary event* from the toolbar and attach it to the *Save data to data factory* Service Task.
++
+image:study-project/task-5/task-5-bp-error-boundary-branch-1.png[]
+
+. Define the event type as an *Error Boundary Event* (Intermediate boundary event "Error")
++
+image:study-project/task-5/task-5-bp-error-boundary-branch-2.png[]
+
+. Create a *Gateway* that will act as a checkpoint for redirection in case of an error.
++
+image:study-project/task-5/task-5-bp-error-boundary-branch-3.png[]
+
+. Add error handling logic by connecting the *Error Boundary Event* and the *Gateway*.
++
+[TIP]
+
+This means that if an error occurs during the *Save data to data factory* stage, we will automatically return to the checkpoint, from where the process execution will restart.
++
+image:study-project/task-5/task-5-bp-error-boundary-branch-4.png[]
+
+[NOTE]
+Modeling components related to "Data factory", and all dashed lines are purely informational. The instructions do not include an example of their creation, but you can add them according to your preferences.
+
+[#create-service-task-bp-result-lab-created]
+==== Creating a service task to set a business process result
+
+Using xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#create-service-task-create-entity-end[Task 3] as an example, model a new service task that will set the result of the business process. Follow the steps below:
+
+. Select the rectangle with the service task created on the xref:#create-service-task-save-data-to-data-factory[previous stage], and attach a new task by clicking the *Append Task* icon.
+
+. Specify the task type by clicking the key icon and selecting *Service Task* from the menu.
+
+. Click `Open Catalog`, select the *Define business process status* template, and click *`Apply`* to confirm.
+
+. On the right-hand settings panel, configure the following parameters:
+
+* In the *Name* field, enter `Process result: Laboratory created`;
+* In the *Status* field, enter `Laboratory created`.
+
++
+image:study-project/task-5/task-5-bp-26.png[]
+
+[#create-end-event]
+==== Creating an end event for business process completion
+
+At this stage, create an event that will _mark the completion of the business process_.
+
+. Using xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#create-task-entity-finish[Task 3] as an example, attach and configure the end event for the business process.
+
+. On the right-hand settings panel, set the `Name` parameter to `Laboratory created`.
+
++
+image:registry-develop:study-project/task-3/task-3-26-bp.png[]
+
+TIP: As a result, we have modeled a business process for use by multiple participants, including the invocation of an external subprocess (Call Activity).
+
+[#save-bp-schema]
+==== Saving the modeled business process diagram
+
+After completing the modeling process, save the resulting business process diagram with the name _citizen-add-lab.bpmn_ to the *_bpmn_* project's regulatory folder in the Gerrit repository. To do this, in the top-left corner, open menu:File[Save File As...], enter the appropriate name and path.
+
+[#form-modeling]
+=== Modeling UI forms for the business process
+
+[TIP]
+====
+During the form modeling phase, create and link JSON forms to the previously modeled tasks within the business process. Forms are linked to business processes by their service name.
+
+Use the following files with the modeled forms as an example:
+
+* _link:{attachmentsdir}/study-project/task-5/bp-forms/shared-officer-sign-lab.json[shared-officer-sign-lab.json]_
+* _link:{attachmentsdir}/study-project/task-5/bp-forms/shared-officer-check-lab.json[shared-officer-check-lab.json]_ 
+* _link:{attachmentsdir}/study-project/task-5/bp-forms/shared-dispatch-task.json[shared-dispatch-task.json]_ 
+* _link:{attachmentsdir}/study-project/task-5/bp-forms/shared-citizen-sign-lab.json[shared-citizen-sign-lab.json]_ 
+* _link:{attachmentsdir}/study-project/task-5/bp-forms/citizen-add-lab-bp-add-lab.json[citizen-add-lab-bp-add-lab.json]_
+====
+
+[checklist-form-modeling]
+==== Checklist of the UI forms modeling
+
+.Use the provided checklist with a list of steps to create forms:
+
+[%interactive]
+* [ ] xref:#form-insert-data[]
+* [ ] xref:#form-sign-data-by-citizen[]
+* [ ] xref:#form-dispatch-task[]
+* [ ] xref:#form-check-data-by-officer[]
+* [ ] xref:#form-officer-sign-data[]
+* [ ] xref:#form-save[]
+
+CAUTION: After completing all stages, upload and save the form schema files to the corresponding folder with the registry regulations (_see xref:#form-save[]_).
+
+[#form-insert-data]
+==== Creating a form for data entry
+
+TIP: Model a form for data entry by the user, using the example from xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#form-insert-data[Task 3].
+
+. Log in to the *Administrative portal*.
++
+image::registry-develop:bp-modeling/forms/admin-portal-form-modeling-step-1.png[]
++
+By default, the user lands on the home page of the [.underline]#Version overview# of regulations master data.
++
+image:registry-admin/admin-portal/new-admin-portal-1.png[]
++
+[TIP]
+====
+For more details about the version of regulations master data, you can refer to the following link:
+
+* xref:registry-develop:registry-admin/admin-portal/version-control/master-version-settings.adoc[]
+====
++
+[WARNING]
+====
+
+The master version of changes to the registry regulations allows working with UI forms only in preview mode.
+
+To create or edit any entities of the regulations (forms, business processes, etc.) and their components, you need to create a new candidate version for changes to the regulations master data and work within it.
+====
+
+. Create a new change request for the regulations master data, which means creating a new candidate version for changes.
++
+image:registry-develop:study-project/task-5/task-5-forms-new-change-request.png[]
++
+OR
++
+Select an existing candidate version for changes.
++
+image:registry-develop:study-project/task-5/task-5-forms-new-change-request-1.png[]
++
+[TIP]
+====
+For more details about creating and viewing change requests for the regulations master data, you can refer to the following links:
+
+* xref:registry-develop:registry-admin/admin-portal/version-control/create-new-change-request.adoc[]
+* xref:registry-develop:registry-admin/admin-portal/version-control/overview-new-change-request.adoc[]
+====
+
+. Within your candidate version, navigate to the [.underline]#UI forms# section.
++
+image:registry-develop:study-project/task-5/task-5-forms-overview.png[]
+
+. Copy the xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#form-insert-data[ add-lab-bp-add-lab] form modeled in Task 3 by clicking the *copy icon*—this will allow you to create a form from an existing template.
++
+image:registry-develop:study-project/task-3/task-3-49-forms.png[]
+
+. In the new window, on the [.underline]#General# tab, enter the business name of the form as `Enter laboratory data`. The name corresponds to the business name of the modeled user task xref:#create-user-task-add-lab-data[`addLabCitizenActivity`].
+
+. Fill in the *Form's service name* field with the value `citizen-add-lab-bp-add-lab` (corresponds to the *Form Key* field value of the same user task xref:#create-user-task-add-lab-data[`addLabCitizenActivity`]).
++
+image:study-project/task-5/task-5-forms-2.png[]
+
+. Navigate to the [.underline]#Constructor# tab.
+
+* For the "Region", "Settlement Name", and "Ownership Form" components, on the *Data* tab, in the *Data Source Type URL* field, remove `/officer`.
++
+image:study-project/task-5/task-5-forms-2-1.png[]
+
+* Ensure that the final data source configurations for the components are as follows:
+
+** The [.underline]#"Region"# component -- `/api/data-factory/koatuu-obl-contains-name`;
+
+** The [.underline]#"Settlement Name"# component -- `/api/data-factory/koatuu-np-starts-with-name-by-obl`;
+** компонент [.underline]#"Форма власності"# -- `/api/data-factory/ownership-contains-name`.
+** The [.underline]#"Ownership Form"# component -- `/api/data-factory/ownership-contains-name`.
+
+. Save the form by clicking the *`Save changes`* button in the top-right corner.
++
+image:study-project/task-5/task-5-forms-3.png[]
+
+[#form-sign-data-by-citizen]
+==== Citizen's signature form modeling
+
+After completing the xref:#form-insert-data[previous stage] of creating a data input form, create another form specifically for data signature.
+
+TIP: Model a form for user input using the example from xref:study-project/study-tasks/task-3-bp-modeling-with-integration.adoc#form-data-signing[Task 3].
+
+. Copy the xref:#form-sign-data-by-citizen[UI form for signing laboratory data] input by clicking on the copy icon—this will allow you to create a form from a ready-made template.
+
+. Enter the form editing mode and switch to the [.underline]#General# tab.
+
+. In the *Form business name* field, enter the name of the corresponding user task: xref:#create-user-task-lab-data-signing[signLabCitizenActivity].
+
+. Fill in the *Form Key* field with the value `shared-citizen-sign-lab` (corresponds to the Form key field value of the same user task).
++
+image:study-project/task-5/task-5-forms-4.png[]
+
+. Switch to the [.underline]#Builder# tab and perform the following settings for each component:
+
+* On the *Display* tab, check the *Disabled* parameter.
+* Click the *Save* button to save the changes.
++
+image:study-project/task-5/task-5-forms-4-01.png[]
++
+image:registry-develop:study-project/task-3/task-3-50-forms.png[]
+
+. Switch to the [.underline]#Preview# tab. Here you can see how the form will appear in the user interface. All fields are inactive.
++
+image:study-project/task-5/task-5-forms-4-1.png[]
+
+. Save the form by clicking the *Save changes* button in the upper right corner.
+
+=== Modeling forms using formVariables
+
+[#form-dispatch-task]
+==== Task executor assignment form modeling
+
+CAUTION: Continue modeling forms within the same candidate version for changes that was created in the ref:#form-insert-data[previous section].
+
+. Within your candidate version, navigate to the [.underline]#UI Forms# section.
++
+image:registry-develop:study-project/task-5/task-5-forms-overview.png[]
+
+. To create a new form for the business process, click the *Create new form* button.
++
+image:registry-develop:study-project/task-5/task-5-forms-overview-1.png[]
++
+
+* In the new window, enter a *Business form name* that corresponds to the name of the modeled user task—xref:#create-user-task-set-executor-validate-docs[Assign task executor (dispatchTaskActivity)].
+
+* Fill in the *Form's service name* field with the value `shared-dispatch-task` (matching the *Form key* field value of the user task xref:#create-user-task-set-executor-validate-docs[`Assign task executor` (`dispatchTaskActivity`)].
++
+image:study-project/task-5/task-5-forms-5.png[]
+
+. Switch to the [.underline]#Builder# tab and model the form using components.
++
+image:study-project/task-5/task-5-forms-5-1.png[]
+
+. Drag and drop the *Select* component from the component panel on the left to the modeling panel and proceed with further configuration of the component:
++
+image:study-project/task-3/task-3-37-forms-drag-select.png[]
+
+* Switch to the *Display* tab and fill in the *Label* field with the value `Choose executor's full name`:
++
+image:study-project/task-5/task-5-forms-6.png[]
+
+* Switch to the *API* tab and fill in the `Property Name` field with `userTaskAssignee`:
++
+image:study-project/task-5/task-5-forms-7.png[]
+
+* Switch to the *Data* tab and configure the following parameters:
+
+** In the *Data source type* field, enter `Custom`;
+** In the *Id Path* field, enter `userName`;
+** In the *Custom Values* field, enter `values = formVariables.officerUsers`;
+** In the *Item Template* field, enter `<span>{{ item.fullName }}</span>`.
++
+
+* Click the *Save* button to save the changes.
++
+image:study-project/task-5/task-5-forms-8.png[]
+
+. Save the form by clicking the *Create form* button in the upper right corner:
++
+image:study-project/task-5/task-5-forms-9.png[]
+
+[#form-check-data-by-officer]
+==== Data validation form modeling by officer
+
+Model a form for data validation by an officer. To do this, follow these steps:
+
+. Copy the xref:#form-dispatch-task[Assign task executor] form modeled above by clicking the *copy icon*—this will allow you to create a form from a ready-made template:
+
+* In the new window, open the [.underline]#General# tab.
+
+* In the *Business form name* field, enter the name `Unique laboratory record check`, corresponding to the name of the user task xref:#create-user-task-check-uniqueness-lab-record[`checkLabOfficerActivity`].
+
+* Fill in the *Form's service name* field with the value `shared-officer-check-lab` (matching the *Form key* field value of the user task xref:#create-user-task-check-uniqueness-lab-record[checkLabOfficerActivity]).
++
+image:study-project/task-5/task-5-forms-10.png[]
+
+. Switch to the [.underline]#Builder# tab and model the form using components.
+
+. Drag and drop the *Checkbox* component from the component panel on the left to the modeling panel and proceed with further configuration:
+
+* Switch to the *Display* tab and fill in the *Label* field with the value `Laboratory is not duplicated`:
++
+image:study-project/task-5/task-5-forms-11.png[]
+
+* Switch to the *API* tab and fill in the *Property Name* field with `labUniqueCheckFlag`.
+
+* Click the *Save* button to save the changes:
++
+image:study-project/task-5/task-5-forms-12.png[]
+
+. Save the form by clicking the *Create form* button in the upper right corner:
++
+image:study-project/task-5/task-5-forms-13.png[]
+
+[#form-officer-sign-data]
+==== Modeling a form for data signing by an officer
+
+Model a form to enable data signing by an officer. Follow these steps:
+
+. Copy the form for xref:#form-check-data-by-officer[data verification by an officer] modeled earlier by clicking the *copy icon*—this will allow you to create a form from an existing template:
+
+* In the new window, switch to the [.underline]#General# tab.
+
+* In the *Business form name* field, enter a name corresponding to the task xref:#create-user-task-sign-lab-data[`signLabOfficerActivity`].
+
+* Fill in the *Service form name* field with the value `shared-officer-sign-lab` (should correspond to the Form Key field value of the same user task -- xref:#create-user-task-sign-lab-data[`signLabOfficerActivity`].
+
++
+image:study-project/task-5/task-5-forms-14.png[]
+
+. Switch to the [.underline]#Constructor# tab and perform the following settings for all components of the form:
+
+* Switch to the *Display* tab and set the `Disabled` parameter to `True`.
+
+* Click the *Save* button to save the changes.
+
+. Save the form by clicking the *Create form* button in the top-right corner.
++
+image:study-project/task-5/task-5-forms-14-1.png[]
+
+[#form-save]
+==== Loading modeled business process forms to local directory
+
+To load the forms, click on the `&#10515;` (_download icon_), and place them in the project's regulatory *_forms_* folder within the local Gerrit repository.
+image:registry-develop:study-project/task-1/task-1-14-forms.png[]
+
+[#bp-access]
+=== Granting access to a business process
+
+[TIP]
+====
+
+At this stage, it is necessary to provide access to the business process from the Citizen portal.
+
+Access parameters are configured in the configuration file named _link:{attachmentsdir}/study-project/task-5/bp-access/citizen.yml[citizen.yml]_.
+====
+
+. Create the _citizen.yml_ file and configure the following parameters within it:
++
+[source,yaml]
+.Example: Configuring access to the business process from the Citizen portal
+----
+authorization:
+  realm: 'citizen'
+  process_definitions:
+    - process_definition_id: 'citizen-add-lab'
+      process_name: 'Business process for the lab creation by a citizen'
+      process_description: 'Business process for the lab creation by a citizen'
+      roles:
+        - 'unregistered-individual'
+        - 'unregistered-entrepreneur'
+        - 'unregistered-legal'
+----
++
+
+. xref:#save-roles-access-files[Save a file] to the *_bp-auth_* project folder. So the result filename will be *_bp-auth/citizen.yml_*.
+
+==== Creating a new role for task allocation in the Officer portal
+
+. Navigate to the regulatory *_roles_* folder, find the _link:{attachmentsdir}/study-project/task-5/bp-access/officer.yml[officer.yml]_, and add two new parameters to it:
++
+.Example. Adding parameters to create a role for task allocation
+[source,yaml]
+----
+  - name: task-dispatcher
+    description: Task dispatcher role
+----
+
+. xref:#save-roles-access-files[Save a file] to the *_bp-auth_* project folder.
+
+[#save-roles-access-files]
+==== Saving access configuration files
+
+Save the _officer.yml_ file to the *_bp-auth_* folder of the project in the local Gerrit repository.
+
+== Transferring regulatory files to remote Gerrit repository
+
+For successful deployment of the business process, forms, and applying the correct access settings to the business process in the target environment, the registry regulations administrator must upload the saved local regulation files to the remote Gerrit code repository.
+
+To do this, follow the steps in
+xref:registry-develop:registry-admin/regulations-deploy/registry-admin-deploy-regulation.adoc[].
+
+IMPORTANT: Once the local changes are incorporated into the regulation process in Gerrit and after confirming that everything is functioning correctly, xref:registry-develop:registry-admin/admin-portal/version-control/overview-new-change-request.adoc#abandon-changes[delete the created candidate version for changes in the Administrative portal].
+
+== Appendices
+
+This section contains examples of ready-made artifacts of regulations modeling that you can use during the execution of this task.
+
+=== Business process schema
+
+* _link:{attachmentsdir}/study-project/task-5/bp-schema/citizen-add-lab.bpmn[citizen-add-lab.bpmn]_
+
+=== Forms for the business process
+
+* _link:{attachmentsdir}/study-project/task-5/bp-forms/shared-officer-sign-lab.json[shared-officer-sign-lab.json]_
+* _link:{attachmentsdir}/study-project/task-5/bp-forms/shared-officer-check-lab.json[shared-officer-check-lab.json]_
+* _link:{attachmentsdir}/study-project/task-5/bp-forms/shared-dispatch-task.json[shared-dispatch-task.json]_
+* _link:{attachmentsdir}/study-project/task-5/bp-forms/shared-citizen-sign-lab.json[shared-citizen-sign-lab.json]_
+* _link:{attachmentsdir}/study-project/task-5/bp-forms/citizen-add-lab-bp-add-lab.json[citizen-add-lab-bp-add-lab.json]_
+
+=== Yaml for Citizen role access to a business process
+
+* _link:{attachmentsdir}/study-project/task-5/bp-access/citizen.yml[bp-auth/citizen.yml]_
+
+===  Yaml for creating a new Task Dispatcher role within the officer realm
+
+* _link:{attachmentsdir}/study-project/task-5/bp-access/officer.yml[roles/officer.yml]_
+
+

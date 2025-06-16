@@ -1,0 +1,13 @@
+{{- if eq .Values.global.platform "kubernetes" }}
+apiVersion: v2.edp.epam.com/v1
+kind: QuickLink
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  icon: {{ .Values.edpComponent.icon }}
+  type: system
+  url: https://{{ .Values.name }}-{{ .Release.Namespace }}.{{ .Values.dnsWildcard }}
+  visible: true
+{{- end }}

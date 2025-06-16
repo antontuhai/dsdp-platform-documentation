@@ -1,0 +1,868 @@
+= Task 3. Modeling a business process with integration
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Goal
+
+The execution of this task aims to: ::
+
+* Teach modeling a business process that involves integration with a data factory.
+* Teach modeling branches within a business process.
+* Teach modeling forms and configuring *Select* components to retrieve data from the data factory.
+
+== Prerequisites
+
+include::partial$snippets/study/prerequisites-bp-forms-en.adoc[]
+
+. Gain a more detailed understanding of business process components exploring the xref:registry-develop:bp-modeling/bp/index.adoc[] section.
+
+== Task execution process
+
+[#bp-modeling]
+=== Business process modeling
+
+[TIP]
+====
+During the business process modeling phase, it is necessary to create and save the corresponding BPMN diagram.
+
+Please use the _link:{attachmentsdir}/study-project/task-3/bp-schema/add-lab.bpmn[add-lab.bpmn]_ file with the pre-designed business process schema as an example.
+====
+
+==== Stages of business process modeling
+
+In the context of this task, the modeler must create a business process consisting of the following stages:
+
+. xref:#create-pool-bp[].
+. xref:#create-start-event[].
+. xref:#create-task-add-lab-data[].
+. xref:#create-service-task-bp-key[].
+. xref:#create-service-task-search-lab-data[].
+. xref:#create-xor-gateway[].
+. xref:#create-validation-error-branch[].
+. xref:#create-service-task-save-data-to-data-factory[].
+. xref:#create-service-task-create-entity-end[].
+. xref:#create-task-entity-finish[].
+
+CAUTION: *Important!* After completing all stages, remember to save the modeled business process diagram to the appropriate folder in the registry regulations (_see xref:#save-bp-schema[Saving the modeled business process schema]_).
+
+[#create-pool-bp]
+==== Creating a pool for the business process
+
+First, _model a pool for the business process_. Follow the steps below:
+
+NOTE: Business process diagram modeling should take place within the *Create Pool/Participant* element.
+
+. Open the *Camunda Modeler* application and create a new BPMN diagram. To do this, click on the *File* → *New File* → *BPMN Diagram* option in the top left corner:
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-1.png[]
+
+. On the toolbar on the left, find the *Create Pool/Participant* element and drag it to the modeling panel:
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-2.png[]
+
+. Fill in the following fields with appropriate values:
+
+** In the *Name* field, enter `Lab creation`.
+** In the *Process id* field, enter `add-lab`.
+** In the *Process name* field, specify `Lab creation`.
+
++
+image:registry-develop:study-project/task-3/task-3-1-bp.png[]
+
+[#create-start-event]
+==== Creating a start event
+
+_Create a start event_. Follow the steps below:
+
+. On the toolbar on the left, find the *CreateStartEvent* element (a circle) and drag it to the modeling panel:
++
+image::registry-develop:bp-modeling/bp/bp-keys/bp-keys-create-start-event.png[]
++
+image::registry-develop:bp-modeling/bp/bp-keys/bp-keys-create-start-event-1.png[]
+
+. In the settings panel on the right, fill in the following parameters with appropriate values:
+
+** In the *Name* field, enter `Start`.
+** In the *Initiator* field, enter `initiator`.
+
++
+image:registry-develop:study-project/task-3/task-3-2-bp.png[]
+
+[#create-task-add-lab-data]
+==== Creating a user task for entering laboratory data
+
+Next, _create a user task intended for users to entering data by the user_. Follow the steps below:
+
+. Select the circle with the start event, modeled in the previous stage, and attach a new task by clicking the *Append Task* icon:
++
+image:study-project/task-3/task-3-3-bp-append-task.png[]
+
+. Specify the task type by clicking the key icon and choosing *User Task* from the menu:
++
+image:study-project/task-3/task-3-3-bp-user-task.png[]
+
+. In the settings panel on the right, click `Open Catalog`, select the *User Form* template from the menu, and click `Apply` to confirm:
++
+image:study-project/task-3/task-3-3-bp-open-catalog.png[]
++
+image:study-project/task-3/task-3-3-bp-user-form.png[]
+
+. On the settings panel on the right, fill in the following fields:
+
+* In the *Id* field, specify `addLabFormActivity`.
+* In the *Name* field, enter `Add Laboratory Information`.
+* In the *Form key* field, enter `add-lab-bp-add-lab`.
+* In the *Assignee* field, specify `${initiator}`.
+
++
+image:registry-develop:study-project/task-3/task-3-3-bp.png[]
+
+[#create-service-task-bp-key]
+==== Modeling a service task for creating a business key
+
+. Create a new Service Task:
++
+image:registry-develop:study-project/task-3/task-3-create-service-task.png[0,400]
+
+. From the extensions catalog (`Open Catalog`), select the *Define process business key* template.
++
+image:registry-develop:study-project/task-3/task-3-04.png[]
+
+. In the settings panel, define the following fields (task name and script for generating the business key):
++
+--
+* In the *Name* field, enter `Set business Key`.
+* In the *Business key* field, enter the following script:
+
+ ${submission('addLabFormActivity').formData.prop('name').value().concat(' ').concat(submission('addLabFormActivity').formData.prop('edrpou').value())}
+--
++
+[TIP]
+====
+
+For more detailed information on configuring business keys, you can follow the xref:registry-develop:bp-modeling/bp/modeling-facilitation/bp-business-keys.adoc[link].
+====
++
+image:registry-develop:study-project/task-3/task-3-05.png[]
++
+[NOTE]
+====
+Using the business key, users can differentiate one business process from another (or one user task from another) in the list of business tasks in the User portals of the official and service recipient.
+
+image:bp-modeling/bp/bp-keys/bp-keys-officer-portal-task.png[]
+====
+
+[#create-service-task-search-lab-data]
+==== Creating a service task for searching laboratory data
+
+Next, it is necessary to _create a *Service Task* for searching laboratory data_. Follow these steps:
+
+. Create a new Service Task:
++
+image:registry-develop:study-project/task-3/task-3-create-service-task.png[0,400]
+
+. From the extensions catalog (`Open Catalog`), select the *Search for entities in data factory* template, and press *Apply* to confirm.
++
+image:registry-develop:study-project/task-3/task-3-06.png[]
+
+. On the settings panel on the right, fill in the following fields:
+
+* In the *Id* field, enter `searchForLabByNameAndEdrpouActivity`.
+
+* In the *Name* field, it should be specified as `Search for laboratory data (transient var)`.
++
+
+* In the *Input Parameters* section → *Resource*, specify the following:
+
+** In the *Variable Assignment Type* field, select `String or Expression`.
+
+** In the *Variable Assignment Value* field, enter `laboratory-equal-edrpou-name-count`.
+
++
+image:registry-develop:study-project/task-3/task-3-07.png[]
+
+* In the *Input Parameters* → *Search Variables* section, provide the following:
+
+** In the *Variable Assignment type* field, select `Map`.
+
+** In the *Add Entry* field, add entries for parameters `name` and `edrpou` (UA-specific) by clicking the plus (+) sign and specifying their corresponding values:
++
+|===
+|Key |Value
+
+|`name` |`${submission('addLabFormActivity').formData.prop('name').value()}`
+
+|`edrpou`
+|`${submission('addLabFormActivity').formData.prop('edrpou').value()}`
+|===
++
+image:registry-develop:study-project/task-3/task-3-08.png[]
+
+* In the *Input Parameters* → *X-Access-Token* section, specify the following:
+
+** In the *Variable Assignment Type* field, select `String or Expression`.
+
+** In the *Variable Assignment Value* field, enter `${completer('addLabFormActivity').accessToken}`.
++
+[WARNING]
+====
+
+After the completion of the first User Task, try using the *`completer('<task_id>')`* function to retrieve user data, instead of `initiator()`.
+
+The access token is taken from either the initiator (e.g., `$initiator().accessToken}` OR the executor of the last User Task (e.g., `${completer('taskDefinitionId').accessToken}`).
+
+The JWT token has a validity period of 300 seconds. If the token of the initiator who started the business process is specified, and the user does not perform the task for a long time, the token will expire, and the business process will need to be restarted.
+
+For more details on JUEL functions, you can refer to the JUEL functions:  xref:registry-develop:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[].
+====
++
+image:registry-develop:study-project/task-3/task-3-6-bp.png[]
+
+* In the *Output Parameters* → *Result Variable* section, fill the `Assign to Process Variable` parameter with the value `response`.
++
+image:registry-develop:study-project/task-3/task-3-7-bp.png[]
+
+[#create-xor-gateway]
+==== Creating and configuring an XOR gateway
+
+Next, it is necessary to _attach an XOR gateway_. Follow the steps below:
+
+. Select the rectangle with the service task `Search for laboratory data (transient var)` modeled in the previous stage and attach the XOR gateway by clicking the *Append Gateway* icon.
++
+image:study-project/task-3/task-3-create-xor.png[]
+
+. In the settings panel on the right, specify the ID and name of the gateway:
+
+** In the *Id* field, enter `isLaboratoryExistGateway`.
+
+** In the *Name* field, enter `Are data present?`
+
++
+image:registry-develop:study-project/task-3/task-3-8-bp.png[]
+
+[#create-validation-error-branch]
+==== Creating a branch with a validation error
+
+At this stage, it is necessary to create a branch with a validation error. Follow the steps below:
+
+. Select the rhombus with the XOR gateway "Are data present?" modeled in the xref:#create-xor-gateway[previous stage] and create a new service task by clicking the *Append Task* icon.
++
+image:registry-develop:study-project/task-3/task-3-9-bp-append-task.png[]
+
+. Specify the task type by clicking the key icon and choosing *Service Task* from the menu.
++
+image:registry-develop:study-project/task-3/task-3-9-bp-service-task.png[]
+
+. Click `Open Catalog`, select the *Throw validation error* template, and press *Apply* to confirm.
++
+image:registry-develop:study-project/task-3/task-3-9-bp-choose-temp.png[]
++
+--
+
+.In the settings panel on the right, fill in the following fields:
+
+* у полі *Name* введіть `Формування валідаційної помилки`.
+* In the *Name* field, enter `Generating validation error`.
+
+* In the *Input Parameters* → *Validation Errors* section, provide the following:
+
+** In the *Variable Assignment Type* field, select `List`.
+** Add the following values for the *Value* field:
++
+.Value 1
+[source,json]
+----
+{"field": "name", "value": "${submission('addLabFormActivity').formData.prop('name').stringValue().replaceAll("\"", "\\\\\"")}", "message": "Data for this laboratory already exists"}
+----
++
+.Value 2
+[source,json]
+----
+{"field": "edrpou", "value": "${submission('addLabFormActivity').formData.prop('edrpou').value()}", "message": "Data for this laboratory already exists"}
+----
+--
++
+image:registry-develop:study-project/task-3/task-3-9-bp.png[]
+
++
+[NOTE]
+====
+The *Throw validation error* delegate has the ability to display multiple messages simultaneously.
+
+In the event of generating this validation error, the user will see two pop-up messages approximately in the following format:
+
+* *name*: <entered value for name on the form> "_Data for this laboratory already exists_".
+
+* *edrpou* (UA-specific): <entered value for edrpou on the form> "_Data for this laboratory already exists_".
+====
++
+
+. On the branch that goes from the "Are Data Present?" gateway to the user task `Formation of validation error`, configure the following parameters:
+
+** In the *Id* field, enter `isLaboratoryAlreadyExistFlow`.
+** In the *Name* field, enter `yes`.
+** In the *Condition Type* field, enter `Expression`.
+** In the *Expression* field, enter `${!response.value.responseBody.elements().isEmpty()}`.
+
++
+image:registry-develop:study-project/task-3/task-3-10-bp.png[]
+
+[#create-branch-continue-bp]
+==== Configuring the branch with continuing the business process
+
+On the branch that goes from the `Are data present?` gateway to the user task `Sign laboratory data` (see xref:#create-user-task-lab-data-signing[]_ below), configure the following parameters:
+
+. Leave the *Id* field with its default value.
+. In the *Name* field, enter `no`.
+. In the *Condition Type* field, select `Expression`.
+. In the *Expression* field, enter `${response.value.responseBody.elements().isEmpty()}`.
+
++
+image:study-project/task-3/task-3-create-branch-continue-bp.png[]
+
+[#create-user-task-lab-data-signing]
+==== Creating the user task for data signing
+
+Create a _User Task for data signing_. Follow these steps:
+
+. Define the task type by clicking the key icon and choosing *User Task* from the menu.
+
+. Click `Open Catalog`, select the *Officer Sign Task* template, and press *Apply* to confirm.
+
+. In the settings panel on the right, fill in the following fields:
+
+* In the *Id* field, enter `signLabFormActivity`.
+* In the *Name* field, enter `Sign laboratory data`.
+* In the *Form  key* field, enter `add-lab-sign-lab-data`.
+* In the *Assignee* field, enter `${initiator`}.
+* In the *Form data pre-population* field, enter `${submission('addLabFormActivity').formData}`.
+
++
+image:study-project/task-3/task-3-create-user-task-lab-data-signing.png[]
+
+[#create-script-task-prepare-data-record-transient-var]
+==== Creating the script task "Preparing data for record (transient var)"
+
+Create a new Script Task to prepare data for record. Follow these further configurations:
+
+. Select the rectangle with the User Task created in the xref:#create-user-task-lab-data-signing[previous step] and append a new task by clicking the *Append Task* icon.
+
+. Define the task type by clicking the key icon and choosing *Script Task* from the menu.
+
+. Select the added Script Task and configure the following parameters:
+
+* In the *Id* field, enter `convertSignFormDataToDataFactoryFormatActivity`.
+* In the *Name* field, enter `Preparing Data for Record (transient var`).
+* In the *Script Format* field, select `groovy` as the scripting language.
+* In the *Script Type* field, choose `InlineScript`.
+* Insert the groovy script directly into the *Script* field.
++
+[%collapsible]
+.*_Script. Click to expand_*
+====
+[source,groovy]
+----
+def signedFormData = submission('signLabFormActivity').formData
+
+signedFormData.prop('oblast', signedFormData.prop('oblast').prop('code').value())
+
+signedFormData.prop('koatuuId', signedFormData.prop('koatuu').prop('koatuuId').value())
+signedFormData.deleteProp('koatuu')
+signedFormData.prop('ownershipId', signedFormData.prop('ownership').prop('ownershipId').value())
+signedFormData.deleteProp('ownership')
+
+if (signedFormData.hasProp('premisesFile')
+    && !signedFormData.prop('premisesFile').isNull()
+    && !signedFormData.prop('premisesFile').elements().isEmpty()) {
+    signedFormData.prop('premisesFile', signedFormData.prop('premisesFile').elements()[0])
+} else {
+    signedFormData.prop('premisesFile', null as String)
+}
+
+if(signedFormData.hasProp('accreditationFile')
+    && !signedFormData.prop('accreditationFile').isNull()
+    && !signedFormData.prop('accreditationFile').elements().isEmpty()) {
+    signedFormData.prop('accreditationFile', signedFormData.prop('accreditationFile').elements()[0])
+} else {
+    signedFormData.prop('accreditationFile', null as String)
+}
+set_transient_variable('dataPayload', signedFormData)
+----
+====
+
++
+image:study-project/task-3/task-3-create-script-task-prepare-data-record-transient-var.png[]
+
+[#create-call-activity-sign-data-by-system-key]
+==== Modeling the service task for data signing with the system key
+
+Create a service task for data signing with the system key and configure the corresponding integration extension. Follow these steps:
+
+. Select the rectangle with the [.underline]#script task# modeled in the previous step and append a new task by clicking the *Append Task* icon.
+
+. Define the task type by clicking the key icon and choosing *Service Task* from the menu.
+
+. In the settings panel on the right, click `*Open Catalog*` to open the list of available delegate templates.
+
+. From the list received, select the *System signature by DSO service* template, which should be used for data signing with the system key.
+
+. In the settings panel on the right, go to the *General* tab and configure the delegate parameters:
+
+* In the *Name* field, enter the task name as `Sign data with system key`;
+
+* In the *Payload* field, pass the data that needs to be signed with the system signature as `${dataPayload}`.
+
+* In the *X-Access-Token source* field, pass the access token of the person currently executing the task with the ID `'signLabFormActivity'` as `${completer('signLabFormActivity').accessToken}`.
++
+[WARNING]
+====
+After the completion of the first User Task, try using the *`completer('<task_id>')`* function to retrieve user data, instead of `initiator()`.
+
+The access token is taken from either the initiator (e.g., `$initiator().accessToken`) OR the executor of the last User Task (e.g., `${completer('taskDefinitionId').accessToken}`).
+
+The JWT token has a validity period of 300 seconds. If the token of the initiator who started the business process is specified, and the user does not perform the task for a long time, the token will expire, and the business process will need to be restarted.
+
+For more details on JUEL functions, you can refer to the JUEL functions at xref:registry-develop:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[].
+====
+
+* In the *Result variable* field, specify the name of the variable to which the digital signature of the specified data will be recorded as `system_signature_ceph_key`.
+
++
+image:study-project/task-3/task-3-create-call-activity-sign-data-by-system-key.png[]
+
+[#create-service-task-save-data-to-data-factory]
+==== Creating the service task for saving data to the data factory
+
+At this stage, you need to _create and configure a new service task for saving data to the data factory_. Follow the steps below:
+
+. Using the example from xref:#create-service-task-search-lab-data[], create a new service task `Save data to data factory` by clicking the key icon and choosing *Service Task* from the menu.
+
+. Click `Open Catalog`, select the *Create entity in data factory* template, and press *Apply* to confirm.
++
+image:study-project/task-3/task-3-24-bp-choose-temp.png[]
+
+. In the settings panel on the right, configure the following parameters:
+
+* In the *Id* field, enter `sendLabToDataFactoryActivity`.
+* In the *Name* field, enter `Save data to data factory`.
+* In the *Resource* field, specify `laboratory`.
++
+[NOTE]
+====
+
+In this example, the resource name corresponds to the table name `laboratory` in the database.
+
+The *Resource* field is used to determine the name of the resource (endpoint) in the data factory to which the data will be sent.
+
+Please note that when modeling the business process, you should use resource names with a dash `"-"` (instead of an underscore `"_"`) that consist of two or more words.
+
+For example: ::
+
+Resource name in the business process:
+`laboratory-test`
+====
+
+* In the *Payload* field, enter `${dataPayload}` as the data to be saved.
+
+* In the *X-Access-Token* field, enter `${completer('signLabFormActivity').accessToken}`.
++
+[WARNING]
+====
+
+After the completion of the first user task, try using the *`completer('<task_id>')*` function to retrieve user data, instead of `initiator()`.
+
+The access token is taken from either the initiator (e.g., `$initiator().accessToken)` or the executor of the last user task (e.g., `${completer('taskDefinitionId').accessToken}`).
+
+The JWT token has a validity period of 300 seconds. If the token of the initiator who started the business process is specified, and the user does not perform the task for a long time, the token will expire, and the business process will need to be restarted.
+
+For more details on JUEL functions, you can refer to xref:registry-develop:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[].
+====
+
+* In the *X-Digital-Signature source* field, enter `${sign_submission('signLabFormActivity').signatureDocumentId}`.
+
+* In the *X-Digital-Signature-Derived source* field, enter `${system_signature_ceph_key}`.
+
+* In the *Result Variable* field, specify `response`, the variable to which the server's response will be recorded, if applicable.
+
++
+image:registry-develop:study-project/task-3/task-3-24-bp.png[]
+
+[#create-service-task-create-entity-end]
+==== Creating the service task for setting the business process result
+
+At this stage, you need to _create and configure a service task that will set the result of the business process_.
+
+. Using the example from xref:#create-service-task-save-data-to-data-factory[], model a new service task `Execution result: Laboratory created` by clicking the key icon and choosing *Service Task* from the menu.
+
+. Click *Open Catalog*, select the *Define business process status* template, and press *Apply* to confirm.
++
+image:study-project/task-3/task-3-25-bp-choose-temp.png[]
+
+. In the settings panel on the right, configure the following parameters:
+
+** In the *Name* field, enter `Execution result: Laboratory created`.
+** In the *Status* field, enter `Laboratory created`!.
+
++
+image:registry-develop:study-project/task-3/task-3-25-bp.png[]
+
+[NOTE]
+====
+The *Name* field has an informative value. "Execution result: Laboratory created!" will be displayed on the portal in the *Status  of the completed business process* field, informing us about the completion of a certain business process.
+
+.Example
+image::user:notifications/notifications-success-01.png[]
+====
+
+[#create-task-entity-finish]
+==== Creating the business process completion event
+
+At this stage, you need to _create an event that will mark the completion of the main business process_.
+
+. Attach and configure the event for completing the business process.
+
+. In the settings panel on the right, for the `Name` parameter, enter `Laboratory created`.
+
+image:registry-develop:study-project/task-3/task-3-26-bp.png[]
+
+TIP: As a result, you will have a complex business process modeled.
+
+[#save-bp-schema]
+==== Saving the modeled business process schema
+
+After completing the modeling process, save the obtained business process schema with the name _add-lab.bpmn_ to the *_bpmn_* folder in the Gerrit repository. To do this, in the top-left corner, open the *File* menu, select *Save File As..*., and enter the corresponding name and path.
+
+[#forms-modeling]
+=== Form modeling
+
+[TIP]
+====
+During the form modeling stage, you need to create and link JSON forms to the previously modeled tasks within the business process.
+
+Forms are linked to business processes by the service name.
+
+Use the files _link:{attachmentsdir}/study-project/task-3/bp-forms/add-lab-bp-add-lab.json[add-lab-bp-add-lab.json]_ and _link:{attachmentsdir}/study-project/task-3/bp-forms/add-lab-sign-lab-data.json[add-lab-sign-lab-data.json]_  with the modeled forms as examples.
+====
+
+[#form-insert-data]
+==== Creating the data entry form
+
+First, _create a form for data entry by the user_. Follow these steps:
+
+. Access the *Administrative portal*.
++
+image::registry-develop:bp-modeling/forms/admin-portal-form-modeling-step-1.png[]
+
+. Create a new candidate version named *Task 3* according to our learning assignment number.
++
+image:registry-develop:study-project/task-3/task-3-011.png[]
++
+image:registry-develop:study-project/task-3/task-3-012.png[]
+
+. Go to the *UI forms* section. To create a new form for the business process, click the *`Create new form`* button:
++
+image:registry-develop:study-project/task-3/task-3-013.png[]
+
+* In the new window, in the *Business form name* field, enter the name corresponding to the modeled xref:#create-task-add-lab-data[user task] -- `Add laboratory information`.
+
+* Fill in the *Form name* field with the value `add-lab-bp-add-lab` (must match the value in the *Form key* field of the same user task).
++
+image:study-project/task-3/task-3-27-forms-name.png[]
+
+. Go to the *Constructor* tab.
+
+. From the components panel on the left, drag the *Text Field* component to the modeling panel and perform further settings:
++
+image:study-project/task-3/task-3-27-forms-drag-text-field.png[]
+
+* In the new window, go to the *Display* tab and fill in the *Label* field with `Laboratory name`:
++
+image:registry-develop:study-project/task-3/task-3-27-forms.png[]
+
+* Go to the *Validation* tab and set the `Required` parameter to `true`:
++
+image:registry-develop:study-project/task-3/task-3-28-forms.png[]
+
+* Go to the *API* tab and fill in the *Property Name* field with `name`.
++
+[NOTE]
+====
+The *Property Name* field value must be unique.
+====
+
+* Click the *`Save`* button to save the changes:
++
+image:registry-develop:study-project/task-3/task-3-29-forms.png[]
++
+[NOTE]
+====
+Similarly, model text fields (*Text Field*) for `EDRPOU or RNOKPP Code` (UA-specific), `Address`, `Phone`, and `Manager`.
+====
+
+. From the components panel on the left, drag the *Checkbox* component to the modeling panel and perform further settings:
++
+image:study-project/task-3/task-3-30-forms-drag-checkbox.png[]
+
+* Go to the *Display* tab and fill in the *Label* field with `Accreditation available`:
++
+image:registry-develop:study-project/task-3/task-3-30-forms.png[]
+
+* Go to the *API* tab and fill in the *Property Name* field with `accreditationFlag`.
+
+* Click the *`Save`* button to save the changes:
++
+image:registry-develop:study-project/task-3/task-3-31-forms.png[]
+
+. From the components panel on the left, drag the *File* component to the modeling panel and perform further settings:
++
+image:study-project/task-3/task-3-32-forms-drag-file.png[]
+
+* Go to the *Display* tab and fill in the *Label* field with `Premises documents`:
++
+image:registry-develop:study-project/task-3/task-3-32-forms.png[]
+
+* Go to the *File* tab and fill in the following fields:
+
+** In the *Storage* field, specify `Url`.
+** In the *Url* field, specify `/documents`.
++
+image:registry-develop:study-project/task-3/task-3-33-forms.png[]
+
+** In the *File Pattern* field, specify `application/pdf,image/jpeg,image/png`.
+** In the *File Minimum size* field, specify `0KB`.
+** In the *File Maximum size* field, specify `50MB`.
++
+image:registry-develop:study-project/task-3/task-3-34-forms.png[]
+
+* Go to the *Data* tab and leave the *Multiple Values* field empty, i.e., with the value `False`:
++
+image:registry-develop:study-project/task-3/task-3-35-forms.png[]
+
+* Go to the *API* tab and fill in the *Property Name* field with `premisesFile`.
+
+* Click the *`Save`* button to save the changes:
++
+image:registry-develop:study-project/task-3/task-3-36-forms.png[]
+
+. Perform the settings to obtain information from the *Region* (`oblast`) dictionary. From the components panel on the left, drag the Select component to the modeling panel.
++
+image:study-project/task-3/task-3-37-forms-drag-select.png[]
+
+* Go to the *Display* tab and fill in the Label field with the value `Region`:
++
+image:registry-develop:study-project/task-3/task-3-41-forms.png[]
+
+* Go to the *Data* tab and fill in the following fields:
+
+** у полі `Data Source Type` вкажіть значення `URL`;
+** у полі `Data Source URL` вкажіть `/officer/api/data-factory/koatuu-obl-contains-name`,
+** In the *Data Source Type* field, specify the value `URL`.
+** In the *Data Source URL* field, enter `/officer/api/data-factory/koatuu-obl-contains-name`,
++
+[TIP]
+====
+_where_:
+
+* `/officer indicates` that the query to the directory will be executed from the Officer portal;
+* `/api/data-factory/` indicates the path to the data factory;
+* `koatuu-obl-contains-name` is the search condition to obtain data from the directory of regions that was modeled and added to the repository.
+====
+
+** In the *Value Property* field, enter the value `code`.
++
+image:registry-develop:study-project/task-3/task-3-42-forms.png[]
+** у полі `Item Template` вкажіть `<span>{{ item.name }}</span>`,
+** In the *Item Template* field, enter `<span>{{ item.name }}</span>`,
++
+[TIP]
+====
+where `name` is the parameter name that returns the search condition and will be displayed on the form.
+====
++
+image:registry-develop:study-project/task-3/task-3-43-forms.png[]
+
+* Go to the *Validation* tab and set the flag for the `Required` parameter to `True`.
+
+* Go to the *API* tab and fill in the *Property Name* field with the value `region`.
++
+image:registry-develop:study-project/task-3/task-3-44-forms.png[]
+
+* Click the *`Save`* button to save the changes.
+
+. Configure the dependent component *Select*. Drag the *Select* component from the component panel on the left to the modeling panel and perform further settings to obtain information from the directory:
++
+image:study-project/task-3/task-3-37-forms-drag-select.png[]
+
+* Go to the *Display* tab and fill in the *Label* field with the value `Settlement name`:
++
+image:registry-develop:study-project/task-3/task-3-45-forms.png[]
+
+* Go to the *Data* tab and fill in the following fields:
+
+** In the *Data Source Type* field, enter `URL`.
+** In the *Data Source URL* field, enter `/officer/api/data-factory/koatuu-np-starts-with-name-by-obl`,
++
+[TIP]
+====
+_where_:
+
+* `/officer` indicates that the query to the directory will be executed from the Officer portal;
+* `/api/data-factory/` indicates the path to the data factory;
+* `koatuu-np-starts-with-name-by-obl` is the search condition to obtain data from the directory of settlements that was modeled and added to the repository.
+====
+
+** In the *Value Property* field, enter `koatuuId`.
++
+image:registry-develop:study-project/task-3/task-3-46-forms.png[]
++
+
+** In the `Filter Query` field, enter `level1={{data.oblast.code}}`,
++
+[TIP]
+====
+_where_:
+
+* `level1` is the input parameter for the endpoint `koatuu-np-starts-with-name-by-obl`;
+* `{{data.oblast.code}}` is the path to obtain data from `data.Property name.Value Property` from the previous Select component.
+====
+
+** In the *Item Template* field, enter `<span>{{ item.name }}</span>`,
++
+[TIP]
+====
+where `name` is the parameter name that returns the search condition and will be displayed on the form.
+====
+
+** In the *Refresh Options On* field, enter `Region` (the current value will be removed when the value in the Region field changes);
+
+** Set the flag for the `Clear Value On Refresh Options` parameter to `True`.
++
+image:registry-develop:study-project/task-3/task-3-47-forms.png[]
+
+* Go to the *Validation* tab and set the flag for the `Required` parameter to `True`.
+
+* Go to the *API* tab and fill in the *Property Name* field with the value `koatsu` (UA-specific).
+
+* Click the *`Save`* button to save the changes.
+
+. Perform the configurations to *select data from the ownership dictionary*. To do this:
+
+* From the components panel on the left, drag the *Select* component to the modeling panel and perform further settings to obtain information from the directory:
++
+image:study-project/task-3/task-3-37-forms-drag-select.png[]
+
+* Go to the *Display* tab and fill in the *Label* field with `Ownership form`:
++
+image:registry-develop:study-project/task-3/task-3-37-forms.png[]
+
+* Go to the *Data* tab and fill in the following fields:
+
+** In the *Data Source Type* field, specify `URL`.
+** In the *Data Source URL* field, specify `/officer/api/data-factory/ownership-contains-name`, where:
++
+[TIP]
+====
+_where_:
+
+* `/officer` indicates that the request to the directory will be executed from the Officer portal.
+* `/api/data-factory/` indicates the path to the data factory.
+* `ownership-contains-name` is the name of the search condition to obtain data from the ownership directory that was modeled and added to the repository.
+====
+
+** In the *Value Property* field, specify `ownershipId`.
++
+image:registry-develop:study-project/task-3/task-3-38-forms.png[]
+
+** In the *Item Template* field, specify `<span>{{ item.name }}</span>`,
++
+[TIP]
+====
+
+where `name` is the name of the parameter that returns the search condition and will be displayed on the form.
+====
++
+image:registry-develop:study-project/task-3/task-3-39-forms.png[]
+
+* Go to the *Validation* tab and set the `Required` parameter to `true`.
+
+* Go to the *API* tab and fill in the *Property Name* field with `ownership`:
++
+image:registry-develop:study-project/task-3/task-3-40-forms.png[]
+
+* Click the *`Save`* button to save the changes.
+
+. Save the form by clicking the *`Create form`* button in the upper right corner:
++
+image:registry-develop:study-project/task-3/task-3-48-forms.png[]
+
+[#form-data-signing]
+==== Creating a form for data signature
+
+After completing the xref:#form-insert-data[previous stage] of creating a form for data entry, _create another form for data signature_.
+
+To do this, copy the xref:#form-insert-data[previously modeled form] by clicking the *copy icon*—this will allow you to create a form from a ready-made template.
+
+image:registry-develop:study-project/task-3/task-3-49-forms.png[]
+
+_Configure the form parameters_:
+
+. Enter the name of the corresponding User Task -- `Sign laboratory data` in the *Business form name* field;
+
+. Fill in the *Form name* field with the value `add-lab-sign-lab-data` (corresponding to the *Form key* field value of the same user task);
+
+. In all components:
+
+* On the *Display* tab, set the flag for the `Disabled` parameter.
+* Click the *`Save`* button to save the changes.
++
+image:registry-develop:study-project/task-3/task-3-50-forms.png[]
+
+. Save the form by clicking the *`Save changes`* button in the upper right corner.
+
+==== Uploading modeled forms of the business process to the local directory
+
+Upload the forms by clicking the _upload icon_ and place them in the regulatory folder *_forms_* of the project in the local Gerrit repository.
+
+image:registry-develop:study-project/task-3/task-3-51-forms.png[]
+
+[#bp-access]
+=== Modeling access to the business process
+
+[TIP]
+====
+At this stage, it is necessary to provide access to the business process in the Officer portal for the standard `officer` role.
+
+Access parameters are configured in the configuration file named _link:{attachmentsdir}/study-project/task-3/bp-access/officer.yml[officer.yml]_ in the _bp-auth_ directory.
+====
+
+Edit the file _bp-auth/officer.yml_ by adding the following parameters:
+
+.Example. Configuring access to the business process in the Officer portal
+[source,yaml]
+----
+authorization:
+  realm: 'officer'
+  process_definitions:
+    - process_definition_id: 'add-lab-test'
+      process_name: 'Laboratory creation'
+      process_description: 'Regulation for creating laboratories'
+      roles:
+        - officer
+    - process_definition_id: 'add-lab'
+      process_name: 'Laboratory creation'
+      process_description: 'Regulation for creating laboratories'
+      roles:
+        - officer
+----
+
+[save-officer-yml]
+==== Saving the access configuration file
+
+Save the _officer.yml_ file to the regulatory folder *_bp-auth_* of the project in the local Gerrit repository.
+
+== Uploading regulation files to the remote Gerrit repository
+
+For successful deployment of the business process, forms, and applying the correct access settings to the business process in the target environment, the regulation administrator needs to upload the saved local regulation files to the remote Gerrit code repository.
+
+To do this, follow the steps: xref:registry-develop:registry-admin/regulations-deploy/registry-admin-deploy-regulation.adoc[].

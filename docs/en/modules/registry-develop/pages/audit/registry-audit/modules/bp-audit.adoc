@@ -1,0 +1,458 @@
+= Business process audit
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+|===
+|Name | Criticality
+
+|<<_bp_01>> |Medium
+|<<_bp_02>> |High
+|<<_bp_03>> |High
+|<<_bp_04>> |High
+|<<_bp_05>> |High
+|<<_bp_06>> |Medium
+|<<_bp_07>> |Medium
+|<<_bp_08>> |High
+|<<_bp_09>> |High
+|<<_bp_10>> |Low
+|<<_bp_11>> |Low
+|<<_bp_12>> |Low
+|<<_bp_13>> |Low
+|<<_bp_14>> |High
+|<<_bp_15>> |High
+|<<_bp_16>> |Medium
+|<<_bp_17>> |Medium
+|<<_bp_18>> |High
+
+|===
+
+== Audit cases
+
+[#_bp_01]
+=== BP-01. X-Access-Token in service tasks
+IMPORTANT: Criticality: Medium
+
+Description ::
+In _Service Tasks_, always use the `X-Access-Token` obtained within the current business process transaction.
+When using JUEL functions to retrieve the user's authorization token (for example,
+`completer('ActivityId').accessToken`, `initiator().accessToken`), make sure that the function call and the corresponding activity
+(such as a _User Task_ or _Start Event_) belong to the same transaction.
+
+Impact ::
+* The user’s authorization token may expire before it is used in the business process.
+* Potential errors are difficult to detect during development due to missing simulation conditions, such as:
+** prolonged waiting time for task execution (5+ minutes),
+** long-running transactions,
+** temporary service unavailability, etc.
+
+Recommendations ::
+* Use the user’s token from the activity that is closest to the point where it is necessary.
+* Alternatively, use the system user’s token — `system_user().accessToken`.
+
+NOTE: If the system user’s token is used, the system user will be recorded in the change history data.
+If it is important to preserve information about the original initiator, consider extending the data model to explicitly store the initiator's identifier.
+
+[#_bp_02]
+=== BP-02. Long-running business process transactions
+IMPORTANT: Criticality: High
+
+Description ::
+If a business process transaction is expected to run for a long time, it should be split into shorter transactions using asynchronous tasks.
+When modeling business processes, avoid long-running transactions — they complicate error handling, increase a resource load, and can lead to system failures.
+
+Impact ::
+Long-running transactions can result in the following issues:
+* Exhaustion of the database connection pool, which blocks the execution of other processes.
+* The retry policy will rerun the entire transaction, re-executing all tasks, including those already completed.
+* The `X-Access-Token` used in service tasks may expire during a long-running transaction.
+* If the transaction starts with a user task:
+** The user will see a *loader* and won’t receive a success message until the transaction completes.
+** Kafka transactions are tied to transactions in the *Process Engine* and have a 30-second timeout.
+** Proxy servers limit request execution time to 30 seconds; after that, the user’s request will be rejected.
+
+Recommendations ::
+* Use the attributes `camunda:asyncBefore="true"` or `camunda:asyncAfter="true"` on tasks to enable *asynchronous continuation* of the business process.
+* This ensures the creation of a new transaction at each step.
+* When modeling asynchronous tasks, consider the dependencies related to the user token (see <<_bp_01>>) and transient variables (see <<_bp_07>>).
+
+TIP: For more details about transactions in Camunda, see the
+https://docs.camunda.org/manual/7.19/user-guide/process-engine/transactions-in-processes/[official documentation].
+
+[#_bp_03]
+=== BP-03. Transactions in loops
+IMPORTANT: Criticality: High
+
+Description ::
+If a business process contains a loop that performs many iterations, each iteration should run in a separate transaction.
+Long-running transactions are often caused specifically by loops. In such cases, you should apply asynchronous execution for each iteration.
+
+Impact ::
+* The *Camunda Engine* holds a database connection for the entire duration of the loop, creating the risks described in <<_bp_02>>.
+* If an error occurs on the 100th iteration, the entire transaction will restart from the first iteration, re-executing all previously completed actions.
+
+Recommendations ::
+* Add the `camunda:asyncBefore` attribute to the first activity inside the loop (for example, a service task or a start event in the case of a subprocess).
+* Alternatively, you can use `camunda:asyncAfter` on the last activity in the loop.
+* Avoid using *transient variables* obtained before the first operation in the loop, as they are not persisted across transactions.
+
+[#_bp_04]
+=== BP-04. Retry strategy (retry time cycle)
+IMPORTANT: Criticality: High
+
+Description ::
+It’s recommended to override the `retry time cycle` strategy for asynchronous tasks.
+By default, if an error occurs during the execution of an asynchronous task, the *job executor* performs three additional attempts without any delay between them.
+In most cases, the error is caused by a call to an internal or external service (outside the system) that might be temporarily unavailable.
+Immediate retries do not improve the situation — as a result, the task is marked as *failed* and can only be restarted manually by the *registry administrator* using the xref:registry-develop:registry-admin/registry-admin-bp-management-cockpit.adoc[Business Process Administration Service].
+
+Impact ::
+* Immediate retries only increase the load on an already unstable service.
+* There’s a high risk of decreased reliability in the business process execution.
+* Administrator intervention is required to resume the task execution.
+
+Recommendations ::
+* For asynchronous tasks, set the `camunda:failedJobRetryTimeCycle` attribute with a delay between retries. For example, `R5/PT5M` — five attempts with a 5-minute interval.
+* Adjust the parameter value during operations as needed, depending on the behavior of the business process and the stability of the integrations.
+
+TIP: For details on configuring retry cycles, see the
+https://docs.camunda.org/manual/7.19/user-guide/process-engine/the-job-executor/#retry-time-cycle-configuration[official Camunda documentation].
+
+[#_bp_05]
+=== BP-05. Limit for search conditions
+
+IMPORTANT: Criticality: High
+
+Description ::
+When using delegates that search for entities in the data factory or the _User and Role Management Service_, you must explicitly set the `limit` parameter that defines the maximum number of records to retrieve.
+During development, tables often contain only a few records, so the `limit` parameter may seem optional.
+However, in production, such queries can return much larger datasets, potentially degrading system performance.
+
+Impact ::
+If no `limit` parameter is set in a service task, retrieving a large amount of data can cause:
+
+* Degradation of the _User and Role Management Service_, impacting the performance of functions related to system login and user operations in the portal (such as updating the user token) for all registries running on the same Platform instance.
+
+* Additional load on:
+** The relational database
+** The synchronous data management service of the registry
+** The user and role management service
+** The business process execution service
+
+* Increased execution time for:
+** Individual queries
+** The business process
+** The business process transaction
+
+* Excessive use of database connections, potentially leading to query backlogs and further delays in both query and process execution.
+
+Recommendations ::
+Always set the `limit` parameter in service tasks that perform data searches.
+Possible usage scenarios are described below.
+
+==== Scenario 1: search for a limited number of elements
+
+If the business logic requires only a specific number of results — for example, just the first item in the list — limit the query to return only that amount.
+
+==== Scenario 2: processing all data from the search results
+
+If you need to process all results, implement stepwise (batch) processing with a loop and pagination when using service tasks for data searches.
+
+==== Scenario 3: external integrations
+
+For queries from external systems, it’s better to use the API to read registry data directly, without involving the business process — but always with *mandatory pagination*.
+
+If you still use a business process, ensure that pagination parameters are included as input attributes of the process and that the integration system implements pagination logic on its side.
+
+[#_bp_06]
+=== BP-06. Complex logic in script tasks
+IMPORTANT: Criticality: Medium
+
+Description ::
+When using script tasks, avoid implementing complex logic — keep them as simple as possible.
+Script tasks allow you to implement sophisticated logic using the full capabilities of the Groovy language. While this can be useful in the short term, especially during prototype development, it introduces several risks that complicate the maintenance, testing, and evolution of business processes.
+
+Impact ::
+Key risks associated with complex logic in script tasks include:
+* *Maintainability*: Complex logic is hard to understand, maintain, and debug. It makes process management more difficult, slows development, and increases the likelihood of errors.
+* *Testing*: Scripts with intricate logic are difficult to test in isolation, making it harder to ensure process quality and reliability.
+* *Performance*: Complex logic in _script tasks_ can degrade performance, especially if it involves resource-intensive operations or long-running activities.
+* *Error handling*: Handling errors within script tasks can be challenging, further complicating maintenance and understanding of the script.
+
+Recommendations ::
+* Limit script tasks to simple, concise, and predictable operations.
+* Use DMN and BPMN features for implementing any business logic in the process.
+* Use the built-in *Camunda Spin* capabilities for working with
+https://docs.camunda.org/manual/7.19/user-guide/data-formats/xml/[XML] and
+https://docs.camunda.org/manual/7.19/user-guide/data-formats/json/[JSON] data formats.
+
+[#_bp_07]
+=== BP-07. Working with transient variables
+IMPORTANT: Criticality: Medium
+
+Description ::
+When modeling business processes, keep in mind that some variables may be marked as `transient` and are not persisted across transactions.
+Business processes often use various _service tasks_ that call both internal system components and external services, such as the _Data Factory_, the _User and Role Management Service_, the _Signature Service_, or _Trembita_.
+The results of such calls may include user personal data and, for security reasons, are stored as `transient` variables available only within the current business process transaction.
+
+Impact ::
+The result of a _service task_ stored as a `transient` variable will be lost after the transaction boundary is crossed — for example, when moving to a _user task_, asynchronous continuation, or waiting for a message (_Message catch event_, etc.).
+
+Recommendations ::
+* Process the result of the _service task_ immediately after it is obtained, while still within the current transaction.
+* If the result needs to be used in subsequent transactions and *does not contain personal data*, store it in a _persistent process variable_.
+* If the result contains both personal and general data but only non-personal parts (for example, an entity identifier) needed later, *separate them and store the non-personal part as a distinct persistent variable*.
+
+TIP: For more details on `transient` variables in _Camunda_, see the
+https://docs.camunda.org/manual/7.19/user-guide/process-engine/variables/#transient-variables[documentation page].
+
+[#_bp_08]
+=== BP-08. Multiple data factory calls in a single transaction
+IMPORTANT: Criticality: High
+
+Description ::
+To save a complex entity and perform a transactional write across multiple tables, use the *_nested entity_* feature.
+When modeling a business process, you may need to update several database tables within a single database transaction. *Note: this refers to the database transaction, not the business process transaction*.
+In such cases, you must ensure atomicity: either all tables are updated or none.
+
+At the business process execution level, it’s not possible to combine multiple _data factory_ calls into a single database transaction. As a result, sequential calls within the same process may lead to inconsistent records in the database.
+
+Impact ::
+* There’s a risk of creating inconsistent data if an error occurs between individual _data factory_ calls. Depending on the logic and regulatory model, this can fully block further work with the affected record.
+* If an error occurs, the business process retry policy may restart the process from the beginning, leading to duplicate record inserts in one of the tables.
+
+Recommendations ::
+* To save complex entities and perform transactional updates across multiple database tables, use the _nested entity_ (`nested entity`) feature.
+
+* If the nested entity feature is not enough, consider the following alternative approaches:
+** Model compensation logic in the business process. If an error occurs, roll back the changes by calling the _data factory_ to delete the created records or restore the previous state.
+** Configure each database insert with _asynchronous continuation_ and enable the retry policy. This allows the system to complete the conditional insert transaction after the cause of the error is resolved.
+** Avoid placing multiple sequential _data factory_ calls in a single business process when they are separated by intermediate tasks (for example, user tasks, scripts, or external service calls).
+Each additional step increases the risk of an error between inserts and the potential loss of data consistency.
++
+*The more steps between write operations, the greater the risk* that something will fail and leave the process in an inconsistent state.
+
+[#_bp_09]
+=== BP-09. Variable initialization and usage
+IMPORTANT: Criticality: High
+
+Description ::
+If you need to create an additional variable during the execution of a business process, initialize it as close as possible to the point where it will be used.
+Also, avoid storing large variables, as this can negatively affect process performance and make maintenance more difficult.
+
+Impact ::
+* Excessive memory usage due to storing large _persistent variables_.
+* Increased query execution time in the _Camunda operational database_.
+* Reduced readability and increased complexity in understanding the business process.
+* More challenging identification and debugging of potential errors.
+
+Recommendations ::
+* Avoid storing large variables.
+For _string variables_, there is a `4000`-character limit at the Camunda database level
+(see the documentation: https://docs.camunda.org/manual/latest/user-guide/process-engine/variables/).
+
+* Avoid using variables of type `Object`.
+
+* Avoid creating unnecessary variables in the process.
+Store only those that are critically needed.
+For official guidance, see the
+https://docs.camunda.io/docs/components/best-practices/development/handling-data-in-processes/#storing-just-the-relevant-datas[Camunda documentation].
+
+* Initialize variables immediately before use. Initialization includes both explicitly creating a variable and using tasks whose results are stored as variables.
+
+[#_bp_10]
+=== BP-10. Identifiers for business process elements
+IMPORTANT: Criticality: Low
+
+Description ::
+All elements in a BPMN diagram must have technically meaningful and clear identifiers.
+
+Impact ::
+_Business process element identifiers_ regularly appear in technical logs and traces.
+Using logical and clear names greatly simplifies analysis, troubleshooting, and reading error logs.
+
+Recommendations ::
+* Review the names of key elements: _processes_, _activities_, _messages_, and _error identifiers_.
+* Pay attention to _gateways_ and their _sequence flows_, which should also have clear and unambiguous identifiers.
+* Follow established naming conventions —
+see the
+https://docs.camunda.io/docs/components/best-practices/modeling/naming-technically-relevant-ids/#using-naming-conventions-for-bpmn-ids[official recommendations].
+
+[#_bp_11]
+=== BP-11. Creating readable BPMN diagrams
+IMPORTANT: Criticality: Low
+
+Description ::
+When modeling _BPMN diagrams_, follow widely accepted principles and best practices for building models that improve clarity and make them more effective for use.
+
+Impact ::
+* Improves the readability and understanding of the BPMN diagram.
+* Facilitates onboarding for new team members.
+* Makes the BPMN diagram a clear and effective tool for communicating with stakeholders.
+* When publishing a service description publicly, it eliminates the need for additional formatting.
+
+Recommendations ::
+Follow the official _Camunda_ recommendations for
+https://docs.camunda.io/docs/components/best-practices/modeling/creating-readable-process-models/#modeling-from-left-to-rightp[creating readable process models].
++
+Below are some key recommendations:
+
+* https://docs.camunda.io/docs/components/best-practices/modeling/creating-readable-process-models/#labeling-bpmn-elements[Labeling BPMN elements]
+* https://docs.camunda.io/docs/components/best-practices/modeling/creating-readable-process-models/#modeling-symmetrically[Modeling symmetrically]
+* https://docs.camunda.io/docs/components/best-practices/modeling/creating-readable-process-models/#modeling-from-left-to-right[Modeling from left to right]
+* https://docs.camunda.io/docs/components/best-practices/modeling/creating-readable-process-models/#creating-readable-sequence-flows[Creating readable sequence flows]
+* https://docs.camunda.io/docs/components/best-practices/modeling/creating-readable-process-models/#modeling-explicitly[Modeling explicitly]
+* https://docs.camunda.io/docs/components/best-practices/modeling/creating-readable-process-models/#avoiding-lanes[Avoiding lanes]
+* https://docs.camunda.io/docs/components/best-practices/modeling/creating-readable-process-models/#emphasizing-the-happy-path[Emphasizing the happy path]
+
+[#_bp_12]
+=== BP-12. Loops using multi-instance subprocesses
+IMPORTANT: Criticality: Low
+
+Description ::
+When modeling loop logic in business processes, it’s recommended to use _multi-instance subprocesses_ instead of implementing loops through _gateways_ and manual variable management.
+
+Impact ::
+In certain cases, using _multi-instance subprocesses_ improves the readability of the BPMN diagram by moving technical details out of the main business flow.
+This reduces visual complexity and removes the need for constructs such as:
+* Explicit creation and management of iteration variables.
+* Condition checks for loop completion using _gateways_.
+
+Recommendations ::
+* Extract the logic for a single loop iteration into a separate _subprocess_ (`sub-process`).
+* Change the subprocess type to _multi-instance_ (`multi-instance`).
+* Configure the following parameters for the _multi-instance subprocess_:
+** `camunda:collection` — creates a separate subprocess instance for each element in the collection and executes the iteration logic.
+** `camunda:elementVariable` — stores the specific element of the collection for each iteration.
+** `completionCondition` — an additional condition for completing the loop early.
+** `loopCardinality` — the total number of loop iterations, which can be used as an alternative to a collection.
+
+TIP: For more details on _multi-instance subprocesses_, see the
+https://docs.camunda.io/docs/components/modeler/bpmn/multi-instance/[official Camunda documentation].
+
+[#_bp_13]
+=== BP-13. Logging in script tasks
+IMPORTANT: Criticality: Low
+
+Description ::
+In script tasks, developers often use `print` / `println` methods to log data to the console.
+While this is acceptable during business process development, it is not appropriate for production environments.
+
+Impact ::
+Using `print` / `println` in script tasks logs information to the _Process Execution Service_, but this information cannot later be correlated with a specific business process or user request.
+
+Recommendations ::
+* Avoid adding extra logging in script tasks altogether.
+In most cases, logging is only needed by modelers for debugging during the development phase.
+* If logging is still necessary, it’s recommended to initialize `org.slf4j.Logger` and use its methods.
+* *It is also essential to ensure* that the logging process *does not include personal or confidential data*.
+
+[#_bp_14]
+=== BP-14. Authorization tokens for external service calls
+IMPORTANT: Criticality: High
+
+Description ::
+The registry regulation, including the business process (BPMN) files, must not contain any authorization tokens or passwords for external service calls.
+
+Impact ::
+The registry regulation is not a secure storage mechanism, and keeping tokens within it can lead to token leakage and unauthorized use by third parties.
+
+Recommendations ::
+All authorization tokens for external service calls must be registered and managed according to the
+xref:arch:architecture/platform/administrative/control-plane/platform-evolution/registry-regulation-secrets.adoc[guidelines for managing external integration settings and secrets].
+
+[#_bp_15]
+=== BP-15. Timers on user tasks
+IMPORTANT: Criticality: High
+
+Description ::
+During business process execution in the registry, responsible individuals work with _user tasks_ assigned to them.
+In some cases, these tasks may remain uncompleted or be forgotten.
+To avoid "stuck" processes, it’s advisable to use timers that automatically complete the business process after a specified time.
+
+Impact ::
+A significant accumulation of open business processes with _user tasks_ that will no longer be completed leads to an unnecessary system load, inefficient use of resources, and the need for additional cleanup actions to remove running processes.
+
+Recommendations ::
+For _user tasks_ that may be left uncompleted, it’s recommended to use a *Timer boundary event*, which, after the configured time elapses, automatically interrupts the business process and moves it to a completed state.
++
+Additionally, consider isolating critical logic sections into _subprocesses_ and applying timer boundary events directly on those subprocesses.
+
+TIP: For more details on using the _Timer boundary event_, see
+https://docs.camunda.org/manual/7.19/reference/bpmn20/events/timer-events/#timer-boundary-event[Camunda documentation].
+
+[#_bp_16]
+=== BP-16. Reducing code duplication
+IMPORTANT: Criticality: Medium
+
+Description ::
+Avoid duplicating identical sequences of blocks when modeling business processes.
+
+Impact ::
+* Makes the business process harder to visually understand.
+* Increases the time needed for developing and testing the business process.
+* If you need to change one of the duplicated sequences, you’ll have to update all duplicated blocks, leading to extra time costs and a higher risk of errors.
+* Raises the likelihood of introducing mistakes when making changes.
+
+Recommendations ::
+* Extract shared logic into a separate subprocess.
+* Remove duplicated blocks and call the subprocess using a *call activity*.
+* In some cases, duplication can also be avoided by optimizing the business process logic and merging several execution branches into a single unified sequence.
+
+[TIP]
+====
+Learn more about subprocesses here:
+
+* https://docs.camunda.org/manual/7.19/reference/bpmn20/subprocesses/call-activity/[Official Camunda documentation]
+* https://youtu.be/l4w1n2KUR6Q?t=565&si=q2Qb7bK6Wg8b1iNO[Video]
+====
+
+[#_bp_17]
+=== BP-17. Working with business keys
+IMPORTANT: Criticality: Medium
+
+Description ::
+Assign the business key as early as possible in the process execution.
+
+Impact ::
+* Having a business key simplifies searching and filtering business processes:
+** In the _Camunda_ operational database when execution errors occur.
+** In the _Camunda_ history database after the business process has completed.
+
+* If the business key is only set at the end of the process in one of the branches, the following issues may arise:
+** If an error occurs before the business key is set, the process will not have a business key.
+** There’s a risk of forgetting to set the business key in one of the branches.
+** Potential code duplication when setting the business key at the end of each branch (see <<_bp_16>>).
+
+* Including contextual information in the business key makes it easier to identify potential issues during business process execution.
+
+Recommendations ::
+* Set the business key as soon as it can be determined.
+* You can pass contextual information into the business key, such as the _application number_, _contract number_, or the parameters with which the business process was launched or the user task was performed.
+
+NOTE: At the time of writing this document, there is no dedicated mechanism for storing additional contextual information about the business process in the _history table_.
+
+[#_bp_18]
+=== BP-18. Historical events for high-load business processes
+IMPORTANT: Criticality: High
+
+Description ::
+During the execution of business processes, historical events are recorded — including task executions, variable storage, and more.
+Processing this historical trace can place a significant load on the system and even cause errors, especially when many processes are active simultaneously.
+If you expect a high load, adapt the business process accordingly to avoid errors and performance degradation.
+
+Impact ::
+* Increased load on the _asynchronous messaging subsystem_ and the _historical event recording service_ due to the large number of events generated during business process execution.
+This leads to longer delays and potential failures of certain system components.
+
+* Excessive load on the _relational database management subsystem_, which can cause failures in critical services, particularly the _process execution service_, effectively blocking the operation of the registry.
+
+Recommendations ::
+* Identify business processes expected to experience high load (more than `50,000` executions per day).
+
+* For such processes, apply optimizations that *may conflict with the general recommendations in this section* but are justified from a performance standpoint:
+** Minimize the number of tasks executed during the process. Consider replacing _script tasks_ with _execution listeners_ or using _expression language_ (`EL`) to create variables directly at the point of use.
+** Consider eliminating the use of _subprocesses_ and moving their logic directly into the main business process body.
+** Avoid setting the _business key_ and _process execution result_ — for _automated processes_ and processes triggered by external systems, this is a mandatory requirement.

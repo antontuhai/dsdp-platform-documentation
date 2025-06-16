@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: {{ .Values.name }}
+    labels:
+        app: {{ .Values.name }}
+spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: {{ .Values.name }}
+    strategy:
+        type: RollingUpdate
+    template:
+        metadata:
+            labels:
+                app: {{ .Values.name }}
+        spec:
+            serviceAccountName: {{ .Values.name }}
+            containers:
+                - name: {{ .Values.name }}
+                  image: {{ include "ddm-architecture.image" . }}
+                  {{- if .Values.dnsWildcard }}
+                  volumeMounts:
+                    - name: update-demo-registry-vars
+                      mountPath: /docker-entrypoint.d/40-update-demo-registry-vars.sh
+                      subPath: 40-update-demo-registry-vars.sh
+                  env:
+                    - name: REGISTRY_NAME
+                      value: {{ .Values.global.demoRegistryName | default "demo-registry" | quote }}
+                    - name: STAGE_NAME
+                      value: {{ .Values.global.demoRegistryStageName | default "main" | quote }}
+                    - name: CLUSTER_NAME
+                      value: {{ (split "." .Values.dnsWildcard)._1 | quote }}
+                    - name: DNS_WILDCARD
+                      value: {{ .Values.dnsWildcard | quote }}
+                  {{- end }}
+                  imagePullPolicy: Always
+                  ports:
+                      - containerPort: 80
+                        protocol: TCP
+                  livenessProbe:
+                      failureThreshold: 5
+                      initialDelaySeconds: 180
+                      periodSeconds: 20
+                      successThreshold: 1
+                      tcpSocket:
+                          port: 80
+                      timeoutSeconds: 5
+                  readinessProbe:
+                      failureThreshold: 5
+                      initialDelaySeconds: 60
+                      periodSeconds: 20
+                      successThreshold: 1
+                      tcpSocket:
+                          port: 80
+                      timeoutSeconds: 5
+                  resources:
+                      requests:
+                          memory: 500Mi
+                  terminationMessagePath: /dev/termination-log
+                  terminationMessagePolicy: File
+            {{- if .Values.dnsWildcard }}
+            volumes:
+              - name: update-demo-registry-vars
+                configMap:
+                  name: update-demo-registry-vars
+                  defaultMode: 0755
+            {{- end }}
+            dnsPolicy: ClusterFirst
+            restartPolicy: Always
+            schedulerName: default-scheduler
+            securityContext: {}
+            terminationGracePeriodSeconds: 30

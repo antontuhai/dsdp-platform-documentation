@@ -1,0 +1,49 @@
+= Configuring access to the registry's API views
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+In addition to granting access to the registry for other registries or external systems in the Control Plane administrative panel (_see xref:admin:registry-management/control-plane-registry-grant-access.adoc[]_), the registry administrator must open access to views and REST API endpoints generated based on these views, at the data model level.
+
+Setting access to the REST API views of the registry is done using unique access attributes at the Liquibase data model level. This allows access to the registry's API, created from the corresponding views, to other registries on the Platform or external systems.
+
+For this, a particular tag *`<exposeSearchCondition>`* is used.
+
+TIP: A description of the `<exposeSearchCondition>` tag can also be reviewed on the page xref:data-modeling/data/physical-model/liquibase-ddm-ext.adoc[].
+
+== Main attributes
+
+The tag accepts the following attributes: ::
++
+.Attributes of the <exposeSearchCondition> tag
+[%header,cols="3*"]
+|===
+| Attribute | Purpose | Default Value
+
+| `name` | Name of the search criterion | Not specified
+| `platform` | Provides access to views and the REST API of the registry for another registry on the Platform | `false`
+| `externalSystem` | Provides access to views and the REST API of the registry for an external system | `false`
+| `trembita` | Provides access to the registry views for SEV DEIR member services through the "Trembita" BOS interface using the SOAP protocol | `false`
+| `publicAccess` | Determines if there should be public access to the search criterion/view | `false`
+|===
+
+== Examples
+
+._Example of an XML schema with platform, externalSystem, and trembita attributes_
+[source, XML]
+----
+<ext:exposeSearchCondition name="exampleViewName" platform="true" externalSystem="true" trembita="false"/>
+----
+
+._Example of an XML schema with the publicAccess attribute_
+[source, XML]
+----
+<exposeSearchCondition publicAccess="true" name="vpo_person_type_contains_name_public_test"/>
+----
+
+== Recommendations
+
+* All attributes have a default value of `false`. Consider this when working with the `<exposeSearchCondition>` tag.
+* Ensure that the `name` attribute is always specified, as it is essential for identifying the search criterion.

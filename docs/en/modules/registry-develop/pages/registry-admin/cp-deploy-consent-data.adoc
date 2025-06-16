@@ -1,0 +1,311 @@
+= Deploying demo registry with reference examples
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+You can deploy a demo-registry with reference examples of a registry regulations modeling. The structure of such regulations is the same as the typical regulations structure, used for any registry deployed on the Platform.
+
+Regulations of the demo-registry includes reference examples marked with the *`reference-`* prefix, and testing examples marked with *`feature-`* prefix. They can be examples of _.bpmn_ business process schemes, _.json_-forms for process data, _.xml_-schemes for the deployment of registry data models, and other file types.
+
+It's important to remark that these reference examples, as well as other examples, were developed by specialists from the core-team of the Platform. Existing ones are continuously updated, and new ones are added with every release. This approach allows you stay updated on the latest tendencies and practices of regulations modelling, experiment and test different scenarios in controlled environments.
+
+== Deployment of demo-registry and regulations
+
+To deploy a demo-registry and copy regulations with ready examples, take the following steps:
+
+. Create a new *"demo"* registry according to the instructions on the followig page: xref:admin:registry-management/control-plane-create-registry.adoc[].
+
+. Navigate to the *OpenShift* > *Home* > *Projects* console and find *`control-plane`* project.
++
+Open *Networking* > *Routes* section and follow the link to *`control-plane-console`* component.
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-1.png[]
+
+. Navigate to *Control Plane* > *Dashboard* console and follow the link to *Gerrit* central component.
++
+image::admin:registry-management/control-plane-overview.png[]
+
+. Navigate to Gerrit account configuration and find *HTTP Credentials* section.
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-2.png[]
+
+. Generate a new HTTP-password and copy it to Notepad.
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-2-1.png[]
++
+NOTE: This HTTP-password is needed further for authentification in order to clone the _consent-data_ Gerrit-repository.
+
+. Open *Browse* > *Repositories* tab and find *_consent-data_* in the *Filter* field.
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-3.png[]
+
+. Clone the *_consent-data_* repository to your local machine the following way:
+
+* Select the Anonymous HTTP tab (_by default_) and copy the  `Clone with commit-msg hook` command.
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-4.png[]
++
+[IMPORTANT]
+====
+[%collapsible]
+
+.It is imperative to use `commit-msg hook` option when cloning the repository.
+=====
+One of the key elements of Gerrit is using "hooks". Hooks are scripts that are executed before or after particular Git events, like `git commit` or `git push`.
+
+ *Clone with commit-msg hook* command in Gerrit allows you to clone a repository while automatically adding a special `commit-msg hook` to the local repository. This hook automatically generates a unique *Change-Id* for every new commit. Gerrit uses *Change-Id* to monitor different versions of the change.
+=====
+====
+
+* Open https://git-scm.com/downloads[Git Bash] and navigate to the directory where you need to copy _consent-data_:
++
+.Navigation to the target directory
+[source,bash]
+----
+cd <path/to/your/local/directory>
+----
+
+* Paste the copied *Clone with commit-msg hook* command *Clone with commit-msg hook* and press kbd:[Enter].
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-5.png[]
++
+Wait until the repository is completely cloned.
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-6.png[]
+
+. Navigate to the *OpenShift* > *Home* > *Projects* console and find the project with the created *`demo`* demo-registry.
++
+Open the *Networking* > *Routes* section and follow the link to the registry *Gerrit* component.
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-7.png[]
+
+. Navigate to Gerrit account configuration and find *HTTP Credentials* section.
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-2.png[]
+
+. Generate a new HTTP-password and copy it to Notepad.
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-2-1.png[]
++
+NOTE: This HTTP-password is needed further for authentification
+in order to clone and interact with the Gerrit-repository that includes _registry-regulations_ regulations.
+
+. Open *Browse* > *Repositories* tab and find *_registry-regulations_* in the *Filter* field.
++
+NOTE: After deploying the registry, Gerrit will have empty regulations _registry-regulations_. You need to fill it in.
+
+. Clone the *_registry-regulations_* repository to your local machine the following way:
+
+* Select the Anonymous HTTP tab (_by default_) and copy the  `Clone with commit-msg hook` command.
++
+[IMPORTANT]
+====
+[%collapsible]
+
+.It is imperative to use `commit-msg hook` option when cloning the repository.
+=====
+One of the key elements of Gerrit is using "hooks". Hooks are scripts that are executed before or after particular Git events, like `git commit` or `git push`.
+
+*Clone with commit-msg hook* command in Gerrit allows you to clone a repository while automatically adding a special `commit-msg hook` to the local repository. This hook automatically generates a unique *Change-Id* for every new commit. Gerrit uses *Change-Id* to monitor different versions of the change.
+=====
+====
+
+* Open https://git-scm.com/downloads[Git Bash] and navigate to the directory where you need to copy _consent-data_:
++
+.Navigation to the target directory
+[source,bash]
+----
+cd <path/to/your/local/directory>
+----
+
+* Paste the copied *Clone with commit-msg hook* command *Clone with commit-msg hook* and press kbd:[Enter].
++
+Wait until the repository is completely cloned.
+
+. On the local machine copy the contents of _consent-data_ repository, and then paste (replacing original files) it to _registry-regulations_.
++
+IMPORTANT: Be sure to move the contents of _consent-data_ repository without _.git_ system directory.
++
+WARNING: If the demo-registry is not expected to be configured for connection to "Diia", then it is important to delete *_diia_* directory from the _registry-regulations_ repository, which can be found via the following path: _./notifications/diia_. Otherwise, regulations deployment will fail.
+
+. Publish the changes in demo-registry regulations. Regulations entities like data model, business process or forms will become available for use in user portals after publishing, including Regulations administrator portal (`admin-portal`), officer portal (`officer-portal`) and citizen portal (`citizen-portal`).
++
+TIP: Fill in the regulations in _registry-regulations_ Gerrit online-repository of the registry on this step.
+
+* Prepare `commit` with the changes to _registry-regulations_ and send it to the repository. To do this, execute commands in Git Bash terminal in the following order:
++
+[source,bash]
+----
+git add --all
+----
++
+This command adds all the new, changed or deleted files in the current catalog and subcatalogs to the `stage` index for subsequent commit. Basically, it prepares all the changes on the project to `git commit` command.
++
+[source,bash]
+----
+git commit -m "added demo registry data"
+----
++
+`Git commit` command creates a new commit with the changes previously added to the index with `git add` command. The `-m` option allows you to add a short message to the commit in order to describe the changes made. In this case, the message is: `"added demo registry data"`.
+
+. After sending the changes, follow the link to Gerrit that will appear in the terminal.
++
+
+[TIP]
+====
+The path to registry Gerrit will be as follows:
+----
+https://admin-tools-<openshift-project-name>.<dns-wildcard>/gerrit
+----
+* `<openshift-project-name>` -- name of the new registry (_in this case_ -- `demo`).
+* `<dns-wildcard>` -- name of OpenShift environment where the registry is deployed.
+====
+
+. Wait until `MASTER-Code-review-registry-regulations` code check system pipeline is executed. You can check the progress by following the corresponding link at the bottom of the page in Gerrit. +
++
+As a result of a successful check, your change request will get `VERIFIED +1` status.
+
+. Confirm the application of changes as moderator by clicking *`CODE-REVIEW+2`* button.
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-10.png[]
+
+. Apply the changes to the `master` branch of the repository that contains regulations, by clicking *`SUBMIT`*, which will execute `git merge` of the changes.
++
+
+As a result, `MASTER-Build-registry-regulations` pipeline automatically publishes the regulations. You can check the progress by following the corresponding link at the bottom of the page in Gerrit.
++
+After successful publication, reference examples marked with *`reference-`* prefix, and testing examples marked with *`feature-`* prefix will become available in the demo-registry regulations.
+
+. Navigate to the Administrative portal and check if entities like business processes and UI-forms are available. The service name of reference examples will contain the *`reference-`* prefix.
++
+TIP: The Administrator portal is accessed via the following link: https://admin-tools-<registry-name>.<dns-wildcard>[].
++
+image:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-11.png[]
++
+
+The same reference business processes will become available as services in officer and citizen portals.
+
+== Demo-registry regulations content description
+
+The content of demo-registry regulations is the same as the typical regulations structure, used for any registry deployed on the Platform (_see more -- xref:registry-develop:registry-admin/regulations-deploy/registry-regulations-structure.adoc[]_).
+
+Regulations of the demo-registry includes reference examples marked with the *`reference-`* prefix, and testing examples marked with *`feature-`* prefix. They can be examples of _.bpmn_- business process schemes, _.json_-forms for process data, _.xml_-schemes for the deployment of registry data models, and other file types.
+
+.Demo-registry regulations content
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-6.png[]
+
+In order to let an officer get access to a corresponding reference process, you need to create a user in `<registry-name>-officer` realm for the corresponding registry in Keycloak service, and give this user the corresponding access rights.
+
+Access rights can differ according to the registry logic. They can be common officer rights, like the `-officer` role, or specific, like the officer responsible for hierarchy structure management -- `hierarchy-registry-manager`.
+
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-12.png[]
+
+TIP: Find more information on creating users and managing their access rights in the following section: xref:registry-admin/create-users/overview.adoc[].
+
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-13.png[]
+
+The list of roles supported by demo-registry regulations is available in _roles/*.yml_ files. Officer roles are listed in _roles/officer.yml_ file, and citizen roles can be found in _roles/citizen.yml_ file.
+
+To view the processes associated with feature-examples, use the `op-regression` role in Keycloak. With this role functionality testing processes like JUEL-function or delegate checking will become available in the portal.
+
+To view the processes associated with reference-examples, use the `op-reference` role in Keycloak.
+
+[TIP]
+====
+[%collapsible]
+
+.Roles of the demo-registry regulations
+=====
+[source,yaml]
+.roles/officer.yml
+----
+roles:
+#  feature roles
+  - name: officer
+    description: Officer role
+  - name: task-dispatcher
+    description: Task orchestrator
+  - name: officer-first-rank
+    description: Officer of the first rank
+  - name: officer-second-rank
+    description: Officer of the second rank
+  - name: op-regression
+    description: Available all business processes
+  - name: op-layouts
+    description: Available layouts business processes
+  - name: op-sorting
+    description: Available sorting business processes
+  - name: officer-grant
+    description: Role with granted analytic view
+  - name: officer-revoke
+    description: Role without revoked analytic view
+  - name: officer-grant-all
+    description: Role with all analytic views
+  - name: officer-revoke-all
+    description: Role without all analytic views
+  - name: citizen
+    description: Role for citizen on officer portal for RBAC
+  - name: death-officer
+    description: Role for RBAC validation
+  - name: inn-officer
+    description: Role for RBAC validation
+  - name: birth-officer
+    description: Role for RBAC validation
+  - name: personnel-officer-admin
+    description: Personnel officer admin role
+  - name: officer-moderator
+    description: Moderator of manual registration
+  - name: hierarchy-registry-user
+    description: Registry user with hierarchy management rights
+  - name: hierarchy-registry-manager
+    description: Registry manager with hierarchy management rights
+  - name: head-officer
+    description: Head officer
+  - name: op-reference
+    description: Available all reference business processes
+----
+=====
+====
+To check access rights for each corresponding role, see regulations authorization files _bp-auth/*.yml_. +
+Access rights for officers are defined in _bp-auth/officer.yml_ file, while for citizens the file is _bp-auth/citizen.yml_. External systems authorization is defined in _bp-auth/external-system.yml_ file.
+
+[TIP]
+====
+[%collapsible]
+.Access to demo-registry business processes for the corresponding roles
+=====
+[source,yaml]
+.bp-auth/officer.yml
+----
+authorization:
+  realm: "officer"
+  ##### Feature process access #####
+  process_definitions:
+  - process_definition_id: "feature-systemErrorAfterUserTask"
+    process_name: "AUTO test process description"
+    process_description: "AUTO test process description"
+    roles:
+      - 'op-regression'
+  ##### Reference process access #####
+  - process_definition_id: 'reference-upload-update-digital-document'
+    process_name: 'File downloading and editing'
+    process_description: 'File downloading and editing'
+    roles:
+      - 'op-reference'
+  ##### Hierarchy management process access #####
+  - process_definition_id: 'reference-hierarchy-management'
+    process_name: 'Hierarchy management'
+    process_description: 'Hierarchy management'
+    roles:
+      - 'hierarchy-registry-manager'
+----
+=====
+====
+
+== Reference examples
+
+Reference examples of regulations modeling are described on the pages of the following section: xref:registry-develop:best-practices/best-practices-overview.adoc[].
+
+== Useful links
+
+* xref:registry-develop:study-project/index.adoc[]

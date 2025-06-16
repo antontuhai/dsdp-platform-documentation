@@ -1,0 +1,664 @@
+= Modeling business processes for generating excerpts in csv and docx format
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+The description of the business process modeling mechanism is given in the example of the _Registry of certified laboratories_, namely in creating the "Laboratory report in csv format" excerpt. Modeling a business process for generating excerpts in the docx format is similar, except for the step where the file format is selected.
+
+[TIP]
+Fulfil the required preconditions for creating a business process, follow the xref:bp-modeling/bp/bp-modeling-instruction.adoc#bp-modelling-preconditions[link] for instructions.
+
+== Initial steps for creating a business process
+
+. Create a new BPMN diagram.
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-1.png[]
+
+. Add the *Create pool/Participant* element.
++
+In the right-hand side window with parameters, you have to enter the appropriate values into the fields:
++
+--
+* In the `Participant Name` field, enter the pool name -- `Generate a report on laboratories in csv format`.
+* In the `Process id` field, enter the ID of the business process -- `zvit-csv-bp`.
+* In the `Process name` field, enter the business name of the process -- `Generate a report on laboratories in csv format`.
+--
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-01.png[]
+
+[#create-start-event]
+[start=3]
+. Create the start event for starting the business process by a user.
++
+In the settings panel on the right-hand side, enter the appropriate values into the following parameters:
+
+* In the `General` tab:
+** In the `Id` field, enter the `StartEvent_lab1` value.
+** In the `Name` field, enter the name of the start event -- `Start Form`.
+** in the `Initiator` field, enter the `initiator` value.
+
++
+[TIP]
+====
+`initiator` is a special variable set for the user, which initiated the process.
+====
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-02.png[]
+
+* In the *Form* tab:
+
+** in the `FormKey` field, enter the form ID -- `add-startform-zvit`.
+
++
+[TIP]
+====
+In the `FormKey` field, enter the service name of the created UI form in the Regulations administrator portal.
+
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-02.1.png[]
+
+The following steps describe xref:#create-ui-form-1[modeling of the start form].
+
+====
+
+== Data preparation and signing
+
+. Create a service task *Read data by laboratoryId*.
++
+Select the customized *Read entity from data factory* template.
++
+[TIP]
+====
+You can find more details about this delegate on the page xref:bp-modeling/bp/element-templates/service-task-templates/read-entity.adoc[].
+====
++
+In the settings panel, enter the following values:
+
+* In the `Name` field, enter the name of the task -- `Data reading by laboratoryId`.
+* In the `Resource` field, enter the `laboratory` resource.
+* in the `Resource id` field, enter the resource ID -- `${submission('StartEvent_lab1').formData.prop('laboratory').prop('laboratoryId').value()}`.
+
++
+[TIP]
+====
+In our case, we pass the `StartEvent_lab1` resource identifier from the start form of the business process using the `submission()` function.
+====
+* In the `X-Access-Token` field, specify the access token to the user's system that is used to perform the `${initiator().accessToken}` operation.
+
+* In the `Result Variable` field, enter the output parameter name -- `labResponse`.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-03.png[]
+
+. Create the *Search for employees data* service task.
++
+Select the configured *Search for entities in data factory* template.
+
++
+[TIP]
+====
+You can find more details about this delegate on the page xref:bp-modeling/bp/element-templates/service-task-templates/search-entities-in-data-factory.adoc[].
+
+====
++
+In the settings panel, enter the following values:
+
+
+* In the `Name` field, enter the name of the task -- `Search for employees data`.
+
+* In the `Input Parameters` section:
+
+** Expand the `Resource` block:
+
+*** `Local Variable Assignment` is set to `on`. This allows creation of a local variable for the request body.
+
+*** `Variable Assignment Type`, select the `String of Expression` variable assignment type from the dropdown list.
+
+*** `Variable Assignment Value`, enter `staff-equal-laboratory-id`.
+
++
+[TIP]
+====
+`staff-equal-laboratory-id` is the endpoint name for the search criteria, where a request is made to find entities.
+
+====
+** Expand the `Search variable` block:
+
+*** `Local Variable Assignment` has the `on` value.
+
+*** `Variable Assignment Type`, select `Map`.
+
+*** `Add Entry`, enter `laboratoryId` in `Key`, and enter `${submission('StartEvent_lab1').formData.prop('laboratory').prop('laboratoryId').value()}` in `Value`.
+** Expand the `X-Access-Token` block:
+
+*** `Local Variable Assignment` has the `on` value.
+
+*** `Variable Assignment Type`, select `String of Expression`.
+
+*** `Variable Assignment Value`, enter `${initiator().accessToken}`.
+
+* In the `Output Parameters` section:
+
+** Expand the `Result variable` block:
+
+*** `Local Variable Assignment` has the `on` value.
+
+*** `Assign to Process Variable`, enter the value of the variable used for writing the request result -- `staffResponse`.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-04.png[]
+
+. Create the *Prepare data for displaying* script task.
++
+In the settings panel, enter the following values:
+
+* In the `Name` field, enter the `Prepare data for displaying` name.
+* In the `Script Format` field, enter the script type (language)  — `groovy`.
+* In the `Script Type` field, select the script type -- `Inline Script`.
+* In the `Script` field, insert the following groovy script:
++
+[source, groovy]
+----
+def labResponseBody = labResponse.responseBody
+def payload = [:]
+def personnelGrid = []
+
+def addPersonPropClosure = { person, staffIt, key ->
+if (staffIt.hasProp(key)) {
+if (!staffIt.prop(key).isNull()) {
+person[key] = staffIt.prop(key).value()
+}
+}
+}
+
+staffResponse.responseBody.elements().each {
+def person = [:]
+
+    addPersonPropClosure(person, it, 'fullName')
+    addPersonPropClosure(person, it, 'specializationDate')
+    addPersonPropClosure(person, it, 'salary')
+    addPersonPropClosure(person, it, 'hygienistFlag')
+    addPersonPropClosure(person, it, 'fullTimeFlag')
+
+    personnelGrid.add(person)
+}
+
+payload['name'] = labResponseBody .prop('name').value()
+payload['edrpou'] = labResponseBody .prop('edrpou').value()
+payload['address'] = labResponseBody .prop('address').value()
+payload['headName'] = labResponseBody .prop('headName').value()
+payload['personnelGrid'] = personnelGrid
+
+execution.removeVariable('payload')
+set_transient_variable('payload', S(payload, 'application/json'))
+----
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-05.png[]
+
+[#create_user-task-1]
+[start=4]
+. Create the *Display personnel data* custom task.
++
+In the settings panel, set the following values:
+
+* In the `Id` field, enter the `personnelDataZvitForm` value.
+* In the `Name` field, enter the `Display personnel data` name.
+* In the `Form key` field, enter the `read-personnel-data-zvit` value.
+
++
+[TIP]
+====
+In the `FormKey` field, you have to enter the service name of the created UI form in the Regulations administrator portal.
+
+The following steps describe xref:#create-ui-form-2[modeling of the personnel data display form].
+====
+
+* In the `Assignee` field, enter the `${initiator}` value.
++
+[TIP]
+====
+`${initiator}` indicates that the business process will be assigned to the user who initiated the business process.
+====
+
+* In the `Form data pre-population` field, enter the `${payload}` value.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-06.png[]
+
+. Create the *Prepare data for creating a database record (transient var)* script task.
++
+In the settings panel, set the following values:
+
+* In the `Name` field, enter the `Prepare data for creating database record (transient var)` value.
+* In the `Script Format` field, enter the script type (language) — `groovy`.
+* In the `Script Type` field, select the `Inline Script` script type.
+* In the `Script` field, insert the following groovy script:
+
++
+[source, groovy]
+----
+def personnelFormData = submission('personnelDataZvitForm').formData
+
+def excerptInputData = [:]
+def requests = []
+
+def prepopulatedDataMap = [:]
+prepopulatedDataMap['name'] = personnelFormData.prop('name').value()
+prepopulatedDataMap['address'] = personnelFormData.prop('address').value()
+prepopulatedDataMap['headName'] = personnelFormData.prop('headName').value()
+prepopulatedDataMap['edrpou'] = personnelFormData.prop('edrpou').value()
+
+personnelFormData.prop('personnelGrid').elements().each {
+    def request = [:]
+    request.putAll(prepopulatedDataMap)
+    it.fieldNames().each { fieldName ->
+        request[fieldName] = it.prop(fieldName).value()
+    }
+    request['hygienistFlag'] = it.prop('hygienistFlag').boolValue() ? '1' : '0'
+    request['fullTimeFlag'] = it.prop('fullTimeFlag').boolValue() ? '1' : '0'
+
+    requests.add(request)
+}
+
+excerptInputData['requests'] = requests
+
+def request = [:]
+request['recordId'] = null
+request['excerptType'] = 'lab-staff-excerpt-csv'
+request['excerptInputData'] = excerptInputData
+request['requiresSystemSignature'] = false
+
+def payload = S(request, 'application/json')
+execution.removeVariable('payload')
+set_transient_variable('payload', payload)
+
+execution.removeVariable('excerpt')
+set_transient_variable('excerpt', excerptInputData)
+----
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-07.png[]
+
+. Add a service task for data signing with the system key.
++
+[TIP]
+====
+For a detailed overview of the delegate description for signing data with the system key, follow this xref:bp-modeling/bp/element-templates/service-task-templates/digital-signature-by-dso-service.adoc[link].
+====
++
+Select the configured template *Digital signature by DSO service*.
++
+In the settings panel, specify the following values:
+
+* In the *Name* field, indicate the task name `Sign data with the system key`.
+* In the *Payload* field, enter the data to be signed -- `${payload}`.
+* In the *X-Access-Token source* field, indicate the user access token under which the operation is performed -- `${initiator().accessToken}`.
+* In the *Result variable* field, specify the variable name `system_signature_ceph_key`, to which the system signing key should be saved.
+
+== Generating a report
+
+[#create-service-task-1]
+. Create a service task *Request for generating an excerpt*.
++
+Select the `Generate Excerpt' configured template.
+
+* In the `Name field`, enter the `Request for generating an excerpt` name.
+
+* In the `Excerpt Type` field, enter the name of the file that defines the format -- `lab-staff-excerpt-csv`.
+
+* In the `Excerpt Input Data`  field, enter the `${excerpt}` value.
+
+* In the `Requires System Signature` field, enter the `false` value.
+
++
+[IMPORTANT]
+====
+A possibility to sign excerpt data in .csv and .docx formats using a system key [.underline]#is not available#. Therefore, the `Requires System Signature` parameter should contain the `false` value by default. If `true` is set, the business process will not run. _Signing using the system key is only available for the .pdf format_.
+
+====
+* In the `X-Access-Token` field, enter the token to access the user system, which is used to perform the `${initiator().accessToken}` operation.
+
+* In the `X-Digital-Signature source` field, enter the source of the digital signature -- `${sign_submission('StartEvent_lab1').signatureDocumentId}`.
+
+* In the `X-Digital-Signature-Derived source` field, enter the source of the system digital signature -- `${system_signature_ceph_key}`.
+
+* In the `Result variable` field, enter the `response` output parameter name.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-09.png[]
+
++
+[TIP]
+====
+The data transmitted to generate the `excerptInputData` excerpt must have the following format:
+
+[source, groovy]
+----
+{
+   "requests":[
+      {
+         "field1":"value1"
+      },
+      {
+         "field2":"value2"
+      }
+
+..........
+   ]
+}
+----
+====
+
+. Create a file in the root of the cluster, placing it in the corresponding project directory.
++
+The file name has to be identical to the name entered in `Excerpt Type` (xref:#create-service-task-1[at the previous step]). In our example, that is `lab-staff-excerpt-csv.csv`.
++
+[plantuml]
+----
+@startsalt
+{
+{T
++ <&folder> registry-regulations
+
+++ <&folder> bp-auth
++++ <&file> role.yml
++++ ...
+
+++ <&folder> bp-trembita
++++ <&file> config.yml
++++ ...
+
+++ <&folder> bpmn
++++ <&file> process.bpmn
++++ ...
+
+++ <&folder>data-model
++++ <&folder> data-load
+++++ <&file> dict.csv
+++++ ...
++++ <&file> model.xml
++++ ...
+
+++ <&folder> dmn
+
+++ <&folder> excerpts
+
+++ <&folder> excerpts-csv
++++ <&file> **lab-staff-excerpt-csv.csv**
++++ ...
+
+++ <&folder> forms
++++ <&file> form.json
+++++ ...
+
+++ <&folder> global-vars
++++ <&file> global-vars.yml
+
+++ <&folder> reports
++++ <&file> report.json
++++ ...
+
+++ <&folder> roles
++++ <&file> role.yml
++++ ...
+
++ <&file> settings.yaml
+
+}
+}
+@endsalt
+----
++
+[TIP]
+====
+At this stage, the .csv and .docx file format is determined.
+
+====
+
+. Create a "Save excerpt's request ID" script task.
+
++
+In the settings panel, set the following values:
+
+
+* In the `Name` field, enter the name of the task -- *Save excerpt's request ID*.
+* In the `Script Format` field, enter the script type (language) — `groovy`.
+* In the `Script Type` field, select the `Inline Script` script type.
+* In the `Script` field, insert the following groovy script:
+
++
+[source, groovy]
+----
+response.responseBody.prop('excerptIdentifier').value()
+----
+* In the `Result Variable` field, enter the name of the variable to which the extract identifier will be written, -- `excerptIdentifier`.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-11.png[]
+
+== Setting the conditions of the output generation result checks
+
+. Add the task for calling an external business process (Call Activity) "Check excerpt generation status".
++
+Select the configured `Check excerpt status` template.
+
++
+[TIP]
+====
+Follow the xref:bp-modeling/bp/element-templates/call-activities/check-excerpt-status.adoc[link] to find more details about the `Check excerpt status` delegate.
+
+====
++
+In the settings panel, enter the following values:
+
+
+* In the `Name` field, enter the name of the task -- `Check the status of excerpt generation`.
+
+* In the `Input excerpt identifier` field, enter the excerpt ID that has to be passed to the called business process -- `${excerptIdentifier}`.
+
+* In the `Output variable name` field, enter the `excerptStatus` variable, where the excerpt status, received as the result of a subprocess execution, has to be saved.
+
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-12.1.png[]
+
++
+."Check an excerpt generation status" business process
+====
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-13.png[]
+
+[TIP]
+=====
+[%collapsible]
+.Where can you find an example of a business process?
+======
+include::partial$snippets/demo-reg-reference-examples-en.adoc[]
+
+An example of a BPMN diagram for the process will be available in the demo registry regulations by searching for the keywords -- *_check-excerpt-status_*.
+
+You can find the names of forms within the corresponding user tasks of the business process in the *`Form key`* field.
+======
+=====
+====
+
+
+. Add the Create *Intermediate/Boundary Event* element, define its type by clicking the key icon (Change type) and selecting the Timer Boundary Event item from the menu.
+
++
+[TIP]
+====
+Follow the xref:registry-develop:bp-modeling/bp/bpmn/events/timer-event.adoc[link] to find more detailed description of the *Timer* event modeling element.
+
+====
++
+Go to the settings panel and configure the event:
+
+
+* In the `Name` field, enter the `P2M waiting time expired`.
+* In the `Timer Definition Type` field, set the `Duration` timer type;
+* In the `Timer Definition` field, set the `P2M` timer duration.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-12.2.png[]
+
+. Add XOR gateways for the "Check excerpt generation status" Call Activity and for the "P2M Timed Out" Timer Boundary Event.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-14.png[]
+
+. Create the "Save the generated excerpt identifier to the system BP" service task.
++
+In the settings panel, set the following values:
+
+* In the `General` tab:
+
+** In the `Name` field, enter the value `Save the identifier of the generated excerpt to the system BP`.
+
+** in the `Implementation` field ,select the `Delegate Expression` value.
+
+** In the `Delegate Expression` field, enter `${defineProcessExcerptIdDelegate}`.
+
+* In the `Input/Output` tab:
+
+** In the `Local Variable Name` field, enter the `excerptId` value.
+
+** In the `Variable Assignment Type` field, select `String or Expression`.
+
+** In the `Variable Assignment Value` field, enter `${excerptIdentifier}`.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-15.1.png[]
+[.text-center]
+↓
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-15.2.png[]
+
++
+[TIP]
+====
+The value specified in the `Id` field is used as the name of the file that a user downloads from the portal.
+
+====
+
+. Configure the flow process for the XOR gateway.
+
++
+Create Connect using sequence (branches):
+
++
+.. To the "Save the identifier of the generated excerpt to the system BP" service task:
+
+* Enter `yes` in the `Name` field.
+
+* In the `Condition Type` field, select `Expression`.
+
+* In the `Expression` field, enter the `${excerptStatus.equals('COMPLETED')}` value.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-16.png[]
+.. To another XOR gateway:
+
+* In the `Name` field, enter `no`.
+
+* In the `Condition Type` field, select `Expression`.
+
+* In the `Expression` field, enter `${excerptStatus.equals('FAILED')}`.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-17.png[]
+
+== Process execution result
+
+=== Unsuccessful result of business process execution
+
+. Create the "Execution result "Excerpt not generated"" service task.
++
+Choose the `Define business process status` configured template.
++
++
+In the settings panel, set the following values:
+
+* In the `Name` field, enter the `Execution result "Excerpt not generated"` value.
+
+* In the `Status` field, enter the `Excerpt not generated` value. This status is displayed after process completion.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-18.png[]
+
+. Configure the flow process from the XOR gateway to the service task "Execution result "Excerpt not generated"" by creating a Connect using sequence (branch).
+
++
+And create the business process completion event.
+
+* In the `Name` field, enter the `Excerpt document not generated` value.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-19.png[]
+
+=== Successful result of business process execution
+
+. Create the "Execution result "Excerpt generated"" service task.
++
+Choose the `Define business process status` configured template.
++
+In the settings panel, set the following values:
+
+* In the `Name` field, enter the `Execution result "Excerpt generated"` value.
+
+* In the `Status` field, enter the `Excerpt generated` value. This status is displayed after process completion.
+
+. Create the business process completion event.
+
+* In the `Name` field, enter the `Excerpt document generated` value.
+
++
+image:registry-develop:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-21.png[]
+
+== Modeling forms
+
+Model the forms in accordance with the instructions at the xref:registry-develop:bp-modeling/forms/registry-admin-modelling-forms.adoc[link].
+
+[#create-ui-form-1]
+=== Modeling the starting form
+
+Modeling the starting form involves creation of a form for searching a laboratory by its name.
+
+* In the `Form business name` field, enter the `Start form lab report` value.
+
+* In the `Form service name` field, enter the `add-startform-zvit` value (which is used at the xref:#create-start-event[previous step] as the value of the `Form Key` parameter).
+
+image:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-22.png[]
+
+[TIP]
+====
+The configured form can be downloaded from the following link:
+
+_link:{attachmentsdir}/bp-modeling/add-startform-zvit.json[add-startform-zvit.json]_
+====
+
+[#create-ui-form-2]
+=== Modeling the personnel data display form
+
+Modeling the personnel data display form involves creation of a form for generating the data of the called laboratory.
+
+
+* In the `Business name of the form` field, enter the `Display personnel data report` value.
+
+* In the `Form service name` field, enter the `read-personnel-data-zvit` value (which is used at the xref:#create_user-task-1[previous step] as the value of the `Form Key` parameter).
+
+image:bp-modeling/bp/excerpt-csv-docx/bp-modeling-excerpt-csv-docx-23.png[]
+
+[TIP]
+====
+The configured form can be downloaded from the following link:
+
+_link:{attachmentsdir}/bp-modeling/read-personnel-data-zvit.json[read-personnel-data-zvit.json]_
+====
+
+== An example of using the business process by a user
+
+You can learn more about the process of creating excerpts by users based on the result of the modeled business process by the following links:
+
+* xref:user:officer/reports/reports-csv.adoc[]
+* xref:user:officer/reports/reports-docx.adoc[]
+

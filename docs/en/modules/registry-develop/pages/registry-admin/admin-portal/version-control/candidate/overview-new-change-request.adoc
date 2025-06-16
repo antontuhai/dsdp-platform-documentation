@@ -1,0 +1,128 @@
+= Reviewing and managing the candidate version settings
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+[#general-description]
+== General description
+
+By xref:registry-admin/admin-portal/version-control/create-new-change-request.adoc[creating a new candidate version] for making changes to the registry regulations, you can review its status and settings.
+
+You can find the new candidate version in the top left corner of the page by expanding the dropdown menu for managing the regulations version.
+
+image:registry-admin/admin-portal/new-admin-portal-5.png[]
+
+When creating a version, the regulation administrator can view the _date and time_ of creation, as well as the _description of the change_.
+
+The registry regulations administrator can also: ::
+
+* xref:#merge-conflict[Get information about conflicting changes relative to the master version]
+
+* xref:#review-changes-candidate[Review the list of the changes made]
+
+* xref:#pull-changes-master[Get updates]
+
+* xref:#push-changes-master[Apply changes to the master version]
+
+* xref:#abandon-changes[Withdraw the request]
+
+image:registry-admin/admin-portal/new-admin-portal-4.png[]
+
+[#merge-conflict]
+== Conflicting changes relative to the master version
+
+A merge conflict is an event that occurs when the system (Git) cannot automatically resolve differences in code between two versions of changes.
+
+.Merge conflict scenario
+====
+
+Suppose there are two persons working on changes to the regulations: user A and user B. Both are working on the same code file from the repository and trying to make different changes to this file within their candidate versions (e.g., simply changing the name of a business process). After making changes, user A applies the changes to the master version. Now, when user B tries to apply their changes to the same file within their candidate version, they cannot do so because the file has already been modified by user A, and the changes are merged into the master branch.
+====
+
+.Making changes to the business process model by user A in candidate
+====
+image:registry-admin/admin-portal/new-admin-portal-7.png[]
+====
+
+.Updating candidate version-01 and applying changes to the master version by user A
+====
+image:registry-admin/admin-portal/new-admin-portal-11.png[]
+====
+
+.Updating candidate version-02 and applying changes to the master version by user B
+====
+image:registry-admin/admin-portal/new-admin-portal-8.png[]
+====
+
+NOTE: In such a case, user B cannot get updates from the master version due to the conflict. The way to resolve the conflict is to withdraw the change request, i.e., cancel candidate version-02 and create a new change request.
+
+[#review-changes-candidate]
+== Reviewing the list of changes
+
+In the *Administrative portal*, you can easily review the list of changes made.
+
+To review the changes made to the candidate version, follow these steps:
+
+. Go to the respective candidate version in the top left corner of the page by expanding the dropdown menu for managing regulation versions.
+. Navigate to the *Proposed changes* section.
+. Expand the change category. For example, *Business process models*.
+. Review the files that have been changed.
++
+image:registry-admin/admin-portal/new-admin-portal-9.png[]
+
+[#pull-changes-master]
+== Getting updates and updating the status of open change requests
+
+CAUTION: To continuously synchronize the master version with all candidate versions and update the status of open requests according to the latest master version, the system automatically updates all open change requests (candidate versions).
+
+The registry regulations administrator can also manually update their candidate version from time to time. This can be done as follows:
+
+. Go to the respective candidate version in the top left corner of the page by expanding the dropdown menu for managing regulations versions.
+
+. Click the `Update` button.
++
+image:registry-admin/admin-portal/new-admin-portal-10.png[]
+
+[#push-changes-master]
+== Applying changes to the master version
+
+After completing the work within the candidate version, it is necessary to apply the changes made to the master version so that other administrators can see the current state of the registry regulations repository. To do this, follow these steps:
+
+. Go to the corresponding candidate version in the top left corner of the page by expanding the drop-down menu for version control.
++
+NOTE: Before applying changes to the master version, you need to xref:#pull-changes-master[get updates] first.
+
+. Click the *Apply changes to master version* button.
++
+image:registry-admin/admin-portal/new-admin-portal-11.png[]
+
+. In the warning window, confirm the changes to the master version or close it.
++
+image:registry-admin/admin-portal/new-admin-portal-11-1.png[]
++
+[NOTE]
+====
+
+You will receive a confirmation window for the following action:
+=====
+
+Please note that the deployment and verification process is not yet complete or has encountered errors. Applying changes may result in errors in the master version of the regulations.
+=====
+
+The deployment and verification process is the *`MASTER-Code-review-registry-regulations`* pipeline in Jenkins. It precedes the process of code compilation and publishing changes to the *`MASTER-Build-registry-regulations`* regulations. Currently, the registry regulations administrator can manually bypass the Code review process by directly applying changes to the master branch of the repository.
+====
+
+As a result, the changes will be included in the master branch, and the selected candidate version will be automatically removed from the list of versions.
+
+[#abandon-changes]
+== Withdrawing a change request within the candidate version
+
+If necessary to withdraw a change request within your own candidate version, for example, due to xref:#merge-conflict[merge conflicts], follow these steps:
+
+. Go to the corresponding candidate version in the top left corner of the page by expanding the drop-down menu for the regulations version control.
+
+. Click the *Withdraw* button.
++
+image:registry-admin/admin-portal/new-admin-portal-12.png[]
+
+As a result, the changes will be canceled, and the selected candidate version will be automatically removed from the list of versions.

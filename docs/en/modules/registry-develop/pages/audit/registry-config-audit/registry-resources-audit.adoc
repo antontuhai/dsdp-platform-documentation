@@ -1,0 +1,508 @@
+= Registry resources configuration audit
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+This document provides recommendations and configuration rules for registries to ensure stability, scalability, and performance.
+
+*Audit scope* — registry resource configuration.
+
+[#_rs_01]
+== RS-01. Container resources
+
+=== Overview
+
+Description ::
+
+To ensure stable operation of the Kubernetes cluster, it is critical to properly configure resources for each container — *memory and CPU*.
+This prevents excessive resource consumption by individual containers and ensures efficient resource allocation among services.
+
+Recommendations ::
+
+* Set identical *Request* and *Limit* values for container memory in OKD/Kubernetes.
+This prevents containers from consuming more resources than expected and negatively impacting node stability.
+
+* Use *_no more than 3 replicas_* of a single service.
+Especially for Java applications, it is more efficient to scale vertically (increase resources per replica) rather than horizontally.
+Each additional replica significantly increases memory usage and decreases overall resource efficiency.
+
+Impact ::
+
+* If memory limits are not set, a container could exceed node resources under load, causing performance degradation or crashes of other containers.
+
+* Using more than 3 replicas for a Java service significantly increases memory consumption, inefficiently distributing resources and degrading overall system performance.
+
+=== Audit scope
+
+*Audit scope* — running containers in the registry.
+Only containers consuming more than 100 MB of memory are considered. One-time pipeline containers (Jobs) and low-memory containers are excluded.
+Containers are sorted by actual memory consumption, from highest to lowest.
+
+.The list of registry services
+[options="header", cols="2,3"]
+|===
+^|Registry subsystem ^|Services
+
+| xref:arch:architecture/registry/operational/bpms/overview.adoc[Business processes management subsystem]
+a|
+* `bpms`
+* `process-history-service-persistence-deployment`
+* `digital-document-service`
+* `form-schema-provider-deployment`
+* `process-history-service-api-deployment`
+* `user-process-management`
+* `user-task-management`
+* `form-submission-validation`
+
+| xref:arch:architecture/registry/operational/registry-management/overview.adoc[Registry data management subsystem]
+a|
+* `registry-rest-api-deployment`
+* `registry-kafka-api-deployment`
+
+| xref:arch:architecture/registry/operational/nonrelational-data-storage/overview.adoc[Non-relational database management subsystem]
+a|
+* `rfr-redis-sentinel`
+
+| xref:arch:architecture/registry/operational/messaging/overview.adoc[Asynchronous messaging subsystem]
+a|
+* `kafka-cluster-kafka`
+* `kafka-cluster-entity-operator`
+* `kafka-cluster-zookeeper`
+
+| xref:arch:architecture/registry/operational/relational-data-storage/overview.adoc[Relational database management subsystem]
+a|
+* `operational-instance`
+* `analytical-instance`
+* `operational-pool`
+
+| xref:arch:architecture/registry/operational/excerpts/overview.adoc[Registry excerpt generation subsystem]
+a|
+* `excerpt-service-api-deployment`
+* `excerpt-worker-csv-deployment`
+* `excerpt-worker-deployment`
+* `excerpt-worker-docx-deployment`
+
+| xref:arch:architecture/registry/operational/external-integrations/overview.adoc[External integrations subsystem]
+a|
+* `bp-webservice-gateway`
+* `platform-gateway-deployment`
+* `registry-rest-api-ext-deployment`
+* `registry-rest-api-public-deployment`
+* `registry-soap-api-deployment`
+
+| xref:arch:architecture/registry/operational/reporting/overview.adoc[Registry analytical reporting subsystem]
+a|
+* `redash-viewer`
+* `redash-viewer-adhocworker`
+* `redash-viewer-scheduler`
+
+| xref:arch:architecture/registry/operational/ext-api-management/overview.adoc[External traffic management subsystem: Registry operational zone]
+a|
+* `kong-kong`
+* `istio-ingressgateway`
+
+| xref:arch:architecture/registry/operational/audit/overview.adoc[Registry audit events logging subsystem]
+a|
+* `kafka-connect-cluster-connect`
+* `kafka-schema-registry`
+
+| xref:arch:architecture/registry/operational/digital-signatures/overview.adoc[Digital signatures subsystem]
+a|
+* `digital-signature-ops`
+
+| xref:arch:architecture/registry/operational/notifications/overview.adoc[User notification subsystem]
+a|
+* `ddm-notification-service`
+
+| xref:arch:architecture/registry/operational/user-settings/overview.adoc[User settings management subsystem]
+a|
+* `user-settings-service-api-deployment`
+
+| xref:arch:architecture/registry/operational/geo/overview.adoc[Geodata management subsystem]
+a|
+* `geo-server`
+
+| xref:arch:architecture/registry/operational/secret-management/overview.adoc[Secrets and encryption management subsystem]
+a|
+* `hashicorp-vault`
+
+| xref:arch:architecture/registry/administrative/regulation-management/overview.adoc[Registry regulations modeling subsystem]
+a|
+* `ddm-language-server`
+* `report-exporter-deployment`
+* `registry-regulation-management-deployment`
+* `gerrit`
+
+| xref:arch:architecture/registry/administrative/operational-maintenance/overview.adoc[Registry’s operational zone service subsystem]
+a|
+* `business-process-administration-portal`
+* `pgadmin-deployment`
+
+| xref:arch:architecture/registry/administrative/regulation-publication/overview.adoc[Registry regulations deployment subsystem]
+a|
+* `jenkins`
+* `nexus`
+
+| xref:arch:architecture/registry/administrative/ext-api-management/overview.adoc[External traffic management subsystem]
+a|
+* `kong-admin-tools-kong-admin-tools`
+
+|===
+
+[#_rs_02]
+== RS-02. Virtual machines size and quantity
+
+=== Overview
+
+Description ::
+
+Effective management of virtual machine size and quantity is key to ensuring OKD/Kubernetes cluster stability and fault tolerance.
+Proper resource distribution helps prevent overloads and simplifies future scaling.
+
+Recommendations ::
+
+* The total memory allocated across all services (Requests and Limits) should not exceed 80% of the memory available on the virtual machines. This ensures resource safety margins for stable operation.
+
+* Add one additional virtual machine (+1) for fault tolerance. This allows rapid recovery in case of a machine failure or increased load.
+
+* Prioritize vertical scaling (increasing resources per machine) over horizontal scaling to optimize memory and CPU usage.
+
+* Highly loaded services should be deployed on dedicated (exclusive) virtual machines to avoid conflicts and ensure higher system stability.
+
+=== Audit scope
+
+*Audit scope* — virtual machines allocated for the registry and heavily loaded services that may require exclusive nodes.
+
+.Candidates for exclusive virtual machines
+[options="header", cols="1,2"]
+|===
+^|Registry subsystem ^|Services
+
+| xref:arch:architecture/registry/operational/relational-data-storage/overview.adoc[Relational database management subsystem]
+a|
+* `operational-instance`
+* `analytical-instance`
+
+| xref:arch:architecture/registry/operational/messaging/overview.adoc[Asynchronous messaging subsystem]
+a|
+* `kafka-cluster-kafka`
+
+| xref:arch:architecture/registry/operational/nonrelational-data-storage/overview.adoc[Non-relational database management subsystem]
+a|
+* `rfr-redis-sentinel`
+
+|===
+
+== RS-03. Resources for Java applications
+
+=== Overview
+
+Description::
+Java applications require specific memory and resource settings due to the nature of JVM (Java Virtual Machine) operation.
+Proper configuration is critical for stable operation and high performance when running in containers.
+
+Recommendations::
+
+* Prefer vertical scaling (increasing resources for a single instance) over horizontal scaling.
+* Always explicitly configure Java heap memory by setting both the initial (`-Xms`) and maximum (`-Xmx`) heap sizes.
+* Set identical values for the initial and maximum heap sizes (`-Xms = -Xmx`).
+* Limit the number of available CPUs with the `-XX:ActiveProcessorCount` option.
+* Calculate heap memory using the formula:
++
+----
+Heap = min(RAM × 0.75, RAM - 0.5 GB)
+----
+where RAM is the total container memory.
+
+Examples::
++
+* 1 GB RAM container: heap = 500 MB
+* 4 GB RAM container: heap = 3 GB
+
+Impact::
+
+Incorrect heap memory settings can cause:
+
+* frequent garbage collection pauses;
+* `OutOfMemoryError` occurrences;
+* unstable application behavior;
+* inefficient memory usage.
+
+=== Audit scope
+
+*Audit scope* — Java applications deployed in the registry.
+
+.List of Java applications
+[options="header", cols="1,2"]
+|===
+| Registry subsystem | Java applications
+
+| Business processes management subsystem
+a|
+* `bpms`
+* `process-history-service-persistence-deployment`
+* `digital-document-service`
+* `form-schema-provider-deployment`
+* `process-history-service-api-deployment`
+* `user-process-management`
+* `user-task-management`
+
+| Registry data management subsystem
+a|
+* `registry-rest-api-deployment`
+* `registry-kafka-api-deployment`
+
+| Asynchronous messaging subsystem
+a|
+* `kafka-cluster-kafka`
+* `kafka-cluster-entity-operator`
+* `kafka-cluster-zookeeper`
+
+| Registry excerpt generation subsystem
+a|
+* `excerpt-service-api-deployment`
+* `excerpt-worker-csv-deployment`
+* `excerpt-worker-deployment`
+* `excerpt-worker-docx-deployment`
+
+| External integrations subsystem
+a|
+* `bp-webservice-gateway`
+* `platform-gateway-deployment`
+* `registry-rest-api-ext-deployment`
+* `registry-rest-api-public-deployment`
+* `registry-soap-api-deployment`
+
+| Registry audit events logging subsystem
+a|
+* `kafka-connect-cluster-connect`
+* `kafka-schema-registry`
+
+| Digital signatures subsystem
+a|
+* `digital-signature-ops`
+
+| User notification subsystem
+a|
+* `ddm-notification-service`
+
+| User settings management subsystem
+a|
+* `user-settings-service-api-deployment`
+
+| Geodata management subsystem
+a|
+* `geo-server`
+
+| Registry regulations modeling subsystem
+a|
+* `ddm-language-server`
+* `report-exporter-deployment`
+* `registry-regulation-management-deployment`
+* `gerrit`
+
+| Operational maintenance subsystem
+a|
+* `business-process-administration-portal`
+
+| Registry regulations deployment subsystem
+a|
+* `jenkins`
+* `nexus`
+|===
+
+== RS-04. Database
+
+=== Overview
+
+Description::
+Proper database configuration is critical for registry stability. It involves optimizing connection pools, resources, storage sizing, and PostgreSQL tuning.
+
+Recommendations::
+
+* Ensure that the total client connection pool is lower than the database’s max connections limit by at least 10%.
+* For high-load cases, deploy the database on a dedicated VM.
+* Size the database storage according to expected data volume and growth rate.
+* Calculate connection pool size based on:
+** number of concurrent users;
+** nature of queries;
+** transaction duration;
+** peak load scenarios.
+* Adjust PostgreSQL parameters for available resources:
+** maximum WAL size;
+** shared buffers size;
+** effective cache size.
+* Use native (thin) disks for better I/O performance.
+
+Impact::
+
+Misconfigured database resources can lead to:
+
+* connection timeouts;
+* system bottlenecks;
+* overall registry instability.
+
+=== Audit scope
+
+*Audit scope* — Configuration of the registry's database and its client services.
+
+.List of database clients
+[options="header", cols="1,2"]
+|===
+| Registry subsystem | Database clients
+
+| Business processes management subsystem
+a|
+* `bpms`
+* `process-history-service-persistence-deployment`
+* `process-history-service-api-deployment`
+
+| Registry data management subsystem
+a|
+* `registry-rest-api-deployment`
+* `registry-kafka-api-deployment`
+
+| Registry excerpt generation subsystem
+a|
+* `excerpt-service-api-deployment`
+* `excerpt-worker-csv-deployment`
+* `excerpt-worker-deployment`
+* `excerpt-worker-docx-deployment`
+
+| External integrations subsystem
+a|
+* `registry-rest-api-ext-deployment`
+* `registry-rest-api-public-deployment`
+
+| Registry analytical reporting subsystem
+a|
+* `redash-viewer`
+* `redash-viewer-adhocworker`
+* `redash-viewer-scheduler`
+
+| Registry audit events logging subsystem
+a|
+* `kafka-connect-cluster-connect`
+
+| User notification subsystem
+a|
+* `ddm-notification-service`
+
+| User settings management subsystem
+a|
+* `user-settings-service-api-deployment`
+
+| Geodata management subsystem
+a|
+* `geo-server`
+
+| Registry regulations modeling subsystem
+a|
+* `registry-regulation-management-deployment`
+
+| Operational maintenance subsystem
+a|
+* `business-process-administration-portal`
+* `pgadmin-deployment`
+|===
+
+[#_rs_05]
+== RS-05. Service Mesh (Istio)
+
+=== Overview
+
+* Set identical Request and Limit values for the memory of Istio sidecar containers.
+* Configure resources for the Istio sidecar based on the service's workload profile.
+
+=== Audit scope
+
+*Audit scope* — services that are part of the Istio Service Mesh. Below is the list of these services.
+
+.Services using Istio Service Mesh
+[options="header", cols="1,2"]
+|===
+| Registry subsystem | Services
+
+| Business processes management subsystem
+a|
+* `bpms`
+* `process-history-service-persistence-deployment`
+* `digital-document-service`
+* `form-schema-provider-deployment`
+* `process-history-service-api-deployment`
+* `user-process-management`
+* `user-task-management`
+* `form-submission-validation`
+
+| Registry data management subsystem
+a|
+* `registry-rest-api-deployment`
+* `registry-kafka-api-deployment`
+
+| Non-relational database management subsystem
+a|
+* `rfr-redis-sentinel`
+
+| Registry excerpt generation subsystem
+a|
+* `excerpt-service-api-deployment`
+* `excerpt-worker-csv-deployment`
+* `excerpt-worker-deployment`
+* `excerpt-worker-docx-deployment`
+
+| External integrations subsystem
+a|
+* `bp-webservice-gateway`
+* `platform-gateway-deployment`
+* `registry-rest-api-ext-deployment`
+* `registry-rest-api-public-deployment`
+* `registry-soap-api-deployment`
+
+| External traffic management subsystem: Registry operational zone
+a|
+* `kong-kong`
+* `istio-ingressgateway`
+
+| Digital signatures subsystem
+a|
+* `digital-signature-ops`
+
+| User notification subsystem
+a|
+* `ddm-notification-service`
+
+| User settings management subsystem
+a|
+* `user-settings-service-api-deployment`
+
+| Geodata management subsystem
+a|
+* `geo-server`
+
+| Registry regulations modeling subsystem
+a|
+* `ddm-language-server`
+* `report-exporter-deployment`
+* `registry-regulation-management-deployment`
+
+| External traffic management subsystem: Administrative zone
+a|
+* `kong-admin-tools-kong-admin-tools`
+|===
+
+[#_rs_06]
+== RS-06. Kafka
+
+=== Overview
+
+* Use at least 3 Kafka brokers in the cluster.
+* Calculate the Kafka storage size (`storage`) based on the specific needs of the registry.
+* For topics containing historical events (`bpm-history-process`, `bpm-history-task`), configure at least 15 partitions.
+* The parallelism factor for the historical event processing service (`process-history-service-persistence`) must be at least 15.
+This parameter is determined by the number of service replicas and the `_data-platform.kafka.consumer.concurrency` setting (in the Config Map).
+
+=== Audit scope
+
+*Audit scope* — Kafka and the Process History Persistence Service configuration.
+
+

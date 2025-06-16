@@ -1,0 +1,41 @@
+= Central service for managing Platform secrets
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+A component that provides Auto unseal operations for secret management and encryption subsystems.
+
+== Component functions
+
+* Provision of automatic unlocking (unseal) of the subsystem of managing secrets and encryption of the Platform
+
+== Component technical design
+
+image::architecture/platform-secret-management/platform-secret-management.drawio.svg[width=500,float="center",align="center"]
+
+== Technology stack
+
+The following technologies were used in the design and development:
+
+* xref:arch:architecture/platform-technologies.adoc#vault[HashiCorp Vault]
+
+== Components
+
+|===
+|Component name|Representation|Source|Appointment
+
+|_Central platform secret management service_
+|`platform-vault`
+|3rd-party
+|Provision of Auto unseal operation for secret management and encryption subsystems
+
+|===
+
+== Component quality attributes
+
+[security]
+=== Security
+
+_Central Platform secrets management service_ provides automatic unpacking (_unseal_) of subsystems of secret management and encryption of the Platform and Registers.

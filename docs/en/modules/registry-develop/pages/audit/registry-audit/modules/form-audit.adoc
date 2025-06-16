@@ -1,0 +1,289 @@
+= Audit of business process UI forms
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+|===
+|Name |Criticality
+
+|<<_fr_01>> |High
+|<<_fr_02>> |High
+|<<_fr_03>> |High
+|<<_fr_04>> |High
+|<<_fr_05>> |High
+|<<_fr_06>> |Medium
+|<<_fr_07>> |High
+|<<_fr_08>> |High
+|<<_fr_09>> |Medium
+|<<_fr_10>> |High
+|===
+
+== Audit cases
+
+[#_fr_01]
+=== FR-01. Large forms
+IMPORTANT: Criticality: High
+
+Description ::
+Design forms as simple and compact as possible.
+
+Impact ::
+* Reduced rendering performance in the browser.
+* Complicated maintenance and updates by registry developers.
+* Poor user experience when filling out or viewing the form.
+* Higher risk of system errors (for example, session timeouts resulting in data loss).
+* Increased complexity of form testing due to a large number of test cases.
+
+Recommendations ::
+* When entering data, split large forms into smaller steps and collect data in phases.
+* When displaying data:
+** Show a limited set of data by default.
+** Use reports or extracts to display detailed information.
+* Avoid deeply nested components with complex dependencies.
+
+NOTE: For more details on best practices for web form development, see https://nngroup.com/articles/web-form-design/[this article].
+
+[#_fr_02]
+=== FR-02. Lazy load for the _Select_ component
+IMPORTANT: Criticality: High
+
+Description ::
+When a form contains a large number of *Select* components, use lazy loading to fetch data via URL.
+By default, *Select* components perform eager loading and fetch data in the following cases:
+
+* When the form is initially rendered.
+* When a related component changes.
+* When a user token is refreshed—a system event triggered independently of user actions.
+
+Impact ::
+* Additional load on servers and networks.
+* Longer form rendering time.
+
+Recommendations ::
+* Avoid creating large forms (see <<_fr_01>>).
+* Use lazy loading for *Select* components if there are more than five components on a form.
+* Use eager loading only if it significantly improves user experience, such as fetching data for the first *Select* immediately upon form rendering.
+
+[#_fr_03]
+=== FR-03. JavaScript logic in form components
+IMPORTANT: Criticality: High
+
+Description ::
+The form builder provides built-in capabilities for data handling and validation.
+Additionally, you can use JavaScript for specific settings like validation, conditional display, or custom default values.
+While flexible, complex or excessive JavaScript logic increases hidden complexity, making debugging and maintenance harder.
+
+Impact ::
+Maintaining complex JavaScript logic at the form modeling level becomes inconvenient and error-prone, especially when teams change or when projects are transferred for support.
+
+Recommendations ::
+* Control JavaScript usage. Keep the logic simple and straightforward whenever possible.
+* Use built-in form builder features for data handling and validation.
+* Avoid side effects. Each JavaScript block must have a single responsibility (validation, conditional display, or data processing) and must not affect unrelated parts of the form.
+
+[#_fr_04]
+=== FR-04. External API services in the _Select_ component
+IMPORTANT: Criticality: High
+
+Description ::
+The *Select* component can fetch data from external APIs located on different domains, often used for lookups.
+Additionally, it can include authentication cookies in requests to external services if necessary.
+You must properly configure both the API server and the form to ensure correct cross-domain requests and cookie handling.
++
+NOTE: Authentication cookie acquisition from external domains is beyond the scope of this document.
+
+Impact ::
+* The browser may block API requests due to CORS (Cross-Origin Resource Sharing) policy violations.
+* The API server may reject requests if required authentication cookies are missing.
+
+Recommendations ::
+* If the API service is public and does not require authentication:
+** Disable authentication cookie transmission in the *Select* component settings (`Add authentication cookies for cross-site requests` = false).
+** Ensure that the API service returns the `Access-Control-Allow-Origin` header with either the user portal domain or wildcard `*`.
+* If the API service requires authentication using cookies:
+** Enable authentication cookie transmission in the *Select* component settings (`Add authentication cookies for cross-site requests` = true).
+** Ensure that the API service returns the `Access-Control-Allow-Origin` header set to the exact user portal domain (https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSNotSupportingCredentials[wildcard `*` is not allowed in this case]).
+* Before production deployment, verify that the API service and form settings fully comply with CORS policy requirements, including proper domain whitelisting.
+
+[#_fr_05]
+=== FR-05. Map component. Non-standard tile servers
+IMPORTANT: Criticality: High
+
+Description ::
+When using non-standard tile servers for the base map layer, you must configure the server to update the `Content-Security-Policy` (CSP) response header.
+
+NOTE: As of writing, the standard tile servers are `tile.openstreetmap.org` and `visicom.ua`.
+
+Impact ::
+Without proper server configuration, the browser will block tile server requests,
+causing the map component to malfunction.
+
+Recommendations ::
+* Prepare and configure the server environment in advance if non-standard tile servers will be used.
+
+NOTE: As of writing, the `Content-Security-Policy` configuration is set in the `deploy-templates/templates/kong-response-transformer-plugin.yaml` file in the `common-web-app` repository.
+
+[#_fr_06]
+=== FR-06. Experimental components
+IMPORTANT: Criticality: Medium
+
+Description ::
+Form builder components in the _Regulation Modeling Web Interface_ are divided into three categories:
+
+* *Updated* — components adapted to the solution and cabinet design, maintained and tested by the Platform development team.
+* *Experimental* — standard Form.io components not adapted for the Platform, not maintained or tested by the Platform team.
+* *Components* — outdated custom components that are no longer maintained.
+
+When modeling forms, you should prioritize using components from the *Updated* category.
+
+Impact ::
+* The form functionality cannot be guaranteed when using components from the *Experimental* or *Components* categories.
+
+Recommendations ::
+* Use components only from the *Updated* category.
+* If the use of other categories is justified, carefully evaluate the risks and perform extensive testing.
+* Avoid manually changing the type of *Experimental* or *Components* items to match *Updated* ones after code adjustments, as this can lead to unpredictable behavior and break functionality.
+
+[#_fr_07]
+=== FR-07. Limits on search conditions for the _Select_ component
+IMPORTANT: Criticality: High
+
+Description ::
+When using the *Select* component integrated with registry reference books via search criteria or external services, always specify a `limit` parameter in the component settings.
+In production, the amount of data may be much larger than in testing, and setting a limit helps avoid performance problems.
+
+Impact ::
+Fetching large datasets into a *Select* component without limits can lead to:
+
+* Unnecessary load on the relational database.
+* Unnecessary load on the synchronous data management service.
+* Increased form rendering time.
+
+Recommendations ::
+* Set the `limit` parameter in the *Select* component to the minimum necessary for correct form functionality.
+* Avoid using the *Disable limiting response* parameter unless strictly justified.
+
+[#_fr_08]
+=== FR-08. Mathematical calculations
+IMPORTANT: Criticality: High
+
+Description ::
+All critical mathematical calculations, especially financial ones, should be performed on the server side using DMN tables or business processes.
+
+Impact ::
+* Results of client-side calculations cannot be trusted and may be compromised.
+* The *Number* component uses the JavaScript `Number` type, which is inaccurate for financial calculations and can produce unsafe results with large numbers.
+
+Recommendations ::
+* Perform critical mathematical calculations in DMN tables or business processes.
+* Optionally duplicate simple calculations client-side for better user experience, but always ignore client-side results on the server.
+
+[#_fr_09]
+=== FR-09. Input mask on text fields
+IMPORTANT: Criticality: Medium
+
+Description ::
+You can apply an input mask to a text field component to simplify user input.
+To ensure proper form pre-filling, input values must match the field's mask format.
+
+Impact ::
+* If a masked field is improperly pre-filled, the user will not be able to submit or sign the form, preventing business process completion.
+* The user will not be able to complete user tasks if:
+** The text field has an input mask.
+** The text field is configured as non-editable.
+** Pre-filled data does not match the mask format.
+
+Recommendations ::
+* Validate pre-filled data in business processes for fields that use masks.
+* Pay extra attention to external system data that may not conform to input masks.
+* Consider avoiding masks altogether, or use masks for input only while disabling them for pre-filled data.
+
+[#_fr_10]
+=== FR-10. Edit Grid
+IMPORTANT: Criticality: High
+
+Description ::
+When using the *Edit Grid* component,
+note that complex logic inside nested components can significantly impact form rendering performance,
+especially with many table rows.
+This applies both to read-only mode (data prepared in business processes) and edit mode (user-entered data).
+
+NOTE: In this section, the terms *Table* and *Edit Grid* are used interchangeably.
+
+Impact ::
+Increased form rendering time due to:
+* Search condition queries being executed for each table row.
+(For example, 100 rows with 3 *Select* fields will generate 300 search queries.)
+* File search queries executed against the _Digital Document Service_ for each file associated with a table row.
+(Client-side requests occur once per table, but server-side processing complexity is O(n)).
+
+Recommendations ::
+* Use the *Optimize column render* setting (under *Data* tab) in the *Edit Grid* component.
+It disables complex client-side logic (JavaScript validation, conditional visibility, computed values, and search queries).
+* Avoid displaying files inside *Edit Grid* if data was prepared via business processes.
+Instead, use a separate form with a detailed card view for file access.
+* Minimize displayed data:
+** Reduce the number of rows to the minimal necessary amount. Consider using reports if you need to work with all data.
+** Reduce the number of columns. Use a separate form for detailed row information if needed.
+
+[#_fr_11]
+=== FR-11. Data types
+IMPORTANT: Criticality: High
+
+Description ::
+When using the *Edit Grid* component, make sure that the data types displayed in the table match the data types provided by the business process.
+Each column in the _Edit Grid_ has its own dedicated component, and these components must align with the corresponding data types.
+For example, to display `string` values, you should use the _Text Field_ or _Textarea_ components.
+Similar issues can also arise when using mismatched components outside of _Edit Grid_.
+
+Impact ::
+Selecting an incorrect component for displaying data can lead to:
+* Failure to display data.
+* Incorrect or inconsistent data display.
+* Problems using the search function inside the _Edit Grid_.
+* Complete malfunction of the form or the _Edit Grid_.
+
+Recommendations ::
+For each data type, use only the components that match it. See the mapping table below.
++
+.Data type mapping for form components
+[cols="1,1,1", options="header"]
+|===
+| Form component
+| Data type in business process scripts (Groovy)
+| Data type in JavaScript
+
+| *Number*
+| `byte`, `short`, `int`, `long`, `BigInteger`, `float`, `double`, `BigDecimal`
+| `number`
+
+| *Text Field*
+| `char`, `String`
+| `string`
+
+| *Text Area*
+| `String`
+| `string`
+
+| *Checkbox*
+| `boolean`
+| `boolean`
+
+| *Select*
+| `Map`, `String`
+| `object`, `string`
+
+| *Select (Multiple values)*
+| `List`
+| `array`
+
+| *Edit Grid*
+| `List`, `Map`
+| `array`, `object` (array of objects)
+
+| **Radio**
+| `String`
+| `string`
+|===

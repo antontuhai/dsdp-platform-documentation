@@ -1,0 +1,20 @@
+= Business process modelers
+
+:sectanchors:
+:sectlinks:
+
+The *_Business Process (BP) modelers_* craft the core of the Registries Platform — *Business Processes*, which underpin all services offered.
+
+Using tools like the *Administrative portal*, Camunda Modeler, and standards like *BPMN* and DMN, BP modelers design *processes*, *UI forms*, and *integrations*.
+Complex models often incorporate *Groovy scripting*, *JUEL functions*, and *JSON structures*. Modelers and developers employ *REST and SOAP connectors* for interactions with external systems or other Registries on the Platform.
+
+For more details on BP modeling, see the section pages.
+
+== Section overview
+
+* [*] xref:bp-modeling/bp/index.adoc[]
+* [*] xref:bp-modeling/bp/bpmn/index.adoc[]
+* [*] xref:bp-modeling/forms/bp-modeling-forms-general-description.adoc[]
+* [*] xref:bp-modeling/bp/rest-connector.adoc[]
+* [*] xref:bp-modeling/external-integration/api-call/connectors-external-registry.adoc[]
+

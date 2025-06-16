@@ -1,0 +1,10 @@
+:sectlinks:
+:sectanchors:
+= Generating excerpts
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Section overview
+
+* xref:user:officer/reports/reports-docx.adoc[]
+* xref:user:officer/reports/reports-csv.adoc[]

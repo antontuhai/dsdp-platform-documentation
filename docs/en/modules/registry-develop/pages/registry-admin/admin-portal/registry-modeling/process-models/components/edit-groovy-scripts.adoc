@@ -1,0 +1,164 @@
+= Editing business process scripts in a visual code editor
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+The developer of the registry regulations can edit https://uk.wikipedia.org/wiki/Groovy[*Groovy*] scripts using the visual code editor in the embedded *BPMN.iO* diagram editor. The solution implements the https://microsoft.github.io/monaco-editor/[Monaco Editor], visualized with the *Visual Studio Dark* theme.
+
+The solution provides an enriched web code editor (a simplified version of an IDE development environment) that significantly enhances working with Groovy scripts in business processes. The tool supports essential functions for working with source code, allowing you to create and edit scripts in a single place—the script tasks of the registry's business processes, without the need for external desktop applications.
+
+The following features are supported when working with the editor: ::
+
+* [*] Autocompletion
+* [*] Autocompletion for custom functions
+* [*] Syntax code analysis and error checking
+* [*] Comment support
+* [*] Code folding and unfolding
+
+== Functional capabilities
+
+=== General usage process
+
+Use the visual code editor when creating and editing scripts within the scope of business process modeling.
+
+[CAUTION]
+====
+Editing components of the registry regulations is only possible within change candidate versions. For the master version, only the viewing option is available.
+
+For more details on working with versions of the regulations, refer to
+xref:registry-admin/admin-portal/version-control/version-control-overview.adoc[].
+====
+
+. In the [.underline]#Regulations administrator portal#, open the [.underline]#Process models# section.
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-1.png[]
+
+. Within the candidate version, select the process and click the [.underline]#&#128393; edit icon#.
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-6.png[]
+
+. Navigate to the [.underline]#Builder# tab and model the business process in the web editor.
++
+TIP: The capabilities of the [.underline]#Builder# tab are described in more detail at
+xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-bpmn-editor.adoc[].
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-4.png[]
+
+. Create a script task (*Script Task*).
+. Click kbd:[Open script editor] to open the [.underline]#Script editor#.
+
+. Create or edit the script.
++
+TIP: Expand the editing window or view the script in full-screen mode for convenience.
+
+* Click kbd:[Save] to save the changes.
+* Click kbd:[Close] to cancel the changes.
++
+image::registry-admin/hierarchical-model/hierarchical-model-bp-2.png[]
++
+image::registry-admin/hierarchical-model/hierarchical-model-bp-3.png[]
++
+[NOTE]
+====
+If the script contains any potential errors, the editor will provide a corresponding message on the screen.
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-6.png[]
+
+====
+
+=== Code autocompletion and custom JUEL function autocompletion
+
+When working with scripts in the modeling editor, you can utilize [.underline]#code autocompletion#, including [.underline]#autocompletion for custom JUEL functions# from the dropdown list. This helps prevent errors during manual parameter entry.
+
+==== Code autocompletion
+
+The built-in intelligent completion features predict a data type and flow and suggest parameters based on the context. For example, prompts for possible methods used in variables, function completions, and more.
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-1-1.png[]
+
+==== Autocompletion for custom JUEL functions
+
+The built-in intelligent completion features also include autocompletion for custom JUEL functions that enhance business process capabilities and facilitate modeling.
+
+[TIP]
+====
+Use platform JUEL functions to simplify business process modeling. Currently, the following functions and their autocompletion are implemented in the visual code editor:
+
+* *`initiator()`*
+* *`completer()`*
+* *`system_user()`*
+* *`submission()`*
+* *`sign_submission()`*
+* *`get_variable()`*
+* *`set_variable()`*
+* *`set_transient_variable()`*
+* *`process_caller()`*
+* *`message_payload()`*
+* *`save_digital_document_from_url()`*
+* *`get_trembita_auth_token()`*.
+
+For more information on using JUEL functions, please refer to
+xref:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[].
+====
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-1-2.png[]
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-1-3.png[]
+
+=== Code syntax analysis and error checking
+
+The editor supports code syntax analysis and provides explanations to detail errors.
+
+When hovering over specific elements, such as a variable used in the script, the editor suggests the package and class it refers to.
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-1.png[]
+
+==== Critical errors
+
+If the code contains a critical error made by the modeler, the editor highlights the error in red within the script and displays a corresponding explanation on the screen.
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-2.png[]
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-3.png[]
+
+==== Non-critical errors
+
+If the code contains a non-critical error made by the modeler, when hovering over the cursor, the editor highlights the error in yellow within the script and displays a corresponding explanation on the screen.
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-4.png[]
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-5.png[]
+
+=== Code commenting
+
+The built-in script editor allows you to add comments to the code. Comments provide clear explanations or annotations in the source code of the script/program. They are added to make the source code easier to understand for humans and are ignored by compilers and interpreters. This means you can "hide" parts of the program or specific lines from execution.
+
+Use [.underline]#single-line# or [.underline]#multi-line# comments.
+
+==== Single-line comments
+
+Single-line comments start with `//` (double forward slash) and can be used anywhere within a line. Characters after `//` until the end of the line are considered part of the comment.
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-7.png[]
+
+==== Multi-line comments
+
+Multi-line comments start with +++<b><code>/*</code></b>+++ (_forward slash followed by an asterisk_) and can be used anywhere within a line. Characters after +++<b><code>/*</code></b>+++ are considered part of the comment, including newline characters, until the first +++<b><code>*/</code></b>+++ (_asterisk followed by a forward slash_) that closes the comment. Therefore, multi-line comments can be placed at the end or even within an expression, and so on.
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-8.png[]
+
+=== Code folding and unfolding
+
+Use code folding and unfolding functions to make your code more readable and hide or reveal details of specific blocks as needed.
+
+You can organize block structure using reserved statements such as `def`, `for`, `if`, `else`, and so on.
+
+When hovering the cursor next to a specific statement (an open block), a switch will appear to allow you to fold it.
+
+Unfolding switches are always visible. Simply click on one to show the details in the code block.
+
+image:registry-admin/admin-portal/process-models/edit-groovy-scripts/edit-groovy-scripts-9.png[]
+
+

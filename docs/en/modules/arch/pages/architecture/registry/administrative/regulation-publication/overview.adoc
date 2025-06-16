@@ -1,0 +1,173 @@
+= Registry regulations deployment subsystem
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+The registry regulations deployment subsystem verifies the integrity of the changes made to the xref:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[registry regulations] and automatically applies them to the subsystems of the xref:architecture/registry/operational/overview.adoc[registry operational zone].
+
+== Subsystem functions
+
+* Tracking changes to the registry regulations
+
+* Validating the integrity of the registry regulations
+
+* Deploying temporary databases for version candidates
+
+* Applying changes to the registry database schema
+
+* Generating code for registry data access services
+
+* Deploying registry data access services
+
+* Deploying changes to business processes and UI forms
+
+* Creating user roles for the registry
+
+* Configuring access rights to business processes
+
+* Applying changes to external integration and cross-registry interaction settings
+
+* Deploying changes to report and excerpt templates
+
+* Deploying changes to user notification templates
+
+* Applying changes to registry settings and customization
+
+* Storing artifacts of registry data access services
+
+* Resetting operational zone subsystems to the default state (regulations cleanup)
+
+* Configuring simulation rules for external integrations
+
+* Configuring geodata management subsystem
+
+== Technical design
+
+.A component diagram of the Registry regulations deployment subsystem
+image::architecture/registry/administrative/regulation-publication/registry-publication-design.drawio.svg[]
+
+* _(1)_ - Occurs only on the first deployment of the registry regulations, including post-cleanup recovery.
+
+[#subsystem-components]
+== Subsystem components
+
+|===
+
+|Component name |Registry representation |Source |Repository |Function
+
+|_Regulations deployment service_
+a|
+* `jenkins`
+* `jenkins-operator`
+|3rd-party
+a|
+* https://github.com/epam/edp-ddm-jenkins-operator[github:/epam/edp-ddm-jenkins-operator]
+* https://github.com/jenkinsci/jenkins[github:/jenkinsci/jenkins]
+
+|A software suite that provides automation throughout the registry regulations deployment lifecycle.
+
+|_Regulations deployment pipeline_
+a|
+* `registry-regulations-publications-pipelines`
+* `registry-regulations-publication-stages` (DEPRECATED)
+|origin
+a|
+* https://github.com/epam/edp-ddm-registry-regulations-publication-pipeline[github:/epam/edp-ddm-registry-regulations-publication-pipeline]
+* https://github.com/epam/edp-ddm-registry-regulations-publication-stages[github:/epam/edp-ddm-registry-regulations-publication-stages]
+|Groovy pipelines to execute the various steps of the regulations deployment subsystem. Built on the https://epam.github.io/edp-install/user-guide/pipeline-framework/[EDP Pipeline Framework].
+
+|_Regulations deployment agent_
+|`dataplatform-jenkins-agent`
+|origin
+|https://github.com/epam/edp-ddm-dataplatform-jenkins-agent[github:/epam/edp-ddm-dataplatform-jenkins-agent]
+|A Jenkins agent that runs the pipelines of the regulations deployment subsystem and has all the necessary dependencies. To learn more about Jenkins agents, refer to Jenkins documentation: https://www.jenkins.io/doc/book/using/using-agents[Using Jenkins agents].
+
+|_Registry artifacts storage_
+|`nexus`
+|3rd-party
+a|
+* https://github.com/epam/edp-ddm-nexus[github:/epam/edp-ddm-nexus]
+* https://github.com/sonatype/nexus-public[github:/sonatype/nexus-public]
+|Storing the artifacts generated in the subsystem.
+
+|_Regulations validation utility_
+|`registry-regulations-validator-cli`
+|origin
+|https://github.com/epam/edp-ddm-registry-regulations-validator-cli[github:/epam/edp-ddm-registry-regulations-validator-cli]
+|A _command line interface (CLI)_ for validating the registry regulations' components at the stage of checking potential changes.
+
+|_Registry data access services generation utility_
+|`service-generation-utility`
+|origin
+|https://github.com/epam/edp-ddm-service-generation-utility[github:/epam/edp-ddm-service-generation-utility]
+|A _CLI_ for generating registry data access services code based on the _Liquibase_ script descriptions.
+
+|_Reports and excerpts publishing utility_
+|`report-publisher`
+|origin
+|https://github.com/epam/edp-ddm-report-publisher[github:/epam/edp-ddm-report-publisher]
+|A _CLI_ for publishing reports and excerpts to the corresponding subsystems.
+
+|_BP access management utility_
+|`camunda-auth-cli`
+|origin
+|https://github.com/epam/edp-ddm-camunda-auth-cli[github:/epam/edp-ddm-camunda-auth-cli]
+|A _CLI_ for managing access rights to BP for the corresponding user roles.
+
+|_Notification templates publishing utility_
+|`notification-template-publisher`
+|origin
+|https://github.com/epam/edp-ddm-notification-template-publisher[github:/epam/edp-ddm-notification-template-publisher]
+|A _CLI_ for publishing notification templates to the corresponding subsystems.
+
+|_Geolayers loading utility_
+|`geoserver-publisher`
+|origin
+|https://github.com/epam/edp-ddm-geoserver-publisher[github:/epam/edp-ddm-geoserver-publisher]
+|A _CLI_ for configuring the geodata management subsystem.
+
+|_Temporary registry databases_
+|`operational:registry-dev-*`
+|origin
+|https://github.com/epam/edp-ddm-registry-regulations-publication-pipeline[github:/epam/edp-ddm-registry-regulations-publication-pipeline/.../dataplatform/CreateSchemaVersionCandidate.groovy]
+|Temporary registry databases for version candidates are used when modeling the regulations to test potential changes in _Liquibase_ scripts.
+
+|===
+
+== Technological stack
+
+The following technologies were used when designing and developing the subsystem:
+
+* xref:arch:architecture/platform-technologies.adoc#java[Java]
+* xref:arch:architecture/platform-technologies.adoc#groovy[Groovy]
+* xref:arch:architecture/platform-technologies.adoc#spring[Spring]
+* xref:arch:architecture/platform-technologies.adoc#spring-boot[Spring Boot]
+* xref:arch:architecture/platform-technologies.adoc#postgresql[PostgreSQL]
+* xref:arch:architecture/platform-technologies.adoc#liquibase[Liquibase]
+* xref:arch:architecture/platform-technologies.adoc#ceph[Ceph]
+* xref:arch:architecture/platform-technologies.adoc#helm[Helm]
+* xref:arch:architecture/platform-technologies.adoc#okd[OKD]
+* xref:arch:architecture/platform-technologies.adoc#jenkins[Jenkins]
+* xref:arch:architecture/platform-technologies.adoc#edp-jenkins-operator[EDP Jenkins Operator]
+* xref:arch:architecture/platform-technologies.adoc#nexus[Nexus]
+* xref:arch:architecture/platform-technologies.adoc#keycloak[Keycloak]
+* xref:arch:architecture/platform-technologies.adoc#edp-keycloak-operator[EDP Keycloak Operator]
+* xref:arch:architecture/platform-technologies.adoc#kafka[Kafka]
+* xref:arch:architecture/platform-technologies.adoc#camunda[Camunda]
+* xref:arch:architecture/platform-technologies.adoc#geoserver[GeoServer]
+
+== Subsystem quality attributes
+
+=== _Deployability_
+
+The main task of the subsystem is to deploy the regulations changes to the corresponding subsystems of the registry operational zone as soon as they are made. The deployment is implemented using common scripting and deployment automation technologies such as _Groovy_, _Jenkins_, and _Helm_.
+
+=== _Integrability_
+
+The subsystem must be integrated with other subsystems of the registry operational zone. For this, the system uses _Groovy_ scripts and CLI adapters that contain complex integration logic and are developed using the _Java_ programming language and common frameworks such as _Spring_ and _Spring Boot_.
+
+=== _Modifiability_
+
+The registry regulations deployment pipeline is divided into separate, loosely connected steps. This enables you to safely modify the existing implementation and develop features to update new subsystems when expanding the xref:architecture/registry/operational/overview.adoc[registry operational zone].

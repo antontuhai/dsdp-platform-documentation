@@ -1,0 +1,194 @@
+= Interacting via REST between Platform registries and with external systems
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+The Platform supports [.underline]#integrative interaction of registries# using *REST API* interfaces. This interaction is possible due to the [.underline]#Inter registry integration subsystem#.
+
+The functionality ensures interoperability of the Platform, providing access to business processes and data reading APIs, as well as allowing reading data and invoking business processes in other registers.
+
+By default, the Platform utilizes cross-registry interaction between registers through the Ukrainian Secure exchange gateway (SEG) *Trembita* (_for details, see https://trembita.gov.ua/ua[trembita.gov.ua]_). This interaction is carried out using the SOAP protocol. It requires resolving preparatory matters in the legal domain.
+
+Cross-registry interaction via REST reduces excessive utilization of computational resources, external traffic, and response time in register integration without employing SOAP interfaces of the Trembita SEG and moving away from complex bureaucratic mechanisms.
+
+Main functions of the cross-registry integration subsystem: ::
+
+* [*] Providing an API for invoking registry business processes by external systems.
+
+* [*] Providing access for other registries or systems to individual data read requests of the registry data management subsystem.
+
+* [*] Routing requests to external registries with granted access.
+
+== Cross-registry interaction: REST schemes
+
+There are two integration schemes for the registries deployed on the Platform: ::
+
+* xref:#int-registry-ext-system[]
+* xref:#platform-registries[]
+
+[#int-registry-ext-system]
+=== REST interaction of registries on the Platform with an external information system
+
+Integration interaction of registers with external systems can be divided into [.underline]#outbound# and [.underline]#inbound#, depending on the direction of traffic.
+
+.Interaction of registries on the Platform with a third-party information system
+
+image::registry-develop:registry-admin/external-integration/rest-api-no-trembita/int-reg-ext-system.png[]
+
+. Outbound interaction is possible through the integration [.underline]#REST connector# -- *Connect to external system*. The connector has a REST interface for calling external endpoints. It can be used when modeling business processes in the regulations of a specific register. OpenShift (Kubernetes) secrets should be used for authentication.
++
+
+. [.underline]#Inbound interaction# is possible through the implemented registry services: *`external-system-api-kong-proxy`* and *`registry-rest-api-ext`*.
++
+[NOTE]
+The external system must initially obtain an access password from the registry administrator. With this password, it can get an access token in the Keycloak service. This token can then be used to authorize in services and access the resources.
+
+* The *`external-system-api-kong-proxy`* service is automatically deployed along with the register. It has a REST interface allows initiating business processes in registries on the Platform and retrieving data from them. The service uses the entry point (endpoint) /*`startBp`* to start a business process.
+
+* The *`registry-rest-api-ext`* service is automatically deployed after creating the data model in the registry regulations. It allows access to API representations of the registry operational database.
+
+[#platform-registries]
+=== REST interaction of registries within a single Platform
+
+During the integration interaction of registries within the Platform, there is always a [.underline]#registry client (data consumer/requester)# and a [.underline]#target registry (data owner)#.
+
+.REST Interaction of registries within a single Platform
+
+image::registry-develop:registry-admin/external-integration/rest-api-no-trembita/internal-registries-platform.png[]
+
+The registry client can request data from the target registry in two ways through: ::
++
+[NOTE]
+The registry client needs to obtain another registry's access token from the Keycloak service. This token can be used for authentication in the services.
+
+. The *`bp-webservice-gateway`* service, which is automatically deployed with the registry and has a REST interface, allows business process initiation in the Platform's registries and retrieving data from them. The service utilizes the entry point (endpoint) /*`startBp`* to start a business process.
++
+[NOTE]
+====
+* Initiating business processes in another (target) registry is possible using a delegate extension called *Start business process in another registry*. It is designed solely for registry integration within the Platform.
+
+* To retrieve data from the operational database of another (target) registry within the execution of business processes, a delegate extension called *Search for entities from another registry data factory* can be used. It is intended only for registry integration within the Platform.
+====
+
+. Through the *`registry-rest-api-ext`* service, which is automatically deployed after creating a data model in the registry regulations, it is possible to access the API representations of the registry's operational database from the User interface (based on search condition) in the User portal.
+
+== Setting up interaction between registries
+
+Configure REST interaction with other registries within a single Platform instance or external systems.
+
+* If your registry receives requests and provides data, refer to the section xref:#target-registry-setup[].
+
+* If your registry queries data from other registries on the Platform, refer to the section xref:#client-registry-setup[].
+
+* For external systems, obtaining an access token to the registry from Keycloak is essential to use it for further authorization in registry services. An example of implementing token retrieval logic through Postman can be found here:  xref:#get-access-token-keycloak[].
+
+* A separate scenario is configuring outbound interaction with external systems, where the registry on the Platform needs to call other systems. This case requires using a REST connector (see xref:#rest-connector[]).
+
+[#target-registry-setup]
+=== Configuring target registry (data owner)
+
+If your registry is the data owner, and you want to expose integration API endpoints, receive requests, and provide data to other registries or systems, perform the following regulations settings:
+
+. Configure authorization settings—provide access to invoking the business process.
+
+. Model the business process to be invoked by another registry.
+
+. Create a data model (grant read access to the registry data through the API representation).
+
+TIP: For more details on setting regulatory requirements for steps 1-3, refer to xref:registry-admin/external-integration/api-publish/rest-soap-api-expose.adoc[].
+
+[start=4]
+. _Also, for REST interaction_, grant access to the registry for another registry on the Platform or external system in the *Control Plane* administrative panel. Administrators can add, delete, or suspend access to the registry for other registries on the Platform and external systems.
++
+TIP: For more details, see xref:admin:registry-management/control-plane-registry-grant-access.adoc[].
+
+[#client-registry-setup]
+=== Configuring the client registry (data consumer)
+
+Configure interaction with other registries for the data-consuming registry. To do this: ::
++
+. Model the business process with the ability to call an external registry.
++
+[TIP]
+====
+[%collapsible]
+.Where can I find an example of a reference business process?
+=====
+include::partial$snippets/demo-reg-reference-examples-en.adoc[]
+
+An example of a BPMN process diagram will be available in the demo-registry's regulations by searching for the keywords -- *_create-school-auto_*. The names of the forms can be found inside the corresponding User Tasks of the business process in the *`Form key`* field.
+=====
+====
+
+. Within the business process, use standard integration extensions to interact with other registries on the Platform:
+
+* Launch business processes in another registry on the Platform—use the standard integration connector—*Start business process in another registry*.
+
+* Retrieve data from the operational database of another registry on the Platform—use the standard integration connector—*Search for entities from another registry data factory*.
++
+[TIP]
+For descriptions and configurations of delegates, see xref:registry-develop:bp-modeling/bp/element-templates/rest-integration-registries/rest-integration-registries-overview.adoc[].
++
+[NOTE]
+====
+To start a business process in the target registry, you need to pass the initial variables expected by it.
+
+You can pass the initial variables as a *`Map`* of input parameters (*Input Parameters*), for example, as _key-value_ pairs when configuring the delegate for starting the business process.
+
+.Formation of initial variables of the process in the client registry for transfer to the target registry
+image::registry-develop:registry-admin/external-integration/rest-api-no-trembita/pass-map-params-bp.png[]
+====
+
+. Model a UI form to read data from the operational database of the registry based on search conditions. This scenario allows accessing the database of another registry from a user form. To do this:
+
+* Go to the [.underline]#Regulations administrator portal#> Open the [.underline]#UI Forms# section > Create a data input form > Open the [.underline]#Form builder#.
+
+* In the *Select* component, switch to the *Data* tab > In the *`Data Source URL`* field, enter the path to the resource in the data factory of another registry.
++
+.Data Source URL field on the UI form
+====
+----
+/api/integration/data-factory/test-registry/resource-name
+----
+
+|===
+| Parameter/Path | Description
+| `/api/integration/data-factory`
+| Root path (unchanged).
+| `test-registry`
+| Service name of the target registry specified in the Control Plane.
+| `resource-name`
+| Name of the resource/endpoint to be accessed for data retrieval. For example, `/edu-type`.
+|===
+
+====
++
+.Request the database of another registry based on the search condition from the UI form
+image::registry-develop:registry-admin/external-integration/rest-api-no-trembita/create-sc-data-source-url.png[]
+
+[#get-access-token-keycloak]
+=== Obtaining authorization tokens from external systems
+
+An external system must obtain a unique access token, the *_JWT_*, to access registry resources. It is intended for further authorization of external systems when interacting with registries deployed within the Platform.
+
+TIP: For more details, see xref:registry-develop:registry-admin/external-integration/api-publish/get-jwt-token-postman.adoc[].
+
+[#rest-connector]
+=== Outbound integration with external systems
+
+If there is a need to integrate with an external service or a system outside the Platform cluster, use a special REST connector -- *Connect to external system*.
+
+[TIP]
+For more details, see
+xref:registry-develop:bp-modeling/bp/rest-connector.adoc[].
+
+=== Related pages
+
+* xref:admin:registry-management/control-plane-registry-grant-access.adoc[]
+* xref:registry-admin/external-integration/api-publish/rest-soap-api-expose.adoc[]
+* xref:registry-develop:data-modeling/data/physical-model/rest-api-view-access-to-registry.adoc[]
+* xref:registry-develop:bp-modeling/bp/element-templates/rest-integration-registries/rest-integration-registries-overview.adoc[]
+* xref:registry-develop:registry-admin/external-integration/api-publish/get-jwt-token-postman.adoc[]
+* xref:registry-develop:bp-modeling/bp/rest-connector.adoc[]

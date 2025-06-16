@@ -1,0 +1,2 @@
+// ================ REGISTRY RESOURCES CONFIGURATION AUDIT ================
+*** xref:registry-develop:audit/registry-config-audit/registry-resources-audit.adoc[]

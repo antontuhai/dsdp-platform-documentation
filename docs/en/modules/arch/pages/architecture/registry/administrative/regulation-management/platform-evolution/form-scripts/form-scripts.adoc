@@ -1,0 +1,146 @@
+= Externalizing UI form scripts
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+When modeling forms for tasks, it is often necessary to use the same Javascript functions that have to be duplicated. This approach relates to relevant functions for any registry and those that make sense to reuse within specific regulations or even a business process.
+
+We suggest saving individual javascript files *at the registry regulations level* to process all these scenarios. These files are available through API in form-schema-provider and are used when performing tasks.
+
+[user-roles]
+=== User roles
+
+* Registry regulations developer
+
+== Functional scenarios
+
+* Reusing Javascript repeated functions within Javascript insertions when modeling forms. The following form parameters are supported:
+
+** *Custom Default Value*
+** *Calculated Value*
+** *Custom Validation*
+** *Advanced Conditions*
+** others, including specific to some components, for example, *Filter Query* and *Custom Filter* on the *Select* component.
+
+== Target design
+
+=== Example of a file containing an externalized script
+
+After adding such a file, users are able to use the `myUtil` function and the `myConst` variable in their Javascript inserts:
+
+[source,javascript]
+----
+function myUtil() {
+  return JSON.stringify(data); // you can use common formio variables here
+}
+
+var myConst = 'veryCustom';
+----
+
+=== System components and their purpose in the scope of the solution design
+
+This section provides a list of system components that are involved or need to be changed/created as part of implementing functional requirements according to the technical design of the solution.
+
+|===
+|Component|Service name|Purpose / Essence of changes
+
+|_Registry regulations_
+|*registry-regulations-publications*
+|Add the _form-scripts_ folder for storing externalized scripts.
+
+|_Registry regulations publication pipeline_
+|*registry-regulations-publication-pipeline*
+|Add processing of externalized scripts -- their storage and updating in the *`form-schema-provider`* service (similar to forms).
+
+|_Form providing service_
+|*form-schema-provider*
+|Forms will now require externalized scripts. In the form-schema-provider service, it is necessary to add the ability to store and update scripts separately from forms. You also need to add a separate GET formScriptList endpoint so that it returns all scripts together in the String format.
+
+|_Regulations management service_
+|*registry-regulation-management*
+|Externalized scripts must be connected to the form for correct work with form preview on *`admin-portal`*. Therefore, in addition to *`form-schema-provider`*, changes are also required in the regulation management service. As part of these changes, one more endpoint should be added for the candidate and master versions that will read script files and return them in `String` format.
+
+|_UI form data validation service_
+|*form-submission-validation*
+|For the correct validation of entered data, it is necessary to make the exact computations as in the portals. Therefore, the validation service must also take into account externalized scripts.
+
+|_Administrative portal_
+|*admin-portal*
+|Change the form component to accept arbitrary scripts as text and perform all Javascript computations based on these scripts.
+
+|_Officer portal_
+|*officer-portal*
+|Add script data processing and transfer it to the form component as text
+
+|_Citizen portal_
+|*citizen-portal*
+|Add script data processing and transfer it to the form component as text
+
+|===
+
+=== Registry regulations
+
+Add the *_form-scripts_* folder to regulations' Gerrit for storing scripts:
+
+.Registry regulations structure
+[plantuml, registry-config-regulation-structure, svg]
+----
+include::partial$architecture/registry/administrative/regulation-management/platform-evolution/form-scripts/form-scripts-structure.puml[]
+----
+
+=== Registry regulations publications pipeline
+
+The *_UploadFormScripts.groovy_* file must be added to the *_/platform/pipelines/stages/impl/lowcode_* in the *_registry-regulations-publications_*. The implementation of this script is similar to the _UploadFormChanges.groovy_ script for saving forms.
+
+=== Portals and validation service
+
+One way or another, portals will receive externalized scripts in the `String` format and pass them to the form component. The form component will add the script text to any Javascript attribute of the form components. This way, all functions and constants will be available when computing Javascript attributes. This approach applies to `officer-portal`, `citizen-portal`, `admin-portal`, and `form-submission-validation` services.
+
+.Javascript attribute execution order
+[plantuml, registry-config-regulation-attribute, svg]
+----
+include::partial$architecture/registry/administrative/regulation-management/platform-evolution/form-scripts/form-scripts-attribute.puml[]
+----
+
+=== Form providing service
+
+==== Changes in Redis
+
+* Create the new namespace (keyspace): `bpm-form-scripts`
+
+==== Endpoints
+
+._form-schema-provider new API_
+[%collapsible]
+====
+swagger::{attachmentsdir}/architecture/registry/administrative/regulation-management/platform-evolution/form-scripts/form-provider-swagger.yml[]
+====
+
+=== Registry regulations management service
+
+==== Endpoints
+
+._registry-regulation new API_
+[%collapsible]
+====
+swagger::{attachmentsdir}/architecture/registry/administrative/regulation-management/platform-evolution/form-scripts/registry-regulation-swagger.yml[]
+====
+
+== Development plan
+=== Technical assessments
+- FE (changes in portals)
+- BE (changes in services)
+- DevOps (changes in the publication pipeline)
+
+=== Plan
+
+- Add an endpoint to the *registry-regulation-management* service for getting scripts
+- Add endpoints to the *form-schema-provider* service for saving, changing, and getting scripts
+- Update the form component
+- Request externalized scripts on the `admin-portal` and transfer them to the form component
+- Process the parameter of the externalized scripts on the citizen and officer portal and pass it to the form component
+- Add a request for *form-schema-provider* in *form-submission-validation* and process scripts
+- Add changes to the publication pipeline
+- Add a reference business process to consent

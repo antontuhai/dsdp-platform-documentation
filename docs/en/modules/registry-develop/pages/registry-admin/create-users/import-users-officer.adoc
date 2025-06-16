@@ -1,0 +1,304 @@
+= Importing users through a file and granting access rights
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+To simplify the creation of many users (officers) in Keycloak, the functionality to load a list of users into the system using a file has been implemented.
+
+A new page called *User management* has been added to the Administrative portal. You can upload a file with user data for this registry there.
+
+To minimize errors when creating new users, preliminary validation rules have been introduced for the file (size, format, encoding).
+
+To meet the security and data storage reliability requirements, the file is encrypted and stored in the object storage of the registry (Ceph).
+
+All subsequent steps for initiating the user import process in Keycloak, parsing and validating user data from the file, processing data in the file, and creating users in Keycloak are performed automatically without the involvement of the registry administrator.
+
+To monitor the execution process and its results, functionality has been implemented in the Kibana logging service. The registry administrator can view information about the processed file and the summary result, including the number of processed records, successful imports, erroneous imports, as well as detailed information for each erroneous record.
+
+Additionally, based on the developed *System event log* in Redash, a new log called *User management log* has been created separately. In the *User management log*, the registry administrator can see actions related to the creation of users in Keycloak, including information about imports through a file.
+
+== Configuring administrator attributes in Keycloak
+
+Before proceeding, the following actions need to be performed once in Keycloak:
+
+. Go to the corresponding `-admin` realm in Keycloak and select the `Users` section.
+
+. Choose the administrator user who will import the file and go to the `Attributes` section.
+
+. Create three keys for the attributes:
++
+* `fullName` -- Full name;
+* drfo -- The personal registration number of the taxpayer's account card.
+* `edrpou` - The unique identification number of the legal entity in the Unified state register of enterprises and organizations of Ukraine.
+
+. Click *`Save`*.
++
+image:registry-develop:registry-admin/import-users(officer)/import-users(officer)-00.png[]
+
+[IMPORTANT]
+====
+If the above actions are not performed, the following error will be displayed: ::
+
+The necessary attributes are not created in the user management system. Please contact the administrator.
+
+image:admin:user-management/user-management-75.png[]
+====
+
+[CAUTION]
+====
+The configuration of attributes in Keycloak is performed once. There is no need to repeat it during subsequent user import procedures.
+====
+
+[#admin-portal-import-users]
+== Importing users through the Regulations administrator portal
+
+. Go to the Regulations administrator portal.
++
+[TIP]
+====
+You can obtain the link to the Regulations administrator portal of the corresponding registry in *Openshift*. To do this, go to the `Networking` → `Routes menu`, select the necessary project, enter `admin-portal` in the search, and follow the link in the *Location* column.
+
+image:admin:user-management/user-management-45.png[]
+====
++
+image:registry-develop:registry-admin/import-users(officer)/import-users(officer)-01.png[]
+
+. Select the `User management` section and click the `Add users` button.
++
+image:admin:user-management/user-management-05.png[]
+
+. Download the `Users_Upload.csv` file template for filling in the user data.
+
+. Familiarize yourself with the *Instructions for filling in the Users_Upload* file.
++
+[IMPORTANT]
+====
+
+Pay attention to the peculiarities of filling in the file template parameters to avoid errors.
+
+If any errors are detected during the user import from the file, the import process will be interrupted, and none of the users will be added to the Keycloak system. xref:#validation-rules[See the diagram below].
+====
++
+image:admin:user-management/user-management-08.png[]
+
+. Fill in the file with data of the users that need to be granted access to the registry.
++
+[WARNING]
+====
+
+File requirements:
+
+* Maximum file size - *`30 MB`*;
+* File format - *`CSV`*;
+* File encoding - *`UTF-8`*.
+
+If the file does not meet any of the criteria described above, the user will receive the corresponding message:
+
+* kbd:[The file is too large.]
+* kbd:[Incorrect file format.]
+* kbd:[File has an incompatible encoding.]
+
+This means that the file upload did not occur. xref:#validation-rules[Refer to the diagram below].
+====
++
+[NOTE]
+====
+Validation rules for data in the file:
+
+Attribute `drfo`: ::
+
+Required, must be unique in relation to attributes `edrpou` and `fullName`.
+
+Attribute `edrpou`: :: Required, must be unique in relation to attributes `drfo` and `fullName`, only digits are allowed.
+
+Attribute `fullName`: :: Required, must be unique in relation to attributes `drfo` and `edrpou`.
+
+Attribute `Realm Roles`: :: Required, may contain multiple roles (system and regulatory roles, if applicable), specified separated by commas. The specified roles must already be created in the Officer Realm in the corresponding registry in Keycloak.
+
+Attribute `KATOTTG`: :: Required for registries that use a territorial-based role model, optional for other cases. The value consists of the letters `UA` followed by 17 digits (for example, `UA53060230000098362`). If the user has access to multiple territorial units, their codes are entered separated by commas. The maximum number of values for one user is 16. In case the user is granted access to records throughout Ukraine, the value of KATOTTG should only be specified as two characters - `UA`.
+
+Any other attribute: :: Optional attribute with a custom name and value as needed (e.g., organization name, region, district, locality, etc.), if there is a future need to build statistics based on it for created users. It is prohibited to include special characters (`[, ], {, }, , "`), as well as values containing more than 255 characters.
+
+[.underline]#The name of each additional attribute must be the same for all users in the registry and have a unique name among other parameters.#
+====
+
+. Upload the file by dragging it to the corresponding *Upload a list of officials* field or selecting it from the appropriate directory.
++
+image:admin:user-management/user-management-06.png[]
+
+. Click the `Start import` button.
++
+image:admin:user-management/user-management-07.png[]
+
+. On the next step, there will be an indication that the file is being processed. Please wait a few minutes for the complete loading of registry users. The message will also include a link to the Kibana service, where you can view the processing results of the file: the number of processed records, the number of successful imports, and the number of errors.
++
+image:admin:user-management/user-management-70.png[]
+
+== Viewing the execution result in Kibana service
+
+The module checks the entire file and writes all found issues to the Kibana technical log repository. The logs record information about each skipped entry during creation, along with the reason for skipping, while successfully processed entries are not logged (only the total count is displayed). Additionally, a unique user identifier in Keycloak (Username) is assigned and duplicated.
+
+[CAUTION]
+====
+During the initial use of the Kibana service, it is necessary to create an `index pattern`.
+
+To do this, follow these steps:
+
+. Open the application and go to the *Management* section.
+. Click on `Create index pattern` to be able to read logs from the indexes that go to *Elasticsearch*.
++
+image:registry-develop:bp-modeling/bp/kibana/kibana-section1-figure1.png[]
+
+. In the *Define Index Pattern* field, create your index pattern according to the template. For example, if all logs start with *app-*, create the index pattern *app-** to display the corresponding logs.
+
+. Click `Next step` to proceed to the next step.
++
+image:registry-develop:bp-modeling/bp/kibana/kibana-section1-figure2.png[]
+
+. Use the filter on the *Configure Settings* tab to select the period for which the data should be shown.
++
+
+TIP: By default, logs for the last 15 minutes will be displayed.
+
+. Click `Create Index Pattern`.
++
+image:registry-develop:bp-modeling/bp/kibana/kibana-section1-figure3.png[]
+
+. After creating the index pattern *app-**, navigate to the *Discover* tab to obtain the necessary information.
+====
+
+[#validation-rules]
+=== General validation rules for checking user data from the file.
+
+.The general schema of validation rules
+image::registry-develop:registry-admin/import-users(officer)/import-users-officer.svg[]
+
+In case of violating a validation rule during data entry in the file, the corresponding error will be displayed:
+
+* _A required field is empty or consists only of spaces `or` has multiple values separated by commas instead of one (for the fields edrpou, drfo, fullName)_ — an error indicating the absence of a mandatory attribute.
+
+* _The `edrpou` field contains invalid characters (it should only consist of digits)_ — an error indicating the presence of forbidden characters.
+
+* _The specified role is not present in the list of available roles in the Officer Realm of the corresponding registry in Keycloak_ — an error indicating the absence of the specified role.
+
+* _The file structure does not match the specified structure_ — an error indicating the file's mismatch with the intended structure.
+
+In such cases, the user import process does not occur.
+
+[CAUTION]
+====
+
+If the user import to Keycloak violates the validation rules, it is necessary to repeat the user import procedure from the beginning after making the necessary adjustments.
+====
+
+Partial import of users with errors is possible in the following cases:
+
+. A user with the same username and attributes (`drfo`, `edrpou`, `fullName`) already exists in Keycloak.
+
+. A user with the same `username` but different attributes already exists in Keycloak.
+
+. A user with the same attributes but a different `username` already exists in Keycloak (in this case, the logs will indicate the actual username of the user in Keycloak).
+
+. The user with the same attributes has been encountered in the CSV file before (duplicate entries).
+
+. An error occurred in Keycloak during the import process.
+
+In such cases, the user import process occurs partially, and user records with errors are logged in Kibana as `Failed to import` and `Skipped`, and they are not added to the Keycloak system. All other successful user records are added to the Keycloak system.
+
+Logging algorithm for user import containing errors:
+
+* If one of the requests in a group of N entries returns an error, the user record from that specific group starts sequentially. The user on which the error occurred is skipped.
+
+* The logs record information about all skipped entries during creation, including the reason for skipping (marked as `Skipped` or `Failed to import`).
+
+[CAUTION]
+====
+If importing users into Keycloak was done with errors (partial user creation), it is necessary to reload the file with the users who couldn't be created and make the necessary adjustments.
+====
+
+=== Result of the import process with an error
+
+First, it is necessary to find the corresponding entry in the logs with the overall result of the import processing.
+
+image:registry-develop:registry-admin/import-users(officer)/import-users(officer)-08.png[]
+
+* `Total users in the file` -- displays the total number of users that were added via the file;
+
+* `Successfully imported` -- the number of users successfully added;
+
+* `Skipped` -- the number of skipped users;
+
+* `Failed to import` -- the number of users that couldn't be added due to an error with the Keycloak service.
+
+For each user that couldn't be added to the service (skipped), a separate log entry will be shown with information about the validation error.
+
+image:registry-develop:registry-admin/import-users(officer)/import-users(officer)-09.png[]
+
+If importing users into Keycloak was done with errors (partial user creation), it is necessary to reload the file with the users who couldn't be created (after making the necessary adjustments).
+
+=== Successful result of the user import process
+
+`Total users in file` відповідає кількості `Successfully imported`.
+In case the validation rules are successfully passed, the import process will import all users from the file into Keycloak. `Skipped` and `Failed to import` will be indicated with zeros. `Total users in the file` corresponds to the number of `Successfully imported`.
+
+image:admin:user-management/user-management-71.png[]
+
+The creation of users in Keycloak is done in groups (individual requests) in batches of N records (N value is specified in the process settings).
+
+After successfully importing the users into Keycloak, user accounts with corresponding attributes and roles are created.
+
+image:registry-develop:registry-admin/import-users(officer)/import-users(officer)-11.png[]
+
+== Viewing audit logs in the User management journal of the Redash system
+
+Security administrator (with the appropriate access rights) can view the *User management* journal in Redash, for example, to conduct an audit of user access provision.
+
+[NOTE]
+====
+
+To grant access rights to the Redash system, the user must have the `redash-admin` role assigned.
+
+The link to the Redash system can be found in the Openshift console → _Networking_ → _Routes_ and by selecting the relevant project, find the `redash-viewer` realm.
+
+image:registry-develop:registry-admin/import-users(officer)/import-users(officer)-14.png[]
+====
+
+The journal includes all entries that match the following parameters: `applicationName="Keycloak"`, `type="SYSTEM_EVENT"`.
+
+Each user created through file import is displayed as a separate row with the specified set of additional parameters.
+
+image:registry-develop:registry-admin/import-users(officer)/import-users(officer)-12.png[]
+
+The report includes the following parameters: ::
+|===
+
+|*Redash name*|*Parameter name*|*Parameter description*
+|Query Identifier|`requestId`|Request identifier with MDC
+|Event name in the database|`name`|"USER_CREATE"
+|Application/Pod Name|`sourceApplication`|Pipeline name for user import (pod_name)
+|Operation date and time|`timestamp`|Timestamp
+|Administrator's full name|`userName`|Full name of the user who initiated the import process
+|Administrator's identifier|`userKeycloakId`|Keycloak identifier of the user who initiated the import process
+|Administrator's tax identification number|userDrfo|Tax identification number of the user who initiated the import process
+|Created user's ID|`userId`|Keycloak identifier of the created user
+|Created user's username|`username`|Username of the created user
+|User is active|`enabled`|true/false
+|KATOTTG|`katottg`|Code of administrative-territorial units and territories of territorial communities. May contain multiple values.
+|Custom Fields|`customAttributes`|Custom additional attributes of the user
+|Realm identifier|`realmId`|Keycloak identifier of the realm in which the user was created
+|Realm name|`realmName`|Name of the realm in which the user was created
+|Keycloak client name|`clientId`|Value of the "Client ID" attribute of the realm from which the user was created
+|Keycloak client identifier|`keycloakClientId`|Keycloak identifier of the client on behalf of which the user was created
+|Roles of the created user|`roles`|Roles of the created user
+|CSV file identifier|`sourceFileId`|Identifier of the CSV file in the Ceph storage
+|Original CSV file name|`sourceFileName`|Original name of the CSV file from which the user import was performed
+|Checksum of the CSV File|`sourceFileSHA256Checksum`|Checksum of the CSV file uploaded by the user (unencrypted)
+|===
+
+The Redash service functionality allows filtering, sorting parameters, and exporting the generated selection.
+
+image:registry-develop:registry-admin/import-users(officer)/import-users(officer)-13.png[]
+
+

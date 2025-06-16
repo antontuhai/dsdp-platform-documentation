@@ -1,0 +1,24 @@
+= Searching registry UI forms
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+Regulation developers can search for UI forms.
+The search works dynamically based on one parameter:"
+
+* form name;
+* service form name.
+
+To search for modeled UI forms in the interface, follow these steps:
+
+. Open the *UI forms* section in the left-hand menu.
++
+image:registry-admin/admin-portal/ui-forms/ui-forms-1.png[]
+
+. Enter the form name in the search window.
++
+image:registry-admin/admin-portal/ui-forms/ui-forms-4.png[]
+
+NOTE: The search works when 3 or more characters are entered.
+
+

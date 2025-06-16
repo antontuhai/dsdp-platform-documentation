@@ -1,0 +1,203 @@
+= User notification service
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General overview
+
+*_User notification service_* is responsible for the implementation of the requirements for creating and sending notifications to the users.
+
+The interface for external interaction with the service is a separate _Kafka_-topic "_user-notifications_", and the basis of the solution is the response and processing of events-requests for the generation of notifications using _FreeMarker_-templates preloaded in the storage and their subsequent sending according to the user's settings in _Kafka_-topics that are responsible for separate communication channels.
+
+[NOTE]
+If the event-request to send a notification through the "_user-notifications_" topic could not be processed, the system makes N attempts according to the current configuration and, in the absence of a result, redirects the message to a separate service topic "_user-notifications.DLT_".
+
+== Component diagram
+
+This component diagram shows important aspects of service functioning, components and their purpose, external integrations and integrations with other services of the _Platforms_.
+
+image::architecture/registry/operational/notifications/notifications-service.svg[]
+
+== Components and their purpose
+
+|===
+|Component|Library|Purpose
+
+|*Notification Event Subscriber*
+|-
+|Processing system requests for sending notifications to users
+
+Logging of details in case of an unsuccessful attempt to process the request.
+
+Publishing requests that could not be processed to a separate notification queue for analysis.
+
+|*Notification Service*
+|-
+|Orchestration of the processing of the request to send notifications.
+
+Downloading user settings and their data required for sending.
+
+Formation of the list of channels for which it is necessary to send a notification.
+
+|*Notification Template Service*
+|-
+|Saving changes to notification templates.
+
+Getting the notification template for the communication channel.
+
+|*Channel Notification Validators*
+|-
+|Validation of a request to send a notification according to the characteristics of the communication channel
+
+|*Channel Notification Producers*
+|-
+|Forming a request to send a notification for a separate communication channel based on a template
+
+|*Channel Notification Publishers*
+|-
+|Publication of requests for sending notifications for a separate communication channel
+
+|*Channel Notification Subscribers*
+|-
+|Processing requests for sending notifications for a separate communication channel.
+
+Publishing requests that could not be processed into a separate channel queue for further processing
+
+|*Inbox Notification Service*
+|-
+|Saving in-app messages for the user.
+
+Getting a list of in-app user notifications.
+
+Confirmation of viewing of the in-app notification by the user
+
+|*User Settings Feign Client*
+|ddm-user-settings-client
+|Getting communication channel settings for the user
+
+|*Diia Notification Service* (citizen-facing solution)
+|ddm-diia-client
+|Sending a push notifications to the user
+
+|*Diia Notification Template Service* (citizen-facing solution)
+|ddm-diia-client
+|Registration of a notification template for subsequent use when sending a push notification
+
+|*Audit Service*
+|ddm-audit-starter
+|Logging of the audit event
+
+|*Idm Service*
+|ddm-idm-client
+|Getting user attributes by ID
+
+|===
+
+== Component interaction for scenario implementation
+
+=== Receiving _in-app_ notifications and confirming user view
+
+[plantuml, inbox-notification-read-flow, svg]
+----
+include::partial$architecture/registry/operational/notifications/inbox/inbox-notification-read-flow.puml[]
+----
+
+=== Sending notifications
+
+==== General notification processing scenario
+
+.General scenario for notification processing by the user-notifications kafka topic
+
+[plantuml, notification-to-channels-flow.puml, svg]
+----
+include::partial$architecture/registry/operational/notifications/general/notification-to-channels-flow.puml[]
+----
+
+==== Processing a request to send an email notification
+
+.Processing requests for sending email notifications to the users
+
+[plantuml, email-notification-flow, svg]
+----
+include::partial$architecture/registry/operational/notifications/email/email-notification-flow.puml[]
+----
+
+==== Processing a request to send in-app notifications to the inbox of a Citizen portal
+
+[plantuml, inbox-notification-save-flow, svg]
+----
+include::partial$architecture/registry/operational/notifications/inbox/inbox-notification-save-flow.puml[]
+----
+
+== General service settings
+
+.An example of service settings for publishing events via a Kafka topic (using the *ddm-starter-kafka* library as an example)
+[source, yaml]
+----
+data-platform:
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      custom-config:
+        "[enable.idempotence]": true
+    topic-properties:
+      creation:
+        enabled: true
+        timeout-in-seconds: 60
+      retention:
+        default-in-days: 7
+        num-partitions: 1
+        replication-factor: 1
+    error-handler:
+      initial-interval: 1500
+      max-elapsed-time: 6000
+      multiplier: 2
+    topics:
+      "<topic-name>": "<topic-name>"
+----
+
+.An example of service settings for receiving notifications via a Kafka topic (on the example of using the *ddm-starter-kafka* library)
+[source, yaml]
+----
+data-platform:
+   kafka:
+     consumer:
+       group-id: <consumer-group>
+       key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+       value-deserializer: org.springframework.kafka.support.serialize.ErrorHandlingDeserializer
+       custom-config:
+         "[allow.auto.create.topics]": false
+         "[retry.backoff.ms]": 10000
+     topics:
+       "<topic-name>": "<topic-name>"
+     error-handler:
+       initial-interval: 1500
+       max-elapsed-time: 6000
+       multiplier: 2
+----
+
+TIP: There is a need to implement the automatic creation of Kafka topics "_<topic-name>.DLT_" within the framework of the *ddm-starter-kafka* library (_StartupKafkaTopicsCreator_) for the correct implementation of the _DeadLetterPublishingRecoverer_ strategy in case of notification processing failure.
+
+.Canonical example of communication channel settings with secrets for testing
+[source, yaml]
+----
+notifications:
+  email:
+    host: smtp.gmail.com
+    port: 587
+    username: <username>
+    password: <password>
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  diia:
+    url: https://api2t.diia.gov.ua/
+    partner:
+      token: <partner-token>
+----

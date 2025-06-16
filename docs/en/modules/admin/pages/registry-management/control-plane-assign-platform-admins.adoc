@@ -1,0 +1,207 @@
+= Creating Platform administrators
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+A Platform administrator is a user responsible for managing and maintaining the infrastructure of the Platform.
+
+This role is required to deploy the Platform, create registries, and install updates. Platform administrators may also collaborate with other teams, such as equipment administrators, to assess the resources necessary to ensure the Platform's reliability and efficient functioning.
+
+[TIP]
+====
+For details on the Platform's roles and functional responsibilities, see:
+
+* xref:admin:admin-study/admin-profile.adoc[]
+* xref:arch:architecture/platform/operational/user-management/platform-actors-roles.adoc[]
+====
+
+After xref:admin:installation/platform-deployment/platform-deployment-overview.adoc[deploying the Platform on target environments], the system automatically creates a single administrator user: *`kube:admin`*. This user is needed to add the first Platform administrator, who, in turn, can add other administrators and create registries.
+
+Platform administrators are created in the *Control Plane* admin console.
+
+== Adding administrators
+
+To add the first administrator, perform these steps:
+
+. Sign in to the *OpenShift* web console as a `kube:admin` user.
++
+NOTE: To obtain `kube:admin` credentials, contact the Platform's support team.
++
+image:registry-management/cp-platform-admins/cp-platform-admins-1.png[]
++
+. Go to *Home* > *Projects*, find and open the *`control-plane`* project.
++
+. Go to *Networking* > *Routes* and open the link to the *`control-plane-console`* component from the *Location* column.
++
+image:registry-develop:registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-1.png[]
++
+. Sign in to the *Control Plane* admin console as `kube:admin` using the same credentials as in OpenShift.
++
+image:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-01.png[]
++
+image:registry-management/cp-platform-admins/cp-platform-admins-1.png[]
++
+. Open the *Platform management* section and click *`Edit`* in the upper-right corner.
++
+image:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-1.png[]
++
+. Open the *Administrators* section and add one or more administrators that need access to Platform management.
++
+image:registry-management/cp-platform-admins/cp-platform-admins-19.png[]
++
+Click the *`+`* (*Add*) button and provide the following details for each administrator:
++
+--
+* *First name*
+* *Last name*
+* *Email address*
+* *Temporary password*
+--
++
+[NOTE]
+====
+*Password requirements:*
+
+- At least 10 characters in length.
+- At least one lowercase letter.
+- At least one uppercase letter.
+- At least one digit.
+- At least one special character (`@, #, $, %, ^, &, +, =`).
+- Use Latin characters only.
+- No spaces.
+====
++
+To add several administrators, repeat this step for each user separately (click *`+`* > provide details > *`Confirm`*).
++
+[NOTE]
+====
+Use a lower case for email addresses.
+
+Allowed characters are: digits (`0-9`), Latin letters (`a-z`), underscores (`_`), hyphens (`-`), at sign (`@`), dots (`.`), and commas (`,`).
+====
+image:registry-management/cp-platform-admins/cp-platform-admins-19-2.png[]
++
+. Click *`Confirm`* to save your changes.
++
+NOTE: You can also remove an administrator by clicking the delete icon (🗑) next to their username.
++
+As a result, the system generates a `Platform administrators update` request with a `New` status. You can view request details in the *Platform management* > *Update requests* section.
++
+image:registry-management/cp-platform-admins/cp-platform-admins-20.png[]
++
+. In the *Update requests* section, click the view icon (👁) to open your request.
+. Compare the changes between the two versions that open in a new window and make sure the data you entered is correct. Click *`Approve`*.
++
+NOTE: The proposed changes are applied to the _deploy-templates/values.yaml_ configuration file of the *`cluster-mgmt`* component upon confirmation.
++
+image:registry-management/cp-platform-admins/cp-platform-admins-20-1.png[]
++
+After the approval, the changes are applied to the `master` branch of a corresponding repository, which starts the *MASTER-Build-`cluster-mgmt`* build process.
++
+After the build is completed, the system creates a Platform administrator account with the necessary access rights.
++
+TIP: You can verify access within a couple of minutes.
++
+[NOTE]
+====
+A Platform administrator automatically gets the necessary access rights, including `Cluster-admins` and `cluster-mgmt-admin` groups and the `cp-cluster-mgmt-admin` role in the *Keycloak* service.
+====
++
+[IMPORTANT]
+====
+Platform administrators have full access to *OpenShift* and *Control Plane*.
+
+They can add other Platform administrators, create registries, and assign registry administrators.
+
+For details on creating registry administrators, see xref:registry-develop:registry-admin/create-users/create-registry-admins.adoc[].
+====
++
+. You can now sign in to Control Plane as a Platform administrator. To do this, sign out of the `kube:admin` account and sign in via the *Log in with* > *keycloak* option using your Platform administrator credentials.
++
+image:registry-management/cp-platform-admins/cp-platform-admins-21.png[]
++
+From now on, you can add or remove Platform administrators using the same steps you performed under the `kube:admin` account.
+
+[TIP]
+====
+.An alternative way to approve the changes via Gerrit
+[%collapsible]
+=====
+When you sign in using your Platform administrator account, not `kube:admin`, you can approve update requests in the Gerrit service in addition to the Control Plane interface. You can also monitor the `cluster-mgmt` code build process in the Jenkins service. To do this, perform these steps:
+
+. Find your update request and click the *View in Gerrit* icon.
++
+image:registry-management/cp-platform-admins/cp-platform-admins-20.png[]
++
+. Approve the changes using *`Code Review +2`* > *`Submit`*.
++
+image:registry-management/cp-platform-admins/cp-platform-admins-22.png[]
++
+After the changes are merged to the `master` branch of the corresponding repository, the *MASTER-Build-`cluster-mgmt`* build starts in Jenkins.
++
+. Use the link at the bottom of the Gerrit page to monitor the build status (*CI Jenkins* > *Build Started* > *Jenkins* > *cluster-mgmt* > *Master-Build-cluster-mgmt*).
++
+image:registry-management/cp-platform-admins/cp-platform-admins-24.png[]
++
+image:registry-management/cp-platform-admins/cp-platform-admins-25.png[]
+=====
+====
+
+== Managing access to the administrator portal
+
+The Platform administrator in the `openshift` realm of the Keycloak service can provide access rights to the xref:admin:registry-management/control-plane-quick-links.adoc#admin-portal[Administrative portal].
+
+Perform these steps:
+
+. Sign in to the *OpenShift* web console.
++
+TIP: To obtain the credentials, contact the Platform's support team.
++
+. Go to *Projects* > *user-management*.
++
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-3.png[]
++
+. Open the *Networking* section and click the *keycloak* service link.
++
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-4.png[]
++
+. Sign in to the *Keycloak Administration Console* using the Keycloak secret (username and password).
++
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-4-1.png[]
++
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-7.png[]
++
+[NOTE]
+====
+[%collapsible]
+.You can obtain the credentials in the Keycloak service's secrets.
+=====
+
+To do this, copy the secrets from the *Workloads* > *Secrets* > *keycloak* section.
+
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-5.png[]
+
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-6.png[]
+=====
+====
++
+. Go to the *`openshift`* realm > *Users* and select the user you wish to grant access to.
++
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-26.png[]
++
+. Open the *Role Mappings* tab and select the *cp-registry-admin-`<registry-name>`* role in the *Available Roles* list, where `<registry-name>` is the name of the registry where the administrative portal is deployed.
++
+. Click *`Add selected`* to move the role to the *Assigned Roles* list. This grants access to the user.
+
+== Related pages
+
+As a Platform administrator, you can create and update infrastructure and registry components configurations and add other Platform and registry administrators.
+
+* xref:admin:admin-study/admin-profile.adoc[]
+* xref:registry-develop:registry-admin/create-users/create-registry-admins.adoc[]
+* xref:admin:registry-management/control-plane-create-registry.adoc[]
+* xref:admin:registry-management/control-plane-edit-registry.adoc[]
+* xref:admin:update/update_cluster-mgmt.adoc[]
+* xref:admin:update/update-registry-components.adoc[]

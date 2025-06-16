@@ -1,0 +1,239 @@
+:toc-title: On this page:
+:toc: auto
+:toclevels: 5
+:experimental:
+:sectnums:
+:sectnumlevels: 5
+:sectanchors:
+:sectlinks:
+:partnums:
+
+= Administering business processes in Camunda Cockpit
+
+Registry regulations administrator uses **Camunda Cockpit** service to administer business processes.
+
+With this service, the administrator can monitor working business processes and business rules to find, analyze and solve technical problems.
+
+[NOTE]
+====
+
+You can find the general description of the service on its official resource via the following link:
+
+* https://docs.camunda.org/manual/latest/webapps/cockpit/
+====
+
+== Service access rights
+
+To grant user access to Camunda Cockpit service, take the following steps:
+
+. Open to Keycloak service, for example, via OpenShift link.
++
+image:registry-admin/camunda-cockpit/cockpit-21.png[]
+
+. Select the corresponding `-admin` realm. Navigate to `Users` menu, click `View all users` and select the user that you need to grant the access to.
++
+image:registry-admin/camunda-cockpit/cockpit-22.png[]
+
+. Navigate to `Groups`, select `camunda-admin` role and click `Join`.
++
+image:registry-admin/camunda-cockpit/cockpit-23.png[]
++
+After successfully granting the role, you will be notified: _"Success! Added group membership"_.
+
+[NOTE]
+====
+You can find more information on the access rights assignment via the following link:
+
+* xref:registry-admin/create-users/overview.adoc[]
+====
+
+== Authorization in the system
+
+You can find the link to Camunda Cockpit in the OpenShift console, or Control Plane.
+
+* To authorize with OpenShift:
+
+. Navigate to `Networking` -> `Routes`.
++
+
+. Select the required project.
++
+. Find the corresponding route `business-process-administration-portal` and click the link in the `Location` column.
++
+image:registry-admin/camunda-cockpit/cockpit-25.png[]
+
+* To authorize with Control Plane:
+
+. Enter the registry administration panel in Control Plane, using the login and password that you have.
++
+image:platform:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-01.png[]
+
+. Navigate to `Registries` section and select the corresponding registry.
++
+image:platform:admin:infrastructure/cluster-mgmt/change-key/change-key-01.png[]
+
+. At the bottom of the page, click the `admin-portal` link.
++
+image:registry-admin/camunda-cockpit/cockpit-20.png[]
+
+== Main Page
+
+After authorization in the web-interface of **Camunda Cockpit** service, you'll see **Camunda Welcome**, the main page with a dashboard that contains three sections: **Cockpit**, **Tasklist** та **Admin**.
+
+Navigate to a **Cockpit** section.
+
+image:registry-admin/camunda-cockpit/cockpit-1.png[]
+
+You will see a board that contains charts with the general information on business processes and their current status.
+
+== Managing business processes in Camunda Cockpit
+
+=== Camunda Cockpit dashboard
+
+image:registry-admin/camunda-cockpit/cockpit-2.png[]
+
+The **Right Now** section shows business processes being executed at the moment:
+
+[#running-process-instances]
+
+* **Running Process Instances** — the number of business processes started by one or several users and still running, is shown in the center of the left circle.
+
+* **Open Incidents** — the number of incidents that occurred during business process execution is shown in the center of the middle circle.
+
+* **Open Human Tasks** — the number of open user tasks waiting to be resolved is shown in the center of the right circle. These tasks were modeled in Camunda Modeler and published by the business process execution service. They are available to users in citizen and officer portals (`citizen-portal` and `officer-portal`).
+
+The **Deployed** section shows business processes that are deployed at the moment:
+
+* `Process Definitions` field -- shows the general number of deployed business processes in Camunda.
+
+* `Deployments` field — shows the number of deployments and version updates of the regulations.
+
+image:registry-admin/camunda-cockpit/cockpit-3.png[]
+
+=== Running business processes
+
+Click the **xref:running-process-instances[Running Process Instances]** chart to navigate to **Processes** page, where all the currently deployed business processes are listed.
+
+image:registry-admin/camunda-cockpit/cockpit-6.0.png[]
+
+|===
+5+|_Columns description_
+|`State`|`Incidents`|`Running Instances`|`Name`|`Tenant ID`
+|Business process execution current status|Number of incidents with errors|Number of times the business process has been started|Name of the business process and link to it|Tenant ID
+|===
+
+==== Viewing business process instance details
+
+Follow the business process link in the `Name` column to open a table with all the instances of this business process.
+
+image:registry-admin/camunda-cockpit/cockpit-7.0.png[]
+
+You can find detailed information on this business process in the field to the left. `Definition Version` line shows a business process version. If there are several versions, you'll be able to switch between them using a dropdown menu to view **Process Instances** for every version of the business process and monitor changes.
+
+image:registry-admin/camunda-cockpit/cockpit-16.png[]
+
+==== Working with error incidents
+
+In case there was an error in business process execution, the incident will be shown in the general business process list, marked with a "cross" — ❌.
+
+[NOTE]
+====
+
+* If the error is caused by business process configuration, or failed script, then restarting the process won't help, and changes must be made.
+
+* If the error is caused by failures in other systems, or connectivity problems, restart the business process.
+====
+
+To resolve the error by restarting the business process, take the following steps:
+
+[NOTE]
+====
+
+The process will restart from the moment of failure, plus the _wait state_ time.
+====
+
+. Follow the business process link in the `Name` column.
++
+image:registry-admin/camunda-cockpit/cockpit-26.png[]
+
+. Navigate to `Incidents` section.
++
+image:registry-admin/camunda-cockpit/cockpit-27.png[]
+
+. Click the notification in the `Message` field to view error contents. It will be shown in a new window.
++
+image:registry-admin/camunda-cockpit/cockpit-28.png[]
+
+. Click ↻ pictogram (`Increment Number of Retriers of Failed Jobs`) in the top right of the screen, or to the right of the process instance to restart the process.
++
+image:registry-admin/camunda-cockpit/cockpit-29.png[]
+
+After being restarted, it takes some time for the business process to show on the main dashboard.
+
+==== Suspending business processes and their instances
+
+You can suspend an instance by clicking `Suspend Process Instance` icon, causing the instance to pause. Users or system can't complete suspended instances. To confirm instance suspension, click `Suspend` in the prompt window.
+
+image:registry-admin/camunda-cockpit/cockpit-12.0.png[]
+
+The entire business process can be suspended the same way, by clicking `Suspend Process Definition`. Users cannot complete suspended business processes, any of their elements, or start additional elements within them. A suspended process can be reactivated later.
+
+NOTE: You need at least one running process instance to suspend a process instance.
+
+==== Activating business processes and instances execution
+
+You can activate a process instance by clicking `Activate Process Instance`.
+
+image:registry-admin/camunda-cockpit/cockpit-13.png[]
+
+You can activate a business process by clicking `Activate Process Definition`.
+
+==== Deleting business process instances
+
+To delete a process instance, click `x` (cross) in the top right corner and confirm by clicking `Delete Process Instance` in the prompt window.
+
+image:registry-admin/camunda-cockpit/cockpit-9.0.png[]
+
+==== Editing parameters
+
+All the variables of a business process are listed in the **Variables** tab. You can find the tab if you open a business process via its link.
+
+image:registry-admin/camunda-cockpit/cockpit-8.0.png[]
+
+You can edit the variables listed in the `Value` column by clicking the corresponding parameter, or clicking the editing icon in the `Actions` column.
+
+image:registry-admin/camunda-cockpit/cockpit-8.1.png[]
+
+==== Filtering search parameters
+
+For fast business process search, you can set additional filters.
+
+image:registry-admin/camunda-cockpit/cockpit-14.png[]
+
+=== Reference rules (Decisions)
+
+The **Decisions** tab shows a table of reference rules for each business process.
+
+image:registry-admin/camunda-cockpit/cockpit-17.png[]
+
+=== Assigned tasks (Human Tasks)
+
+The **Human Tasks** tab shows the number of tasks in progress, which are assigned to corresponding users.
+
+image:registry-admin/camunda-cockpit/cockpit-18.png[]
+
+=== Viewing deployed business processes (Deployments)
+
+Click `Deployments` icon to open a tab with the following fields:
+
+- the `Deployment Time` column shows date and time for every deployed file;
+- the middle column lists all deployed files in the current deployment process;
+- left-clicking a file name will open the business process scheme (model) on the right.
+
+Left-clicking the `Download` icon will download the business process, created in the modeller.
+
+image:registry-admin/camunda-cockpit/cockpit-4.png[]
+
+Detailed information about the business process can be found in the `Definitions` field. To see the currently running instance, follow the business process link and check the **Process Instances** tab. The number of running instances is shown in the info panel (26 in example case).
+
+image:registry-admin/camunda-cockpit/cockpit-5.png[]

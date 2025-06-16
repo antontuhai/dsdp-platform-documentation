@@ -1,0 +1,59 @@
+= Component for managing the state of Platform resources
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+A Component that provides the ability to install and update an instance of the Registry Platform.
+
+Functions of the component
+
+* Installation of the Register Platform
+* Updating the Registers Platform
+* Deployment of the component xref:arch:architecture/platform-secret-management/overview.adoc[]
+* Deployment of the component xref:arch:architecture/platform-backup-storage/overview.adoc[]
+
+== Technical design
+
+This diagram shows the components included in the _Platform resource state management component_ and their interaction with other subsystems.
+
+image::architecture/platform-installer/platform-installer-subsystem.drawio.svg[width=600,float="center",align="center"]
+
+== Components
+
+|===
+|The name of the component|Representation|Application type|Source|Prescription
+
+|_Platform resource state management component_
+|`control-plane-installer`
+|backend
+|origin
+|Archive of Platform components and registries, scripts and components for deploying the Platform of Registries with aggregated components
+on the prepared infrastructure
+
+|===
+
+== Technology stack
+
+During the design and development of the subsystem, the following technologies were used:
+
+* xref:arch:architecture/platform-technologies.adoc#terraform[Terraform]
+* xref:arch:architecture/platform-technologies.adoc#bash[Bash]
+* xref:arch:architecture/platform-technologies.adoc#okd[OKD]
+
+== Component quality attributes
+
+=== Usability
+
+The _Platform resource health component_ is easy to understand and use and has clear and concise application instructions.
+
+=== Portability
+
+The _Platform resource state management component_ is designed with compatibility between different infrastructure providers in mind and is installed
+both in cloud infrastructure environments (AWS) and in local server equipment (vSphere).
+
+=== Upgradability
+
+The _Platform resource state management component_ is designed with backward compatibility in mind and preserves existing features, integrations, and interactions with users,
+thereby reducing disruption and ensuring a smooth transition when implementing new updates and improvements to the Registries Platform.

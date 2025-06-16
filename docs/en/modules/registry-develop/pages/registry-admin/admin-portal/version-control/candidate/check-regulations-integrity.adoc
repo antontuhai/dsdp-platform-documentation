@@ -1,0 +1,80 @@
+= Integrity check for change requests to registry regulations
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+== Problem overview
+
+The components of the xref:arch:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[Digital registry regulations] contain internal dependencies, which were previously only partially validated.
+This caused delays in identifying errors when making changes to the regulation.
+
+== General description
+
+The Platform supports an extended validation system to ensure checks for the following:
+
+* Dependencies between directories
+* Dependencies in business process delegates
+* Dependencies for business process JUEL functions
+
+[NOTE]
+====
+*Integral change request* is a change request after which all registry regulation components retain valid internal dependencies.
+
+For example, when using a delegate in a business process to create an entity, the system can check for the existence of the corresponding table in the data model.
+If such a table is missing, the change request is considered non-integral and cannot be merged into the `master` branch of registry regulations.
+====
+
+== Checking directory dependencies in the registry regulation
+
+In the *Admin Portal* web interface, a developer can modify an existing business process or create a new one using a candidate version.
+
+For example, when editing a form containing a search query, on the *Data* tab of the xref:registry-develop:bp-modeling/forms/components/select/select-overview.adoc[*Select*] component,
+you enter and save an incorrect integration point name that does not exist in the data model:
+
+* Correct value:
+`+++<b style="color: green;">/officer/api/data-factory/factor-all</b>+++`
+
+* Incorrect value:
+`+++<b style="color: orange;">/api/data-factory/folders</b>+++`
+
+image:registry-develop:registry-admin/admin-portal/version-control/regulations-integrity/regulations-integrity-1.png[]
+
+== Checking dependencies for business process JUEL functions
+
+When using a *Script Task*, a developer can use JUEL functions inside the script
+(see details: xref:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[]).
+
+For example, if you provide a JUEL function with an incorrect task identifier and save it:
+
+* Correct value: `submission('signRequest+++<b style="color: green;">DataFormActivity</b>+++')`
+
+* Incorrect value: `submission('signRequest+++<b style="color: orange;">FolderFormActivity</b>+++')`
+
+image:registry-develop:registry-admin/admin-portal/version-control/regulations-integrity/regulations-integrity-2.png[]
+
+== Checking dependencies when using standard business process extensions
+
+A regulation developer can use a standard extension in a *Service Task*.
+For example, the *Create entity in data factory* extension (see details: xref:bp-modeling/bp/element-templates/service-task-templates/create-entity.adoc[]),
+where the *Resource* field must specify the resource (table name) where the data will be saved.
+
+For example, you specify a value that does not exist in the database:
+
+image:registry-develop:registry-admin/admin-portal/version-control/regulations-integrity/regulations-integrity-3.png[]
+
+== Validation errors in the regulation change application pipeline logs
+
+During the *MASTER-Code-review-registry-regulations* pipeline execution,
+an additional validation step is run, highlighted in yellow, signaling detected errors with details stored in the logs.
+
+image:registry-develop:registry-admin/admin-portal/version-control/regulations-integrity/regulations-integrity-4.png[]
+
+[NOTE]
+====
+This means that after entering invalid data into a JUEL function, standard extension, or search query,
+the system checks these values and displays the task identifiers with the corresponding errors.
+====
+
+image:registry-develop:registry-admin/admin-portal/version-control/regulations-integrity/regulations-integrity-5.png[]
+
+The same validation is performed in the *MASTER-Build-registry-regulations* pipeline when applying invalid changes to the master version of the regulations.
+
+image:registry-develop:registry-admin/admin-portal/version-control/regulations-integrity/regulations-integrity-6.png[]

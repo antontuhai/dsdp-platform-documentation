@@ -1,0 +1,231 @@
+= Creating registry administrators
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+*_Registry administrators_* are official administrators who perform the functions of registry support, as well as the deployment and maintenance of regulations for the respective registries.
+
+[TIP]
+====
+For more information about the Platform role classes and their functional responsibilities, refer to the following link:
+
+* xref:arch:architecture/platform/operational/user-management/platform-actors-roles.adoc[]
+====
+
+== Creating a registry administrator
+
+[NOTE]
+====
+After xref:admin:registry-management/control-plane-assign-platform-admins.adoc[] and deploying the registry, you can add administrators for that registry.
+
+The first service registry administrator must be created by the Platform administrator with the appropriate access rights. Subsequently, the service registry administrator can add other registry administrators independently.
+====
+
+. Log in to the *Control Plane* registry management administrative panel using the provided login and password.
++
+image:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-01.png[]
++
+. Go to the *Registries* section and select the registry for which you need to add administrators.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-01.png[]
++
+. Click the *Edit* button in the upper right corner of the page.
++
+image:admin:infrastructure/cluster-mgmt/change-key/change-key-02.png[]
++
+. Go to the *Administrators* section and add a new registry administrator.
++
+Click the `+` (plus) icon. In the new opened window, fill in the following fields:
++
+--
+* *First name*
+* *Last name*
+* *Email address*
+* *Temporary password*
+--
++
+[NOTE]
+====
+*Password requirements:*
+
+- At least 10 characters in length.
+- At least one lowercase letter.
+- At least one uppercase letter.
+- At least one digit.
+- At least one special character (`@, #, $, %, ^, &, +, =`).
+- Use Latin characters only.
+- No spaces.
+====
++
+You can provide access to multiple registry administrators. To do this, repeat the action for each administrator separately (`+` > provide data > click `*Confirm*`).
++
+[NOTE]
+====
+Provide the email address in lowercase.
+
+Allowed characters: `"0-9"`, `"a-z"`, `"_"`, `"-"`, `"@"`, `"."`, `","`.
+====
+
++
+image:admin:registry-management/cp-submit-mr/cp-add-registry-admin-1.png[]
++
+image:admin:registry-management/cp-submit-mr/cp-add-registry-admin-2.png[]
++
+. Click *`Confirm`* to save the changes.
++
+image:admin:registry-management/cp-submit-mr/cp-add-registry-admin-3.png[]
+
++
+As a result, a registry update request with the status `New` will be generated.
++
+. Go back to the *Registries* section, scroll down the page, and find the *Update requests* section.
++
+image:admin:registry-management/cp-submit-mr/cp-submit-mr-1.png[]
++
+. Open the generated request by clicking the view icon -- 👁
++
+NOTE: The proposed changes will be applied to the _deploy-templates/values.yaml_ configuration file upon confirmation.
++
+. In the new window, compare the two versions of the changes, make sure the data you entered is correct, and click *`Confirm`*.
++
+TIP: The comparison window allows you to conveniently check the two versions of changes: the current one (left) and the new one (right).
+
++
+image:admin:registry-management/cp-submit-mr/cp-submit-mr-2.png[]
++
+image:admin:registry-management/cp-submit-mr/cp-submit-mr-3.png[]
++
+As a result, the request will be assigned the `Verified` status, and the changes will take effect.
++
+image:admin:registry-management/cp-submit-mr/cp-submit-mr-4.png[]
++
+CAUTION: Wait for the automatic code build to complete. This may take a few minutes. For more details, see xref:#confirm-changes-in-gerrit[].
+
++
+You can also reject the changes to the registry configuration immediately by clicking *`Reject`*.
++
+image:admin:registry-management/cp-submit-mr/cp-submit-mr-5.png[]
+
++
+[NOTE]
+====
+The system automatically creates a registry administrator in the *`openshift`* realm of the Keycloak service and assigns them the `cp-registry-admin-<registry-name>` role and the group `/cp-registry-admin-<registry-name>`, where `<registry-name>` is the name of the registry.
+====
+
+[confirm-changes-in-gerrit]
+[#confirm-changes-in-gerrit]
+=== Confirming the changes in the Gerrit interface (alternative method)
+
+_An alternative method_ for confirming changes to the registry configuration is to perform the confirmation in the Gerrit interface. After making a change in the Control Plane (adding a new administrator, etc.), follow these steps:
+
+. У розділі `Запити на оновлення` з'явиться новий запит. Натисніть іконку `Переглянути в Gerrit`.
+. A new request will appear in the *Update requests* section. Click the `View in Gerrit` icon.
++
+image:admin:user-management/user-management-52.png[]
++
+. Perform the quality gate checks. To do this, enter the created change and click *`REPLY`*.
++
+image:admin:user-management/user-management-53.png[]
++
+. Click the following buttons to confirm:
++
+--
+* `*+2*` -- for Code-Review;
+* `*+1*` -- for Verified.
+* `*SEND*` -- to save.
+--
++
+image:admin:user-management/user-management-54.png[]
++
+. Click *`SUBMIT`* to merge the changes into the repository (`git merge` changes).
++
+image:admin:user-management/user-management-55.png[]
++
+. In the pop-up window, click *`CONTINUE`* to confirm.
++
+image:admin:user-management/user-management-56.png[0,700]
++
+. At the bottom of the Gerrit page, locate the *CI Jenkins* build information and follow the link.
++
+image:admin:user-management/user-management-57.png[]
++
+. In the new window, click *Back to Project* on the left side (return to the project).
++
+image:admin:user-management/user-management-58.png[]
++
+. Ensure the build was successful.
++
+image:admin:user-management/user-management-59.png[]
++
+. After a successful execution of the Jenkins job, the system creates a new registry administrator.
+
++
+[NOTE]
+====
+The system automatically creates a registry administrator in the openshift Keycloak service realm and assigns them the `cp-registry-admin-<registry-name>` role and the `/cp-registry-admin-<registry-name>` group, where `<registry-name>` is the name of the registry.
+====
+
+== Creating a registry regulations administrator
+
+*_Registry regulations administrators_* are service administrators responsible for deploying and maintaining regulations for the corresponding registries. Within the regulations, an administrator works with specific entities such as data models, business processes, UI data entry forms, analytical reports, extracts, and more.
+
+It is necessary to manually create a registry regulations administrator and assign them roles. To do this, follow these steps:
+
+. Log in to the *Openshift* console using the provided login and password.
++
+TIP: The login and password for access can be obtained from the technical support team.
++
+. Go to *Projects* > *user-management*.
++
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-3.png[]
++
+. Find the *Networking* section and follow the link to the *`keycloak`* service.
++
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-4.png[]
++
+. Access the *Keycloak Administration Console* using the Keycloak secrets (username and password).
++
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-4-1.png[]
++
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-7.png[]
++
+[NOTE]
+====
+The username and password can be obtained from the secrets for the *`Keycloak`* service.
+
+To do this, go to *Workloads* > *Secrets* > *keycloak* and copy the secrets.
+
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-5.png[]
+
+image:admin:registry-management/cp-platform-admins/cp-platform-admins-6.png[]
+====
++
+. Log in to the *`-admin`* realm. This is where registry administrators are created and their roles (access rights) are defined.
++
+image:registry-develop:registry-admin/regulations-admin/create-registry-regulations-admin-1.png[]
++
+. In the *`-admin`* realm, create a user and [.underline]#assign# them the following [.underline]#roles#:
++
+image:admin:user-management/user-management-43.png[]
++
+** `gerrit-administrators` — Gerrit administrators, this role is necessary for deploying regulations and approving changes (passing Quality Gates);
+** `jenkins-administrators` — Jenkins administrators, this role is necessary for running clean-up jobs, reviewing generated and added Jenkins pipelines, viewing logs, etc.;
+** `camunda-admin` — Camunda Cockpit administrators, this role is necessary for viewing available business processes, rules, tasks, etc.
++
+. In addition to the role, [.underline]#assign a group# to the user:
++
+image:admin:user-management/user-management-44.png[]
++
+* Go to the *Groups* > *Available Groups* tab.
+* Select the `camunda-admin` group.
+* Click `join`.
++
+As a result, the group should appear in the *Group Membership* list.
+
+== Related articles
+
+After deploying the Platform in the target environment and before deploying any registry, it is necessary to first create the Platform administrator(s).
+
+You can find out how to do this by following the link:
+
+* xref:admin:registry-management/control-plane-assign-platform-admins.adoc[]

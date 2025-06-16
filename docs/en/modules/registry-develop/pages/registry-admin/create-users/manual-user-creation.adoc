@@ -1,0 +1,223 @@
+= Creating a user and granting access rights
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Creating a user in the system
+
+To create a new user (officer) in Keycloak, follow these steps:
+
+["arabic"]
+
+. Go to the *`<registry-name>-officer-portal`* realm of the respective registry:
+
+** On the *Users* tab, click kbd:[View all users].
+
+** Click the kbd:[Add user] button.
++
+image:admin:user-management/user-management-04.png[]
+
+. In the opened window, enter the following user's data:
++
+--
+
+** `Username` (_required_) -- the system name of the user in Keycloak. _It does not affect user authentication_.
++
+
+NOTE: It can be used as an exception for logging into internal system services that require login and password authentication.
+
+** `First Name` (_optional_) -- the user's first name.
+
+** `Last Name` (_optional_) -- the user's last name.
+
+** `User Enabled` (_enabled by default_) -- a mark indicating that the user is activated in the system (if not active, the user's access to the system will be restricted).
+
+** `Email Verified` (_optional_) -- activated if email confirmation is required.
+--
++
+image:admin:user-management/user-management-33.png[]
+
+. Click the kbd:[Save] button.
+
+. Go to the *Credentials* tab.
+
+
+. Enter the password in the *Password* field and confirm it in the *Password Confirmation* field. Check the *Temporary* box to generate a temporary password.
++
+[CAUTION]
+====
+
+For security reasons, it is necessary to change the temporary password during the first login to the system.
+====
++
+image:admin:user-management/user-management-34.png[]
+
+. Click the kbd:[Set Password] button.
++
+image:admin:user-management/user-management-35.png[0,740]
+
+
+. Go to the *Role Mappings* tab and assign the necessary roles to the user. Click the kbd:[Add selected] button.
++
+[NOTE]
+====
+
+Verify that the user has the mandatory *`officer`* role assigned, which provides access to the Officer Portal.
+
+You can also assign additional roles depending on your registry's logic.
+====
++
+image:admin:user-management/user-management-36.png[]
+
+. The assigned roles are displayed in the *Assigned Roles* section.
++
+image:admin:user-management/user-management-37.png[]
++
+
+
+. Go to the *Attributes* tab and set values for the parameter keys: *`drfo`*, *`edrpou`*, *`fullName`*, which are mandatory for authentication with the user's Qualified Electronic Signature (_see xref:user:citizen-officer-portal-auth.adoc[]_). A new parameter is added after you click the kbd:[Add] button.
++
+[CAUTION]
+====
+
+If the attribute values do not correspond to the values specified in the Qualified Electronic Signature, the user will not be able to access the Officer portal or sign the Qualified Electronic Signature tasks.
+====
+
++
+
+
+*`drfo`* -- особистий реєстраційний номер облікової картки платника податків (РНОКПП) посадової особи. Якщо через релігійні переконання особа не отримувала РНОКПП, необхідно вказати серію та номер паспорта або номер ID-картки.
+
+
+
+
++
+|===
+|Attribute |Description |Mandatory
+
+| `drfo`
+
+|State register of individuals taxpayers. The official's personal registration number of the taxpayer's account card (RNOKPP). If the person did not receive such a card due to religious beliefs, it is necessary to specify the series and number of the passport or the ID card number.
+
+|Yes
+
+|`edrpou`
+
+|The unique identification number of the legal entity in the Unified state register of enterprises and organizations of Ukraine (8 digits).
+
+|Yes
+
+|`fullName`
+|Last name, first name, patronymic (if available).
+|Yes
+
+|`<custom-attribute>`
+|Any attribute with a *custom name and value* (e.g., organization name, region, district, locality, etc.) if there is a future need to generate statistics based on it. It is prohibited to include special characters (`[, ], {, }, \, "`), as well as values exceeding 255 characters. The name of each additional attribute must be the same for all users in the registry and have a unique name among other parameters.
+
+E.g. `location`, `age` and so on.
+
+|No
+|===
+
+
+
+
++
+image:admin:user-management/user-management-42.png[]
+
+[start=10]
+. Click the kbd:[Save] button.
+
+The user has been successfully created.
+
+[#delete-user-role]
+
+== Removing a role from a user
+
+To remove roles assigned to a user, follow these steps:
+
+. Select a user. To do this, choose the corresponding realm, go to the *Users* section, click kbd:[View all users], and select the user from the list.
++
+image:admin:user-management/user-management-40.png[]
+
+. Select the roles you want to remove from the list and click kbd:[Remove selected].
++
+image:admin:user-management/user-management-38.png[]
+
+. The removed roles will become available and will be shown in the *Available Roles* section.
++
+image:admin:user-management/user-management-39.png[]
+
+
+
+* *`KATOTTG`* _or_ Codifier of administrative-territorial units and territories of territorial communities (_to be filled in for registries using the territorial role model_) - a list of codes from the Codifier of administrative-territorial units and territories of territorial communities. After determining the code, the abbreviated value of the code should be recorded in Keycloak. The user of the Officer portal will have access to records of the specific region/district/territorial community, etc., whose code is indicated.
++
+[TIP]
+====
+
+To view the decryption of the code KATOTTG, please follow the link:https://www.minregion.gov.ua/napryamki-diyalnosti/rozvytok-mistsevoho-samovryaduvannya/administratyvno/kodyfikator-administratyvno-terytorialnyh-odynycz-ta-terytorij-terytorialnyh-gromad/[link].
+
+Find the most up-to-date file _Codifier_. For convenience, use additional filtering by the *Object Category* column of the file, which contains the following values:
+|===
+
+|Level|Value
+
+|First level|*`O`* - Autonomous Republic of Crimea, regions
+
+*`K`* - cities with special status
+
+|Secod level| `*P*` - districts in regions and the Autonomous Republic of Crimea
+
+|Third level| *`H`* - territories of territorial communities (names of territorial communities) in regions, territorial communities of the Autonomous Republic of Crimea
+
+|Fourth level| *`M`* - cities
+
+*`T`* - urban-type settlements
+
+*`C`* - villages
+
+*`X`* - settlements
+
+|Additional level|*`B`* - districts in cities
+|===
+
+Example 1: ::
+
+To provide user with access to the Officer portal at the level of the _Myrhorod_ territorial community (Third level) in Poltava region, do the following:
+
+* select the value *`H`* in the *Object category* column.
+
+* enter the name of the territorial community *`Myrhorodska`* in the *Object name* column as a search query.
+
+* copy the code value of the territorial unit (*`UA53060230000098362`*) from the "Third level" column.
+
+* according to the decryption below, determine which blocks are the last non-zero ones, delete all zero blocks along with the system number, and enter only this value into Keycloak. In Example 1, you need to enter *`UA5306023`* into Keycloak (blocks up to the level of territorial communities are non-zero).
+
++
+image:admin:user-management/user-management-41.png[]
+
+Example 2: ::
+
+To provide user with access to the Officer portal at the level of _Shevchenkivskyi_ district in Poltava city (Additional level), do the following:
+
+* first, select the value *`O`* in the *Object category* column.
+
+* enter the name of the region *`Poltavska`* in the *Object name* column for search.
+
+* copy the code value of the region *`UA53000000000028050`* from the *First level* column.
+
+* use the filter to leave only the values in the *First level* column that contain the value *`UA53000000000028050`*.
+
+* select the value *`B`* in the "Object Category" column.
+
+* enter the name of the district *`Shevchenkivskyi`* in the *Object name* column as a search query.
+
+* copy the code value of the territorial unit (*`UA53080370010339303`*) from the *Additional level* column.
+
+* according to Example 1, determine which blocks are the last non-zero ones, delete all zero blocks along with the system number, and enter only this value into Keycloak. In Example 2, you need to enter *`UA530803700103`* into Keycloak (blocks up to the level of districts in cities are non-zero).
+
+If a user has access to multiple territorial units, their codes are entered into Keycloak with a separator `##`. The maximum number of values for one user is 16.
+
+If you are granting a user access to records of the entire Ukraine, within the *KATOTTG* field only two characters should be specified: *`UA`*
+
+TIP: For more information on the territory-based hierarchical role model, see xref:registry-admin/hierarchical-model.adoc[]

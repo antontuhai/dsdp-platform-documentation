@@ -1,0 +1,124 @@
+= Registry audit events logging subsystem
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+The *_Registry audit events logging subsystem_* receives and processes messages about significant system events and ensures they are recorded in the audit log for long-term storage and analysis.
+
+== Subsystem functions
+
+The subsystem logs the following events:
+
+* Operations on registry data initiated by the users while executing business processes.
+* Events critical for ensuring system security.
+* General system-level events.
+
+== Technical design
+
+The following diagram presents the _Registry audit events logging subsystem's_ components and their interactions with other subsystems in implementing functional scenarios.
+
+image::architecture/registry/operational/audit/audit-overview.svg[float="center",align="center",width=600]
+
+The _Registry audit events logging subsystem_ provides an asynchronous _API_ in the form of the _Kafka_ `audit-events` topic for publishing audit event messages by the target subsystems according to a predefined scheme. The subsystem saves data to the _Audit events operational database_ using https://kafka.apache.org/documentation.html#connect[Kafka Connect API] to support _exactly-once_ semantics for message processing.
+
+Administrators can view audit logs through the _Registry analytical reporting subsystem's_ web interface as a set of service dashboards created during registry deployment by the xref:arch:architecture/platform/administrative/overview.adoc [_Platform and registries deployment and configuration subsystem_].
+
+[TIP]
+--
+For details on the _Registry analytical reporting subsystem's_ design, see xref:arch:architecture/registry/operational/reporting/overview.adoc[].
+--
+
+[#subsystem-components]
+== Subsystem components
+
+|===
+|Component name |Registry representation |Source |Repository |Function
+
+|_Audit event message schema storage service_
+|`kafka-schema-registry`
+|3rd-party
+|https://github.com/epam/edp-ddm-kafka-schema-registry[github:/epam/edp-ddm-kafka-schema-registry]
+|Validation of message structure against the current schema.
+
+|_Audit event storage service_
+|`kafka-connect-cluster-connect`
+|3rd-party
+|https://github.com/epam/edp-ddm-strimzi-kafka-operator[github:/epam/edp-ddm-strimzi-kafka-operator]
+|Saving messages to the database.
+
+|_xref:arch:architecture/registry/operational/audit/audit-db.adoc[Audit events operational database]_
+|`operational:audit`
+|origin
+|https://github.com/epam/edp-ddm-registry-postgres/tree/main/platform-db/changesets/audit[github:/epam/edp-ddm-registry-postgres/tree/main/platform-db/changesets/audit]
+|A separate database for audit events.
+
+|===
+
+== List of services subject to audit
+
+|===
+|Owner subsystem |Component name |Registry representation
+
+|xref:arch:architecture/registry/operational/registry-management/overview.adoc[Registry data management subsystem]
+|_Registry data management service_
+|*registry-rest-api*
+
+.2+.^|xref:arch:architecture/registry/operational/bpms/overview.adoc[Business process management subsystem]
+|_Business process history access service_
+|*user-process-management*
+
+|_Business process history logging service_
+|*process-history-service-persistence*
+
+|xref:arch:architecture/registry/operational/user-settings/overview.adoc[User settings management subsystem]
+|_User settings management service_
+|*user-settings*
+
+|xref:arch:architecture/registry/operational/notifications/overview.adoc[User notification subsystem]
+|_User notification service_
+|*ddm-notification-service*
+
+.4+|xref:arch:architecture/registry/operational/excerpts/overview.adoc[Registry excerpt generation subsystem]
+|_Excerpt management service_
+|*excerpt-service-api*
+
+|===
+
+== Technology stack
+
+The following technologies were used when designing and developing the subsystem:
+
+* xref:arch:architecture/platform-technologies.adoc#kafka[Kafka]
+* xref:arch:architecture/platform-technologies.adoc#kafka-schema-registry[Kafka Schema Registry]
+* xref:arch:architecture/platform-technologies.adoc#strimzi-operator[Strimzi]
+
+== Subsystem quality attributes
+
+=== _Security_
+
+Using TLS authentication to connect the application to the message broker prevents man-in-the-middle attacks. All transit data is also encrypted using TLS.
+
+=== _Reliability_
+
+The overall system reliability is ensured by a number of mechanisms implemented in the subsystem's components.
+
+* Kafka (`Replication`, `Fault Tolerance`, `Message Persistence`, `Message immutability`, `Acknowledgment Mechanism`).
+* Crunchy PostgreSQL (`Replication and Failover`, `High Availability`).
+
+=== _Scalability_
+
+Parallel processing of messages and the absence of state storage in the application ensures horizontal scaling.
+
+=== _Performance_
+
+Service events are created as asynchronous events (`Application Events`) and do not significantly affect the performance of service scenarios.
+
+=== _Data integrity_
+
+The integrity and immutability of data is guaranteed by the immutability of Kafka messages and access restrictions to database write operations.
+
+=== _Data retention and archiving_
+
+The retention and archiving policies are implemented by configuring the settings of the built-in Kafka message data retention and database backup tools.

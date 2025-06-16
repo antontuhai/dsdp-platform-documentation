@@ -1,0 +1,41 @@
+= Editing business processes
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+The *Administrative portal* allows for editing, modifying, and developing existing business processes. If the modeler has made an error in the name, wants to change an element of the process diagram, or modify the XML code, they can enter the _editing mode_ and make the necessary changes.
+
+NOTE: It is not possible to edit the internal technical name. Upon initial save, the technical name is stored in the repository as a unique identifier for the process within the registry instance and cannot be changed.
+
+Edit an existing business process in a few simple steps:
+
+. In the *Administrative portal*, open the [.underline]#Process Models# section.
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-1.png[]
+
+. Select the process and click on the [.underline]#&#128393; editing icon#.
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-6.png[]
+
+. Modify any component of the business process (business name, code, or BPMN element in the modeler).
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-7.png[]
+
+. Click the [.underline]#Save changes# button to save the entered information.
++
+[TIP]
+====
+The user receives a notification of successful process creation:
+
+* &#9989;  `Business process "<Process name>" successfully saved`.
+====
+
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-8.png[]
++
+You can view the changes and their status in the [.underline]#Proposed changes# section (_for more details, see the page xref:registry-admin/admin-portal/version-control/overview-new-change-request.adoc#review-changes-candidate[Reviewing the list of proposed changes]_).
++
+Suppose you have completed editing within the candidate version and want to publish the changes in the registry's regulation. In that case, you need to apply the changes to the master version (for more details, see the page xref:registry-admin/admin-portal/version-control/overview-new-change-request.adoc#push-changes-master[Applying changes to the master version]).
+
+
+include::partial$snippets/admin-portal-master-candidate-edit-en.adoc[]

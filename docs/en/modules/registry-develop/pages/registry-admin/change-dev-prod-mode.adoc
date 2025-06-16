@@ -1,0 +1,88 @@
+= Changing registry deployment mode
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+Deployment mode is a parameter that indicates the environment in which the registry regulations are deployed. It allows distinguishing between the production environment and the development environment, as well as configuring the settings according to the needs of each. The registry Platform supports two deployment modes: *`development`* and *`production`*.
+The development mode
+
+The *`development`* mode involves deployment with settings for convenience in development and debugging.
+
+The *`production`* mode involves optimized deployment for maximum productivity, stability, and security. It excludes additional debugging tools, provides optimal configuration and settings for real-world operation on target clusters.
+
+[IMPORTANT]
+====
+In the production mode, the following components involved in the registry development processes are not deployed:
+
+* Components involved in the processes of registry regulations development;
+
+* Public endpoints of the components involved in the processes of registry regulations development.
+====
+
+// Table listing the components
+include::platform:ROOT:partial$templates/snippets/dev-prod-mode-en.adoc[]
+
+// Note about the table from include::
+[IMPORTANT]
+====
+This table provides recommendations for using components and their deployment availability in a production environment.
+
+Services such as `admin-portal` and `registry-regulation-management` can be enabled if needed;
+however, their use in production environments is not recommended.
+At the same time,
+the deployment of these services is supported and can be activated through registry settings based on your requirements.
+====
+
+== Configuration
+
+To change the registry deployment mode -- `*deploymentMode*` -- from *`production`* to *`development`*, follow these steps:
+
+. Open the *OpenShift* console, find the *Control Plane* project, and navigate to the *`gerrit`* component.
++
+.Central Gerrit link:
+TIP: `https://gerrit-control-plane.<dns-wildcard>[]`
++
+. Find the repository with your registry and open the _deploy-templates/values.yaml_ file.
++
+. Locate the *`deploymentMode: production`* variable and change its value to *`deploymentMode: development`*.
++
+The deployment mode settings appear as follows:
++
+.deploy-templates/values.yaml
+[source,yaml]
+----
+global:
+  deploymentMode: development
+----
++
+. (_Optional_) If you need to deploy the registry without a specific portal (for example, Citizen portal), exclude it from the settings as follows:
++
+.deploy-templates/values.yaml
+[source,yaml]
+----
+global:
+  excludePortals: ['citizen']
+----
++
+[IMPORTANT]
+====
+By default, the *`excludePortals`* variable is absent, which indicates the deploying of all portals:
+
+.deploy-templates/values.yaml
+[source,yaml]
+----
+global:
+  excludePortals: ['']
+----
+
+When excluding the Citizen portal from the deployment process, the following services are also not deployed:
+
+* `citizen-portal`
+* `ddm-notification-service`
+* `user-service-api`
+* `user-service-persistence`
+====
++
+. Commit the changes with `git commit`, apply the changes to the `master` branch, and initiate the registry deployment.

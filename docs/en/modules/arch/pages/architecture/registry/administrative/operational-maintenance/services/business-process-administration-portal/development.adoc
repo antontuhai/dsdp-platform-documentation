@@ -1,0 +1,107 @@
+= Service functional capabilities
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Start page of the business process administration service
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/camunda-welcome.svg[]
+
+The service offers the following functionality: ::
+
+* *Camunda Cockpit*: allows tracking of operational processes and decisions to detect, analyze, and resolve technical issues. For detailed information, see https://docs.camunda.org/manual/7.14/webapps/cockpit/[official resource].
+* *Camunda Admin*: provides the capability to configure users and groups. For detailed information, see https://docs.camunda.org/manual/7.14/webapps/admin/[official resource].
+* *Camunda Tasklist*: enables end-users to work on tasks assigned to them. For detailed information, see https://docs.camunda.org/manual/7.14/webapps/tasklist/[Official resource].
+
+== Main scenarios
+
+=== Granting user access rights in Camunda Admin
+
+//- У головному вікні Camunda Admin потрібно перейти на вкладку `Authorizations`
+- In the main Camunda Admin window, navigate to the `Authorizations` tab.
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/admin-main.svg[]
+
+//- Після чого, з приведеного переліку вибираємо потрібний нам розділ та переходимо на нього, наприклад `Deployment`
+- Select the desired section from the list, for example, `Deployment`.
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/admin-deployment-auth.svg[]
+
+//- В правому куті потрібно натиснути кнопку `Create new authorization`
+- Click the `Create new authorization` button in the top right corner
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/admin-create-auth.svg[]
+
+//- В полях для вводу потрібно заповнити користувача або групу, після чого вибрати з переліку потрібні права та підтвердити введені дані
+- Fill in the user or group details in the input fields and select the required permissions from the list. Confirm the entered data
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/admin-add-auth.svg[]
+
+//- Як рузультат з'явиться новий запис, який надалі ми можемо редагувати або видалити
+- A new entry will be created that can be edited or deleted later
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/admin-result.svg[]
+
+[NOTE]
+//Більш детально про управління авторизацією можна ознайомитися https://docs.camunda.org/manual/7.14/webapps/admin/authorization-management/#application-access[тут]
+You can learn more about the authorization at the https://docs.camunda.org/manual/7.14/webapps/admin/authorization-management/#application-access[link].
+
+=== Assigning a task to a user in Camunda Cockpit
+
+//- На головній сторінці Camunda Cockpit потрібно перейти на вкладку `Processes`.
+- On the main page of Camunda Cockpit, go to the `Processes` tab.
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/cockpit-main.svg[]
+
+//- Та вибрати з переліку потрібний бізнес-процес
+- Choose the relevant business process from the list
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/cockpit-processes.svg[]
+
+//- Після чого, потрібно вибрати потрібний ідентифікатор єкземпляра процесу
+- Select the appropriate instance process identifier
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/cockpit-process-instance.svg[]
+
+//- Перейти на вкладку `User Task`
+- Navigate to the `User Task` tab
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/cockpit-user-task.svg[]
+
+//- У полі `Assignee` визначити користувача який буде виконувати цю задачу
+- In the `Assignee` field, specify the user who will execute this task
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/cockpit-task-assign.svg[]
+
+//- Як результат побачимо, що для даної задачі користувач був визначений
+- As a result, you will see that the user has been assigned to this task
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/cockpit-task-assign-result.svg[]
+
+=== Suspending a business process in Camunda Cockpit
+
+//- На головній сторінці Camunda Cockpit потрібно перейти на вкладку `Processes`
+- On the main page of Camunda Cockpit, go to the `Processes` tab
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/cockpit-main.svg[]
+
+//- Та вибрати з переліку потрібний бізнес-процес
+- Select the desired business process from the list
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/cockpit-processes.svg[]
+
+//- Після чого, у правому куті потрібно натиснути на кнопку як показано нижче:
+- Next, in the upper right corner, click the button as shown below:
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/stop-bp.svg[]
+
+//- Та підтвердити призупинення:
+- Confirm the suspension:
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/confirm-stop-bp.svg[]
+
+//- Отримаемо повідомлення про призупинення бізнес-процеса, натискаємо кнопку `OK`
+- You will receive a message confirming the suspension of the business process. Click the `OK` button:
+
+image::arch:architecture/registry/administrative/operational-maintenance/services/business-process-administration-portal/stop-bp-result.svg[]
+

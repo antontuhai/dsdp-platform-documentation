@@ -1,0 +1,309 @@
+= Call Activity
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+*_Call Activity_* is a standard BPMN-modeling element supported by Camunda Engine. It allows you to call another process as part of the currently running process. *Call Activity* is similar to xref:bp-modeling/bp/bpmn/subprocesses/embedded-subprocess.adoc[embedded subprocess], but is external, meaning it's modeled within a separate business process pool, and can be used multiple times by different Parentfootnote:[*Parent Process* is a process that initiates subprocess start. A subprocess is a *Child Process* to a *Parent Process*.] business processes.
+
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-01.png[]
+
+[NOTE]
+====
+In Camunda BPM the calling of global (external) subprocess can be executed between processes modeled in separate _.bpmn_ files, or within a single _.bpmn_ file. This way an independent business process can start another one, and vice versa.
+
+The registry platform currently supports only one type -- calling a global subprocess from a Parent process. From a global subprocess you can execute the Call Activity -- a subprocess of the 2nd level (_see xref:#restrictions[]_).
+
+.Example. Calling between processes, modeled in separate BPMN files
+image:bp-modeling/bp/subprocesses/call-activities/call-activity-separate-bpmn.png[]
+
+.Example. Calling between processes, modeled in one BPMN file.
+image:bp-modeling/bp/subprocesses/call-activities/call-activity-same-bpmn.png[]
+
+====
+
+When a Call Activity element is brought into action, a new instance is created for the process the element is linked to. The new instance is activated during none-startfootnote:[*None events* are undefined events, also called "empty."] event. The process can have start events of other types, but they are ignored.
+
+[NOTE]
+====
+When the created instance is ended, the call action is stopped, and the sequence flow continues.
+
+In other words, when Call Activity is executed, the process that initiated the call awaits the end of the global subprocess, and continues after that.
+====
+
+== Types of Call Activity element template extensions
+
+To simplify business process modeling within the registry Platform, a number of extension (delegate) types that are configured using the developed Call Activity element templates, were implemented:
+
+. xref:bp-modeling/bp/element-templates/call-activities/call-activity.adoc[*Call Activity*] -- general template for global subprocess call.
+. xref:bp-modeling/bp/element-templates/call-activities/check-excerpt-status.adoc[*Check excerpt status*] -- specialized template for the calling of check excerpt status subprocess.
+
+CAUTION: We differentiate Call Activity as a BPMN element and Call Activity as this element's extension that is configured using the _callActivity.json_ developed template, used to call the global subprocess.
+
+[#element-temp-call-activity]
+== Modeling business processes using Call Activity extensions
+
+Let's look at the application of Call Activity BPMN-element using _callActivity.json_ developed template-extension to call global subprocesses on the example of online order processing business processes (_further in the text -- main or parent process_) and confirmation of the order (_further in the text -- subprocess_).
+
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-1.png[]
+
+[TIP]
+====
+On the modeling stage it is required to create 2 business process pools and save them within one _.bpmn_ file.
+====
+
+=== Process modeling stages
+
+To model 2 processes (the parent process and the global subprocess in our case) using Call Activity, we need to go through the following stages:
+
+. xref:#create-pool-bp-1[].
+. xref:#bp-start-event[].
+. xref:#bp-user-form-insert-data-online-order[].
+. xref:#bp-call-activity[].
+. xref:#create-pool-bp-2[].
+* xref:#bp-start-event-called-process[].
+* xref:#bp-user-form-approval-decision[].
+* xref:#bp-script-task[].
+* xref:#bp-end-event-called-process[].
+. xref:#bp-user-form-order-payment[].
+. xref:#bp-end-event-caller-process[].
+
+[#create-pool-bp-1]
+=== Creating parent process pool
+
+_To model a pool for the parent process_, take the following steps:
+
+NOTE: Parent process pool modeling must be performed within the *Create Pool/Participant* element.
+
+. Open *Camunda Modeler* and create a new BPMN diagram by clicking *File* menu > *New File* > *BPMN Diagram*.
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-1.png[]
+
+. On the left panel, find *Create pool/Participant* and drag it onto the modeling canvas.
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-2.png[]
+
+. Fill in the fields with the corresponding values:
+
+* In the `Participant Name` field, enter the name for the pool -- `Creating an order on the website`.
+* In the `Process id` enter business process ID -- `create-order`.
+* In the `Process Name` field enter process name -- `Creating an order on the website`.
+
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-2.png[]
+
+[#bp-start-event]
+=== Modeling start event of the parent process
+
+_To model a start event_, take the following steps:
+
+. On the left panel, find the *CreateStartEvent* and drag it onto the modeling canvas.
+. On the right panel, fill in the following parameters with the corresponding values:
+* In the `Name` field, enter the name for the start event -- `Cart`;
+* In the `Initiator` field, enter `initiator`.
+
++
+TIP: `initiator` -- is a special variable set for the user who started the process.
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-3.png[]
+
+[#bp-user-form-insert-data-online-order]
+=== modeling the user task for entering online order data
+
+_To create a user task for data entering, take the following steps:_
+
+. Create a new task, define its type by clicking the key icon and selecting *User Task* from the menu.
+. On the right panel, click `Open Catalog`, select *User Form* template, and click `Apply` to confirm.
+. On the right panel, fill in the following fields:
+
+* In the `Id` field, set task ID -- `user-form-1`.
++
+TIP: Task ID is automatically set by default. Enter it manually if required.
+
+* In the `Name` field, enter task name -- `Order data form`.
+* In the `Form key` field, enter form key that will correspond with the form service name -- `add-order-bp-add-order-test`.
+* In the `Assignee` field, enter the variable of the user who initiated the process instance -- `${initiator}`.
+
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-4.png[]
+
+[#bp-call-activity]
+=== modeling Call Activity to call external subprocess
+
+_To model Call Activity, take the following steps:_
+
+TIP: You can find an example of Call Activity delegate configuration xref:bp-modeling/bp/element-templates/call-activities/call-activities-overview.adoc[here].
+
+. Create the *Call Activity* element.
+
+. Perform the following configurations:
+
+* In the `Name` field, enter element name -- `Decision on order confirmation`.
+
+* In the `Called Element` field, set the ID of the global xref:#create-pool-bp-2[subprocess to be called] -- `order-confirm`.
+
+* In the `Input data` field, set the input data to be sent to the called business process. The parameters must be transferred in the form of _key-value_ pairs (here -- `${submission('user-form-1').formData}`).
+
++
+TIP: You can find more detauls on using the `submission()` function on the following page: xref:registry-develop:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[].
+
+* In the `Output variable name` set the payload-carrying variable name (here -- `callActivityOutput`).
+
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-5.png[]
+
+NOTE: This way the current configuration starts xref:#create-pool-bp-2[a global subprocess] from the main pool. The main process can't end while the global subprocess is running.
+
+[#create-pool-bp-2]
+=== Creating a pool for the global subprocess
+
+_Model a pool for the global subprocess_ as shown in the example xref:#create-pool-bp-1[].
+
+. On the left panel, find the *Create pool/Participant* element and drag it to the modeling canvas.
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-2.png[]
+
+. Fill in the following fields with the corresponding values:
+
+* In the `Participant Name` field, enter the name of the pool displayed in the modeler -- `Decision on order confirmation`.
+
+* In the `Process id` field, enter business process ID -- `order-confirm`.
+
+* In the `Process Name` field, enter business process name -- `Decision on order confirmation`.
+
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-6.png[]
+
+[#bp-start-event-called-process]
+=== Modeling start event for the global subprocess
+
+_Model a start event for the global subprocess_ as shown in the example xref:#bp-start-event[].
+
+To do that, take the following steps:
+
+. On the left panel, find the *CreateStartEvent* element and drag it to the modeling canvas.
+
+. On the right panel, fill in the following parameters with the corresponding values:
+
+* In the `Name` field, enter the name of the start event -- `Receiving order data`.
+
+* In the `Initiator` field, enter `initiator`.
+
++
+TIP: `initiator` -- is a special variable set for the user who started the process.
+
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-7.png[]
+
+[#bp-user-form-approval-decision]
+
+=== Modeling the "Decision for order confirmation" user task
+
+_Create the "Decision for order confirmation" user task_ based on the example xref:#bp-user-form-insert-data-online-order[], by taking the following steps:
+
+. Create a new task, define its type by clicking the key icon and selecting *User Task* from the menu.
+
+. On the right panel, click `Open Catalog`, select *User Form* template, and click `Apply` to confirm.
+
+. On the right panel, fill in the following fields:
+
+* In the `Id` field, enter task ID -- `user-form-2`.
++
+
+TIP: Task ID is automatically set by default. Enter it manually if required.
+
+* In the `Name` field, enter task name -- `Decision for order confirmation`.
+
+* In the `Form key` field, enter a form key that will correspond with the form service name -- `add-order-bp-order-confirm-test`.
+
+*  In the `Assignee` field, enter the variable of the user who initiated the process instance -- `${initiator}`.
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-8.png[]
+
+[#bp-script-task]
+=== Modeling the script task to prepare the data for output
+
+_Create a script task for data processing and preparation for output_.
+
+[TIP]
+====
+The task purpose is to take the data that the user filled in the form, using groovy-script with `submission()` function, form an output in JSON format, and write it into `callActivityOutput` variable, defined in `Output variable name` field when modeling xref:#bp-call-activity[Call Activity] of the main process.
+====
+
+. Create a new task, define its type by clicking the key icon and selecting *Script Task* from the menu.
+
+. On the right panel, fill in the following fields:
+
+* In the `Name` field, enter task name -- `Preparing data for output`
+* In the `Script Format` field, enter script format -- `groovy`.
+* In the `Script Type` field, enter script type -- `Inline Script`.
+* In the `Script` field, enter the groovy-script:
++
+[source,groovy]
+----
+var data = submission('user-form-2').formData
+execution.removeVariable('outputPayload')
+set_transient_variable('outputPayload', S(data, 'application/json'))
+----
+
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-9.png[]
+
+[#bp-end-event-called-process]
+=== modeling global subprocess end event
+
+. Create a business process end event.
+
+. On the right panel, set the `Name` parameter to `Order confirmed`.
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-10.png[]
+
+TIP: The data received as a result of the "Decision for order confirmation" global subprocess execution are written into the `callActivityOutput` variable, defined in the `Output variable name` field when modeling xref:#bp-call-activity[Call Activity] of the main process, and can be used on the xref:#bp-user-form-order-payment[order payment form] in the main process. After that, the main process execution continues.
+
+[#bp-user-form-order-payment]
+=== modeling the user task for order payment
+
+_Create the user task for order payment_ based on the example xref:#bp-user-form-insert-data-online-order[], by taking the following steps:
+
+. Create a new task, define its type by clicking the key icon and selecting *User Task* from the menu.
+
+. On the right panel, click `Open Catalog`, select *User Form* template, and click `Apply` to confirm.
+
+. On the right panel, fill in the following fields:
+
+* In the `Name` field, enter task name -- `Order payment`.
+
+* In the `Form key` field, enter form key that will correspond with the form service name -- `add-order-bp-view-order-test`.
+
+* In the `Assignee` field, enter the variable of the user who initiated the process instance -- `${initiator}`.
+
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-11.png[]
+
+[#bp-end-event-caller-process]
+=== Modeling main process end event
+
+. Create the business process end event.
+. On the right panel, fill in `Name` parameter with `Order paid`.
++
+image:bp-modeling/bp/subprocesses/call-activities/bp-call-activity-12.png[]
+
+[#restrictions]
+== Restricting nesting levels when calling subprocesses with Call Activity
+
+The Platform has certain restrictions on how many nesting levels are allowed for business processes during the calling of global subprocesses with Call Activity.
+
+[CAUTION]
+====
+
+For proper calling of global subprocesses with Call Activity functionality operation, use no more than 3 nesting levels for bysiness processes. This means the _main process, global subprocess of the 1st level, and global subprocess of the 2nd level_.
+====
+
+== Displaying business processes in user Portals
+
+Users of Officer and Citizen Portals will see only the names of parent business processes of the highest level on [.underline]#My services# and [.underline]#My tasks# pages during the execution of called or in-built subprocesses.
+
+If business process `A` called subprocess `B`, and subprocess `B` called subprocess `C`, the user will _only see business process A name_ in the Portal.
+
+

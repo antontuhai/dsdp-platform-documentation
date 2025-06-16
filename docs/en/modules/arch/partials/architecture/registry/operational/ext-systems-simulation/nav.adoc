@@ -1,0 +1,3 @@
+***** xref:arch:architecture/registry/operational/ext-systems-simulation/overview.adoc[External API simulation subsystem]
+****** Subsystem evolution
+******* xref:arch:architecture/registry/operational/ext-systems-simulation/custom-mocking-wiremock.adoc[Declarative configuration of system emulators: simplified testing of external registry integrations]

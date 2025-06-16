@@ -1,0 +1,240 @@
+= Integration with external services using the REST connector
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+You can use the `REST connector` to connect to secured services or systems outside the Platform cluster.
+
+This guide describes the steps required to set up the connector.
+
+[#create-service-entry]
+== Creating a Service Entry
+
+Before a request for an external resource can go beyond the Platform cluster, you need to create a *Service Entry* at the registry level to serve as an entry point for the outbound traffic.
+
+[NOTE]
+====
+
+A Service Entry is created automatically after the registry administrator configures the integration in the Control Plane admin console. Once the changes are applied to the registry configuration and the *MASTER-Build-`<registry-name>`* Jenkins pipeline runs, the connection to the external system is set up.
+
+For details on Control Plane settings, see xref:registry-develop:registry-admin/external-integration/cp-integrate-ext-system.adoc[].
+====
+
+[WARNING]
+====
+
+For registry versions 1.9.2 or earlier, a Service Entry is created automatically after the publication pipeline is launched and changes to the registry regulations are deployed.
+====
+
+You can check whether the Service Entry was created using the `*ServiceEntries*` list in the OpenShift console.
+
+. Sign in to the OpenShift web console.
+
+. Go to *Home* > *API Explorer*.
+. In the *Filter by kind* search field, search for `ServiceEntry` and select the corresponding service.
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-1.png[]
+
+. From the *Project* dropdown list, select the registry that will use the external service.
+. Open the *Instances* tab and find the required `ServiceEntry`.
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-2-1.png[]
+
+[#create-secret]
+== Creating a secret for service authorization
+
+[WARNING]
+====
+
+For registry versions 1.9.3 or later, there is no need to create secrets manually in Openshift.
+
+The secrets (such as a token or password) are created automatically after the external system interaction settings are applied via the Control Plane admin console.
+
+Once the changes are applied to the registry configuration and the *MASTER-Build-`<registry-name>`* Jenkins pipeline runs, a secret for external service authorization is created along with the Service Entry. The secret is added to the *user-management:hashicorp-vault* for the system or service to which requests will be made.
+
+For details on configuring interactions with external systems, see xref:registry-admin/external-integration/cp-integrate-ext-system.adoc[].
+====
+
+To create the secret manually, perform these steps:
+
+. Sign in to the OpenShift web console.
+. Go to *Workloads* > *Secrets* and select your project from the *Project* dropdown list.
+. Select *`Create`* > *Key/value secret*.
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-6.png[]
+
+. Enter the name of the secret into the *Secret name* field. For example: `httpbin-basic-authentication`.
++
+NOTE: You will need the name of the secret for the `*secret-name*` parameter when configuring the regulations. For details, jump to xref:#regulations-configuration[].
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-7.png[]
+
+. Specify the type of service authentication to use:
+
+* For `BASIC` authentication, add two *Key* parameters:
+** `username`
+** `password`
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-8.png[]
+
+* For `PARTNER_TOKEN` authentication, add one *Key* parameter:
+** `token`
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-9.png[]
+
+. Once the settings are applied successfully, the secret is created. You can use this secret for authorization in the external service.
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-10.png[]
+
+[#regulations-configuration]
+== Configuring the regulations
+
+[WARNING]
+====
+For registry versions 1.9.3 or later, the main integration settings are performed at the registry instance level in the Control Plane admin console. For details, see xref:registry-admin/external-integration/cp-integrate-ext-system.adoc[].
+
+At the registry regulations level, the administrator configures only the following: ::
+
+* system name
+* allowed operations:
+** endpoint and resource path
+** method
+
+.external-systems config in the bp-trembita/configuration.yml file for registries version 1.9.3 or later
+=====
+[source, yaml]
+----
+# reusing external system names configured on registry level
+external-systems:
+  diia:
+    operations:
+      get-damaged-property:
+        resource-path: "/api/v1/public-service/damaged-property/filtered"
+        method: "GET"
+      create-distribution:
+        resource-path: "/api/v1/notification/distribution/push"
+        method: "POST"
+  http-bin:
+    operations:
+      get-operation:
+        resource-path: "/get"
+        method: "GET"
+----
+=====
+====
+
+For registries version 1.9.2 or earlier, perform the configuration at the registry regulations level.
+
+To do this, you need to configure the `*external-systems*` block in the *_bp-trembita/configuration.yml_* file of a corresponding registry.
+
+.An example of `BASIC` authentication
+[example]
+[source, yaml]
+----
+external-systems:
+  httpbin:
+    url: http://httpbin.org/
+    methods:
+      get:
+        path: /get
+        method: GET
+    auth:
+      type: BASIC
+      secret-name: httpbin-basic-authentication
+----
+
+[NOTE]
+====
+* The `external-systems` header must be followed by the name of the external service, for example, `httpbin`.
+* The `url` parameter must contain the service address, for example, `http://httpbin.org/`
+* The `methods` header must contain the name of the method used to interact with the service, for example, `get`.
+** The `path` is the path to the service, for example, `/get`.
+** The `method` is the HTTP method of interacting with the service, for example, `GET`.
+* The `auth` header must contain the secret parameters:
+** The `type` is the authentication type: `BASIC` or `PARTNER_TOKEN`.
+** The `secret-name` is the name of the secret, for example, `httpbin-basic-authentication`.
+====
+
+.An example of `PARTNER_TOKEN` authentication
+[example]
+[source, yaml]
+----
+external-systems:
+  diia:
+    url: http://api2.diia.gov.ua
+    methods:
+      get-damaged-property:
+        path: /api/v1/public-service/damaged-property/filtered
+        method: GET
+    auth:
+      type: PARTNER_TOKEN
+      secret-name: secret2
+      partner-token-auth-url: https://api2t.diia.gov.ua/api/v1/auth/partner
+      token-json-path: $.token
+----
+
+[#bp-modeling]
+== Modeling business processes using the "Connect to external system" delegate
+
+To configure the delegate template in Camunda Modeler, perform these steps:
+
+. Open the business process modeling interface.
+. Create a *Service Task*.
+. In the settings panel on the right, click the *`Open Catalog`* button and select the *Connect to external system v2* delegate template from the list. Click *`Apply`* to confirm your action.
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-11.png[]
+
+. Configure the following options:
+
+* *Name*: Specify the task name. For example, `Create a GET request`.
+* *Input Parameters*:
+
+** Expand the *External system name* section and specify the name of the target external system:
+
+*** Set the *Local Variable Assignment* toggle to *On*. This will allow creating a local variable for the method.
+
+*** From the *Variable Assignment Type* dropdown list, select *String or Expression*.
+
+*** In the *Variable Assignment Value* field, enter the name of the external system. For example, `httpbin`.
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-12.png[]
+
+** Expand the *External system method name* section and specify the HTTP method for interacting with the external system:
+
+*** Set the *Local Variable Assignment* toggle to *On*. This will allow creating a local variable for the method.
+
+*** From the *Variable Assignment Type* dropdown list, select *String or Expression*.
+
+*** In the *Variable Assignment Value* field, enter the name of the method. For example, `get`.
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-13.png[]
+
+** When using the GET method, expand the *Request parameters* section and specify the required request parameters:
+
+*** Set the *Local Variable Assignment* toggle to *On*. This will allow creating a local variable for the method.
+*** From the *Variable Assignment Type* dropdown list, select *Map*.
+
+**** *Key*: Specify the request parameter key.
+**** *Value*: Specify the request parameter value.
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-14.png[]
+
+** Expand the *Additional request headers* section and specify additional request headers:
+
+*** Set the *Local Variable Assignment* toggle to *On*. This will allow creating a local variable for the method.
+*** From the *Variable Assignment Type* dropdown list, select *Map*.
+**** *Key*: Specify the request header key.
+**** *Value*: Specify the request header value.
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-15.png[]
+
+** The *Request payload* section is used for the POST and PUT request methods.
+* *Output Parameters*:
+
+** Expand the *Result variable* section and specify the process variable to put response to. The default value is `response`.
+
+** Set the *Process Variable Assignment* toggle to *On*.
+
+** In the *Assign to Process Variable* field, enter the name of the result variable or leave the default `response` value.
++
+image:registry-develop:bp-modeling/bp/rest-connector/rest-connector-16.png[]

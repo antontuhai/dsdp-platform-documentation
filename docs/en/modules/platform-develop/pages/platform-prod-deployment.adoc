@@ -1,0 +1,1262 @@
+= Launching the Platform and registries into production
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+== Preparing the Platform environment
+
+=== Basic prerequisites
+
+To launch the Platform and registries into production, use only officially supported virtual infrastructures (currently https://aws.amazon.com/[AWS] and https://www.vmware.com/products/vsphere.html[VSphere]).
+
+An OKD cluster must be deployed on the selected infrastructure, using a version that meets Platform requirements according to the official recommendations (xref:admin:installation/okd-requirements.adoc[]).
+
+Install and configure the Platform strictly according to the official documentation and deploy it only on supported environments:
+
+* xref:admin:installation/platform-deployment/aws/platform-aws-deployment.adoc[]
+* xref:admin:installation/platform-deployment/vsphere/platform-vsphere-deployment.adoc[]
+
+=== Training the registry technical administrator
+
+Onboarding for registry administrators is crucial for several reasons:
+
+* The role requires deep technical knowledge. Administrators must understand the registry structure and components, and be able to monitor and maintain the system. Training helps them acquire the necessary knowledge and skills to perform their tasks effectively.
+
+* Registry administrators are responsible for developing and implementing the registry regulations. This requires understanding the registry's logic, data models, business processes, and user interfaces. Onboarding ensures administrators grasp these aspects to manage the system efficiently.
+
+* Covering all key aspects of the administrator’s role during onboarding greatly improves performance. When administrators clearly understand their responsibilities, goals, and expectations from the start, they can adapt faster and work more effectively in a large distributed system.
+
+[TIP]
+====
+For more details, see the following materials:
+
+* xref:registry-develop:registry-admin-study/registry-admin-profile.adoc[]
+* xref:registry-develop:registry-admin-study/registry-admin-study.adoc[]
+** xref:registry-develop:registry-admin-study/study-tasks/study-tasks-overview.adoc[]
+* xref:registry-develop:study-project/index.adoc[]
+====
+
+=== Planning backup storage for the Platform and registries
+
+Backups of the Platform and registries are stored in a separate S3-compatible storage — https://min.io/[MinIO].
+It is important to consider the size of backups when planning the available storage space and compute resources.
+
+[NOTE]
+====
+Accurately estimating the required storage space for backups is difficult because it depends on the specifics of each registry. The figures below provide approximate guidance.
+====
+
+Backup requirements differ slightly based on the type of installation — AWS or VSphere:
+
+* *AWS*:
+Backups of OpenShift resources for core components require between 1 and 5 MB. Data stored in `PersistentVolumeClaims` is backed up using EBS Snapshots (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSSnapshots.html[]), so no additional space is used in MinIO.
+The only exception is one `PersistentVolumeClaim` in the `user-management` namespace, which requires about 5 MB on MinIO.
+
+* *vSphere*:
+The size of OpenShift resource backups is similar to AWS. However, backups of `PersistentVolumeClaims` are stored in MinIO, with approximate sizes as follows:
++
+--
+* `control-plane` — 15 GB
+* `user-management` — 12 GB
+* `control-plane-nexus` — 100 GB
+* `grafana-monitoring` — 10 GB
+--
+
+These figures represent the actual PVC sizes. For central components, plan approximately 140 GB for PVC data backups and an additional 10 GB for OpenShift resources (_the 10 GB buffer is reserved for future growth_).
+
+Backup sizes for registries are the same for both AWS and VSphere. Each registry backup requires around 210 GB:
+10 GB for OpenShift resources and 200 GB for PVC data.
+
+Regarding replication: initially, plan up to 200 GB.
+As the registry grows, storage needs may increase to several terabytes.
+
+[#expand-central-components-volume-space]
+=== Planning storage space for central Platform components
+
+Expand PVC ::
+
+The central Platform components are stored on cloud-native persistent volumes.
+You can expand the disk space for these components via the OpenShift console under *Storage* > *PersistentVolumeClaims* > *`Expand PVC`* within the corresponding namespaces:
+
+* `openshift-logging`
+* `grafana-monitoring`
+* `control-plane`
+* `control-plane-nexus`
+* `user-management` (Keycloak database)
+
++
+.Example: Expanding storage for openshift-logging
+image::admin:logging/elastic-search-expand.png[]
+
+Custom resource definitions ::
+
+Additionally, update *Custom Resource Definitions (CRDs)* for certain components.
+For example, to expand storage for `openshift-logging`:
+
+. Open *Administration* > *Custom resource definitions* and locate *ClusterLogging*.
+. Select the *Instance* for the *openshift-logging* project.
+. Open the *YAML* configuration, find the `storage.size` parameter, and adjust the disk size.
+
++
+.Example: Updating custom resource definitions for openshift-logging
+image::admin:logging/cluster-logging-yaml-edit.png[]
+
+NOTE: Each service initially runs with default disk size settings.
+As an administrator, you can either keep these defaults or increase the volume size immediately if you anticipate higher usage.
+The recommended increase is *+50%* of the original size.
+For example, if the default disk size for `openshift-logging` is 400 GB, you may want to expand it to 600 GB at the initial stage.
+
+[TIP]
+====
+For a detailed example of expanding storage, see the technical maintenance guide for the EFK stack:
+xref:admin:logging/elastic-search.adoc[]
+====
+
+=== Planning storage space for Ceph root volumes
+
+The *Ceph* service is another central component of the Platform with its own specifics.
+Root volumes for Ceph are stored in the `openshift-storage` project.
+
+You can configure disk size for Ceph in the OpenShift console: go to the `openshift-storage` project, then *Storage* > *PersistentVolumeClaims*.
+
+NOTE: The recommended initial disk space increase is *+50%*, similar to other xref:#expand-central-components-volume-space[central components].
+For example, if the default disk size for Ceph is 512 GB, you should consider expanding it to 750 GB.
+
+[TIP]
+====
+For more information about configuring the file system, see:
+
+* xref:admin:file-system/ceph-space.adoc[]
+* xref:admin:file-system/ceph_scaling.adoc[]
+* xref:admin:file-system/s3/lifecycle-policy.adoc[]
+====
+
+////
+
+=== Зберігання цифрових печаток адміністратора для платформи та реєстрів
+
+//TODO: UA-SPECIFIC SECTION
+
+==== Мережний криптомодуль "Гряда"
+
+У промисловій експлуатації рекомендованим сховищем зберігання ключів є програмно-апаратний комплекс "Гряда". Технічний адміністратор Платформи повинен мати змогу генерувати та сертифікувати ключі для Платформи та реєстрів, що будуть на ній розгорнуті.
+
+"Гряда" встановлюється на окремому екземплярі, в тому ж ЦОД, але окремо від Платформи реєстрів. Налаштування криптомодуля як стороннього продукту виконує адміністратор "Гряди". На стороні Платформи адміністрування виконує технічний адміністратор Платформи. Для Платформи передбачений єдиний екземпляр "Гряди" для всіх реєстрів.
+
+Необхідно забезпечити мережеве з'єднання між Платформою реєстрів та "Грядою". Для цього: ::
++
+. На стороні криптомодуля "Гряда" необхідно дозволити трафік з OpenShift. За це відповідає адміністратор "Гряди". Адміністратор Платформи має надати IP-адреси, з яких необхідно дозволити трафік від Платформи реєстрів до "Гряди".
+
+. На поді DSO (_сервіс цифрових підписів_) реєстру необхідно дозволити вихідний трафік на "Гряду":
+
+* Відкрийте налаштування поди DSO-сервісу та перевірте конфігурацію `sidecar.istio`:
++
+** Якщо в анотації до сервісу вказано `sidecar.istio.io/inject: 'false'`, то трафік дозволено за замовчуванням, і додаткові налаштування не потрібні.
++
+----
+metadata:
+  annotations:
+    sidecar.istio.io/inject: 'false'
+----
++
+** Якщо вказано `sidecar.istio.io/inject: 'true'`, зокрема:
++
+----
+metadata:
+  annotations:
+    sidecar.istio.io/inject: 'true'
+    traffic.sidecar.istio.io/excludeOutboundIPRanges: 10.129.71.251/32
+----
++
+переконайтеся, що YAML-конфігурація на поді DSO має наступні анотації:
++
+----
+traffic.sidecar.istio.io/excludeOutboundIPRanges: {{ .Values.griada.ip }}
+traffic.sidecar.istio.io/excludeOutboundPorts: '{{ .Values.griada.port }}'
+----
++
+*** де замість `{{ .Values.griada.ip }}` буде IP-адреса "Гряди", наприклад, `0.0.0.0`;
+
+*** замість `'{{ .Values.griada.port }}'` буде порт "Гряди", наприклад, `3080`.
+
+* Анотації з helm chart для DSO-сервісу автоматично сформуються, якщо у _deploy-templates/values.yaml_ реєстру дозволено трафік на "Гряду" й вказані IP та порт.
++
+----
+griada:
+  enabled: true
+  ip: 0.0.0.0
+  port: 3080
+----
+
+. Виконайте налаштування всередині самої Гряди, щоб технічний адміністратор Платформи мав змогу генерувати та сертифікувати ключі для Платформи та реєстрів, що будуть на ній розгорнуті.
++
+[TIP]
+====
+* Як встановити та налаштувати "Гряду, дивіться на офіційному сайті ІІТ: https://iit.com.ua/products[].
+* Як налаштувати доступ до "Гряди" на локальній машині, дивіться на сторінці xref:admin:installation/griada/configure-access-griada-locally.adoc[].
+* Як використовувати криптомодуль при роботі із ключами цифрового підпису на Платформі, див. на сторінках:
+
+** xref:admin:control-plane/system-keys/control-plane-platform-keys.adoc[]
+** xref:admin:control-plane/system-keys/control-plane-registry-keys.adoc[]
+====
+
+TIP: Додатково ознайомтеся із розгортанням емулятора "Гряда" в AWS на сторінці xref:admin:installation/griada/griada-301-deployment.adoc[].
+
+==== Файлові ключі
+
+Використання __файлових ключів для підпис__у є методом, який не рекомендується і, відповідно до законодавства, не пройде Комплексної Системи Захисту Інформації (КСЗІ).
+
+Забезпечення взаємодії реєстру з Акредитованим Центром Сертифікації Ключів (АЦСК) вимагає використання українських IP-адрес.
+
+Якщо екземпляр реєстру не має українських IP, бо розміщений на хмарних ресурсах ЦОД AWS або іншого провайдера, тоді власник екземпляра повинен забезпечити додавання цих IP до білого списку відповідного АЦСК. Цей процес називається "whitelisting". Він дозволяє специфічним IP-адресам обходити певні обмеження мережі, таким чином надаючи змогу взаємодіяти з АЦСК.
+
+NOTE: Важливо зауважити, що не всі хмарні сервіси дозволяють пряме управління IP-адресами. Тому власники екземплярів реєстрів мають розглянути можливості використання додаткових послуг або рішень для отримання українських IP-адрес або забезпечення їх "whitelisting".
+
+[TIP]
+====
+Детальніше про налаштування файлових ключів цифрового підпису ви можете дізнатися на сторінках:
+
+* xref:admin:control-plane/system-keys/control-plane-platform-keys.adoc[]
+* xref:admin:control-plane/system-keys/control-plane-registry-keys.adoc[]
+* xref:admin:control-plane/system-keys/create-qes-keys-test-ca-iit.adoc[]
+====
+
+=== Налаштування взаємодії з "Трембітою" та встановлення Шлюзу Безпечного Обміну (ШБО)
+
+* xref:registry-develop:registry-admin/external-integration/registration-subsystem-trembita/registration-subsystem-trembita.adoc[]
+* xref:registry-develop:registry-admin/external-integration/api-publish/trembita-data-invoking.adoc[]
+* xref:registry-develop:registry-admin/external-integration/api-publish/trembita-bp-invoking.adoc[]
+
+=== Первісна перевірка після розгортання Платформи
+
+Після розгортання Платформи у цільовому середовищі, необхідно виконати первинне тестування Платформи, зокрема провести такі перевірки компонентів:
+
+Перевірки в OpenShift-консолі: ::
+
+. У компоненті *`control-plane-jenkins`* перевірте, що пайплайн MASTER-Build-cluster-mgmt завершився успішно, й усі кроки виконані.
+
+. Перевірте, що поди `user-management` розгорнулися, зокрема перевірте доступність сервісів Keycloak та DSO Платформи.
+
+. Перевірте стан под *`control-plane-nexus`* -- вони мають бути у "хорошому" стані.
+
+. Перевірте стан под компонента `openshift-logging`.
+
+. Виконайте вхід до сервісу моніторингу *Grafana* для перевірки його доступності.
+
+. Перевірте стан усіх под у проєктах `istio-system` та `istio-operator` -- вони повинні бути у стані `OK`.
+
+. Перевірте компонент *Jaeger*: відкрийте сторінку Jaeger, автентифікуйтеся за допомогою системного користувача `KubeAdmin`, виконайте вхід до сервісу Jaeger та перевірте, чи відкривається сторінка пошуку Jaeger.
+
+* Перевірте компонент *Kiali*: відкрийте сторінку Kiali, автентифікуйтеся за допомогою системного користувача `KubeAdmin`, виконайте вхід до сервісу Kiali та перевірте, чи відкривається домашня сторінка Kiali.
+
+* Перевірте стан усіх под `openshift-logging` -- вони повинні бути у стані `OK`.
+
+. Перевірте стан усіх под в `openshift-storage`, а також переконайтеся, що `CephObjectStores` у статусі `Connected`.
+
+. Перевірте готовність `clusterSources`.
+
+. Окремо перевірте доступність файлової системи *Ceph* у проєкті `openshift-storage`.
+
+Перевірки control-plane-console: ::
+
+. Виконайте вхід до *Control Plane* та переконайтеся, що можете бачити вміст розділів *Реєстри* та *Керування Платформою*.
+
+. Перейдіть до *Керування Платформою* та створіть адміністратора Платформи.
+
+. Зачекайте, доки Jenkins-пайплайн *MASTER-Build-cluster-mgmt* створить адміністратора та встановить права доступу у сервісі Keycloak. Виконайте вхід до Control Plane вже під щойно створеним адміністратором.
+
+. Створіть новий реєстр у Control Plane.
+
+////
+
+=== Configuring monitoring alert notifications
+
+Monitoring alert notifications are configured in the *Grafana* component.
+You must select a communication channel to receive alerts.
+We recommend using a Telegram chatbot.
+
+[NOTE]
+====
+This is the recommended _basic_ monitoring notification setup.
+Alerts can be triggered from various dashboards.
+More advanced configurations can be performed by the Platform administrator as needed.
+====
+
+TIP: For more information, see xref:registry-develop:registry-admin/grafana-monitoring/grafana-alerting-notifications.adoc[].
+
+=== Configuring basic dashboards in Kibana
+
+The Platform uses the *EFK* stack (*Elasticsearch, Fluentd, Kibana*) for event logging.
+The EFK stack is responsible for collecting, processing, and visualizing system event logs, helping ensure transparency and monitoring of system health.
+
+The event logging subsystem is deployed in a separate OpenShift project called `*openshift-logging*`.
+This approach isolates logging-related resources from other system components, enhancing security and stability.
+
+*Kibana* provides an interactive interface to visualize all application logs across the Platform, allowing for effective event analysis and monitoring.
+
+TIP: For details, see xref:registry-develop:registry-admin/openshift-logging/openshift-logging-overview.adoc[].
+
+=== Configuring backups for central components
+
+The Platform supports two types of backups for central (infrastructure) components:
+
+* Manual backups (_see details — xref:admin:backup-restore/control-plane-components-backup-restore.adoc[]_).
+* Automatic backups based on a defined schedule (_see details — xref:admin:backup-restore/backup-schedule-cluster-mgmt.adoc[]_).
+
+After creating a backup, the central component environment can be restored directly from it.
+
+=== Configuring Platform digital signature keys
+
+The creation of digital signature keys and certificates occurs during Platform deployment (_see details — xref:admin:installation/platform-deployment/aws/prerequisites.adoc#preconditions-first-stage[Prerequisites for Platform deployment]_).
+
+A general overview of Platform keys is available here: xref:admin:registry-management/system-keys/system-keys-overview.adoc[].
+
+You can also update digital signature keys and certificates during Platform operation through the Control Plane interface (_see details — xref:admin:control-plane/system-keys/control-plane-platform-keys.adoc[]_).
+
+[#configure-smtp-server]
+=== Configuring and obtaining permission for the SMTP server in the AWS environment
+
+The Platform administrator must first configure the SMTP server.
+Follow the instructions provided in xref:admin:installation/internal-smtp-server-setup.adoc[].
+
+As part of the setup procedure, it is critically important to complete the xref:admin:installation/internal-smtp-server-setup.adoc#obtain-permission-email-aws[permission request for the SMTP server in the AWS environment].
+This step ensures the reliability and efficiency of email delivery.
+
+By default, any outbound traffic on port 25 (SMTP) is blocked when the Platform is deployed in AWS.
+
+You must submit a https://aws-portal.amazon.com/gp/aws/html-forms-controller/contactus/ec2-email-limit-rdns-request[Request to remove email sending limitations] to AWS Support.
+The request review time may take up to 48 hours.
+
+=== Configuring network-level access restrictions to Platform administrative endpoints
+
+In the *Control Plane* console under *Platform management*, the administrator can define a CIDR block to restrict external access to platform and infrastructure component routes.
+
+TIP: For more information, see xref:admin:control-plane/cidr/control-plane-cidr-access-endpoints.adoc[].
+
+=== Securing target environment infrastructure
+
+The environment administrator is responsible for securing the target infrastructure according to applicable organizational policies.
+
+=== Updating components
+
+==== Special steps for updating the Platform cluster
+
+In addition to the xref:#update-cluster-mgmt[standard update procedure], each release may require special actions related to updating Platform components.
+
+NOTE: Start the update process on the xref:admin:update/special-steps-for-update/special-steps.adoc[Special update steps] page.
+During these steps, proceed with updating the xref:#update-cluster-mgmt[infrastructure components].
+
+[#update-cluster-mgmt]
+==== Updating Platform infrastructure components (updating cluster-mgmt)
+
+NOTE: Start the update process on the xref:admin:update/special-steps-for-update/special-steps.adoc[Special update steps] page.
+During these steps, proceed with updating the infrastructure components.
+
+The management of Platform infrastructure component updates is performed in the *Control Plane* administrative panel for Platform and registries.
+
+The update process follows the *GitOps* approach.
+
+TIP: For more information, see xref:admin:update/update_cluster-mgmt.adoc[].
+
+=== Migrating registries
+
+Sometimes it is necessary to transfer a registry, along with its settings and resources, from one cluster to another.
+
+The migration process involves restoring the registry from the latest backup and transferring it from Cluster A to Cluster B.
+
+TIP: For more information about migration, see xref:admin:migration/migration-overview.adoc[].
+
+== Preparing the registry environment
+
+=== Recommendations for forming registry support teams (L1, L2, L3)
+
+Mandatory points: ::
+
+. Scope of support:
+
+* Define the required support levels (L1, L1.5, L2, L3, etc.).
+Note that each level requires a separate set of skills and resources.
+* Outline the environments to be supported (*Prod*, *Stage*, etc.).
+The team must have sufficient experience working in these environments.
+
+. ITSM system for tracking support requests.
+We recommend using https://www.atlassian.com/software/jira/service-management[Jira Service Management] from Atlassian (cloud solution).
+
+. Coverage hours (8×5, 16×5, on-call shifts, holiday schedules, etc.).
+Ensure availability during non-working hours and holidays.
+
+. Language support.
+The team must be able to communicate effectively in the required languages.
+
+. Expected volume of support requests.
+This helps determine the required team size.
+
+. Main business time zone.
+This is important for planning team working hours.
+
+. SLA/SLO/OLA requirements.
+Define the expected service quality levels.
+
+. Communication channels (tickets, phone support, etc.).
+The team must be ready to work through the required channels.
+
+. Tools and technology stack.
+The team must have expertise in the necessary technologies.
+
+. Number of system users.
+This also impacts the required team size.
+
+Additional points to consider: ::
+
+. Ticket reporting (tickets dump).
+Helps analyze user needs more effectively.
+
+. Size of the existing team (if any).
+Helps assess whether additional resources are needed.
+
+. Dependencies on third-party teams.
+Important for planning collaboration and coordination.
+
+=== Creating a registry and performing the initial verification
+
+After completing the xref:admin:control-plane/registry-management/control-plane-create-registry.adoc[], perform the following initial checks to ensure everything is set up and working correctly:
+
+. Obtain your login and password for OpenShift and the Control Plane from the Platform administrator.
+. Verify that the namespace for your registry has been deployed in OpenShift.
+You should see only your registry project.
+. Verify that all required pods and routes are available within the namespace.
+* Verify access to the registry’s administrative tools and check their general availability: Gerrit, Jenkins, Nexus, and Admin Portal.
+* Log in to Keycloak and verify that the registry realms are available, including:
+
+** `-officer-portal`
+** `-citizen-portal`
+** `-admin`
+** `-external-system`
+
+. Verify access to the *Control Plane* and log in.
+. Ensure that you can see only your own registry in the Control Plane.
+. Verify that you can modify the registry configuration, for example, by adding a registry administrator.
+. Verify that authentication is working correctly.
+
+* In regional Ukrainian environment:
++
+[NOTE,caption=UA-SPECIFIC]
+====
+** Create an officer user in Keycloak and log in to the *Officer Portal* using a qualified electronic signature (QES).
+** Log in to the *Citizen Portal* using a qualified electronic signature (QES).
+====
+
+* In the global environment:
+** Create an officer user in Keycloak and log in to the *Officer Portal* using the basic login and password authentication.
+** Log in to the *Citizen Portal* using the basic login and password authentication.
+
+TIP: It is also helpful to review the xref:admin:control-plane/registry-management/control-plane-edit-registry.adoc[] page.
+
+[#update-registry-components]
+=== Updating registry components
+
+The management of registry component updates is performed in the *Control Plane* administrative panel for Platform and registries.
+
+The update process follows the *GitOps* approach, after completing xref:#update-cluster-mgmt[].
+
+TIP: For more information, see xref:admin:update/update-registry-components.adoc[].
+
+=== Special steps for updating the registry
+
+In addition to the xref:#update-registry-components[standard update procedure], each release may require special actions related to updating registry components.
+
+TIP: For more information, see xref:admin:update/special-steps-for-update/special-steps.adoc[].
+
+=== Common issues with registry user authentication and business process signing
+
+include::platform:ROOT:partial$admonitions/ua-specific.adoc[]
+
+You can address these issues as follows:
+
+* Check the digital signature key at https://id.gov.ua/sign[].
+* Verify that the DSO pods of the registry and the `user-management` project have the latest digital signature certificates installed.
++
+If the keys or certificates are outdated or not functioning correctly, they must be updated.
++
+[TIP]
+====
+For more information about updating digital signature keys and certificates, see:
+
+* xref:admin:control-plane/system-keys/control-plane-platform-keys.adoc[]
+* xref:admin:control-plane/system-keys/control-plane-registry-keys.adoc[]
+====
+* Another common issue is the presence of duplicate users.
+For example, the `<registry-name>-officer-portal` realm in Keycloak may have two users with identical attributes.
+
+// TODO: Clarify
+////
+=== Changing the registry deployment mode from production to development
+
+[NOTE]
+====
+Starting from release `1.9.7`, this functionality is no longer supported.
+Changing the deployment mode will not be possible after the registry is created.
+====
+
+The *deployment mode* is a parameter that specifies the environment in which the registry regulations are deployed.
+It distinguishes the production environment from the development environment and allows configuring settings according to their needs.
+The Registry Platform supports two deployment modes: `*development*` and `*production*`.
+
+TIP: For more information, see xref:registry-develop:registry-admin/change-dev-prod-mode.adoc[].
+////
+
+=== Conducting a registry audit
+
+Before deploying the registry regulation into production, it is recommended to conduct a full registry audit.
+
+An audit helps assess the quality of the developed regulation and identify potential issues that could affect the stability or efficiency of the registry.
+
+Review the set of audit recommendations, grouped according to the
+xref:arch:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[Digital Registry Regulation] structure.
+
+Additionally, it is recommended to audit the registry's resource configurations.
+
+[TIP]
+====
+For more information about registry auditing:
+
+* xref:registry-develop:audit/registry-audit/registry-audit-instruction.adoc[]
+* xref:registry-develop:audit/registry-config-audit/registry-resources-audit.adoc[]
+====
+
+=== Features of deploying regulations in the production environment
+
+Regulations structure: ::
+
+* xref:registry-develop:registry-admin/regulations-deploy/registry-admin-deploy-regulation.adoc[]
+
+Deploying regulations: ::
+
+* xref:registry-develop:registry-admin/regulations-deploy/registry-regulations-structure.adoc[]
+
+Changing the deployment mode of regulations: ::
+
+* xref:registry-develop:registry-admin/change-dev-prod-mode.adoc[]
+
+Getting started prerequisites: ::
+
+* xref:registry-develop:study-project/index.adoc#preconditions-setup[Getting started prerequisites]
+
+Regulations publishing pipeline: ::
+
+* xref:registry-develop:study-project/index.adoc#registry-regulations-deployment[How regulations are deployed]
+
+Automatic validation during regulation updates: ::
+
+* xref:registry-develop:registry-admin/regulations-deploy/registry-regulations-auto-validation.adoc[]
+
+Regulations Administrator Portal: ::
+
+* xref:registry-develop:registry-admin/admin-portal/overview.adoc[]
+
+Other useful documents: ::
+
+* xref:registry-develop:study-project/index.adoc[]
+
+=== Recommended process for updating registry regulations
+
+After the registry is deployed by the Platform administrator, the registry will have an empty Gerrit repository for its regulations.
+
+The process for making changes to the regulations — either initially or later during updates — follows the GitOps approach and does not differ procedurally.
+
+[TIP]
+====
+.What is the GitOps approach?
+[%collapsible]
+=====
+GitOps is an approach to managing infrastructure and deploying applications based on using Git version control.
+
+In GitOps, all configuration files, infrastructure descriptions, and application code are stored in a Git repository.
+Any changes to the infrastructure or application are made through commits to the Git repository.
+=====
+====
+
+Files are updated locally, then pushed to the remote Gerrit repository.
+The publication pipeline tracks changes to the regulation directories, and when changes are merged into the master branch, the *Master-Build-registry-regulations* pipeline is triggered.
+This pipeline builds the entire codebase. Once completed, the changes take effect, and the regulation is updated to the latest commit version.
+
+You can update the registry regulations using either an advanced or a simplified approach.
+
+Advanced approach ::
+
+The advanced approach involves working directly with file directories, the Git system, Gerrit (using Git Bash console or similar tools), and Jenkins.
++
+The update process:
+
+. Clone the empty Gerrit repository containing the registry regulations to your local machine.
+. In the _registry-regulations_ directory, add the necessary files:
+* Create the registry data model (_data-model_).
+* Model business processes (_bpmn_).
+* Model UI forms for business processes (_forms_).
+* Define roles for your registry (_roles_).
+* Define access to business processes for specific roles (_bp-auth_).
+* Define other settings according to your registry regulations (_notifications, extracts, global variables, etc._).
+
+. Run the following commands:
++
+--
+----
+git add --all
+----
+----
+git commit -m "commit message"
+----
+----
+git push refs/for/master
+----
+--
+
+. Complete the code review process:
+First, an automated Jenkins check will run (*MASTER-Code-review-registry-regulations*).
+Then, an authorized administrator must approve the changes.
+
+. Perform a `git merge` into the `master` branch of the Gerrit repository.
+
+Simplified approach ::
+
+The simplified approach involves using the convenient web interface of the Regulations Administrator Portal.
++
+The update process:
+
+. Log in to the *Regulations Administrator Portal*.
+. Create a new candidate version for your changes.
+. Add the necessary updates:
+* Create the registry data model (Tables).
+* Model business processes (Process models).
+* Model UI forms for business processes (UI forms).
+* Define other configuration settings required for your registry regulations.
+
+. Go to the *Version overview* tab and click `*Apply changes to the master branch*`.
++
+This action automatically creates a change request, confirms it, and publishes the changes to the regulations.
+
+[TIP]
+====
+For more information about working with regulations, see:
+
+* xref:registry-develop:registry-admin/regulations-deploy/registry-admin-deploy-regulation.adoc[]
+* xref:registry-develop:registry-admin/admin-portal/overview.adoc[]
+
+Other useful documents:
+
+* xref:registry-develop:study-project/index.adoc[]
+====
+
+//TODO: UA-SPECIFIC
+////
+=== Налаштування ключів та сертифікатів цифрового підпису реєстру
+
+Створення ключів та сертифікатів цифрового підпису відбувається під час розгортання реєстру (_див. xref:admin:control-plane/registry-management/control-plane-create-registry.adoc[]_).
+
+Загальна інформація про типи ключів на Платформі реєстрів: xref:admin:registry-management/system-keys/system-keys-overview.adoc[]
+
+Оновлення ключів та сертифікатів цифрового підпису: xref:admin:control-plane/system-keys/control-plane-registry-keys.adoc[]
+////
+
+=== Configuring the SMTP server
+
+The internal SMTP server is a Platform component designed to send notifications to end users.
+During Platform installation, it is deployed in the `smtp-server` project.
+
+NOTE: The Platform administrator must first configure the SMTP server itself (_see xref:#configure-smtp-server[]_).
+
+Later, the registry administrator can configure a connection to this server to send email notifications to users.
+This can be done through the Control Plane interface by following the instructions in xref:registry-develop:registry-admin/user-notifications/email/config-smtp-server.adoc[].
+
+=== Configuring integration with other registries and external systems
+
+* General process: xref:registry-develop:registry-admin/external-integration/ext-integration-overview.adoc#exchange-data-ext-system[Exchanging data with other systems using REST]
+
+* xref:registry-develop:registry-admin/external-integration/cp-integrate-ext-system.adoc[]
+
+* xref:registry-develop:bp-modeling/bp/rest-connector.adoc[]
+
+* xref:registry-develop:registry-admin/external-integration/rest-api-no-trembita.adoc[]
+
+=== Configuring the registry for load handling
+
+// VERTICAL AND HORIZONTAL RESOURCES SCALING
+include::platform:ROOT:partial$templates/snippets/scale-resources-en.adoc[]
+
+=== Planning storage space for the registry
+
+Registry components are stored on Ceph storage volumes.
+You can configure the available disk space for these components via the OpenShift console under *Storage* > *PersistentVolumeClaims* within your registry project.
+
+Disk sizes can be adjusted based on your needs.
+There are three approaches for expanding storage space for different registry services:
+
+I.Expand PVC ::
+
+This is the simplest and most common approach for most registry components.
++
+You can expand disk space via the OpenShift console under *Storage* > *PersistentVolumeClaims* > *`Expand PVC`* in the corresponding project (namespace) — for example, `demo-reg`.
++
+.Expanding disk space for the `redis-data-redash-viewer` component
+image::platform-develop:platform-prod-deployment/expand-pvc-registry-1.png[]
++
+.Expanding disk space for the `redis-data-redash-viewer` component
+image::platform-develop:platform-prod-deployment/expand-pvc-registry-2.png[]
+
+II. Expand PVC + deploy-templates/values.yaml ::
+
+This approach applies to specific data-related services, such as `crunchyPostgres` and `kafka`.
++
+To expand disk space for these components:
+
+. (Optional) Open the OpenShift console and navigate to *Storage* > *PersistentVolumeClaims* in your registry project — for example, `demo-reg`. Then click *`Expand PVC`*.
+
+. In the central Platform Gerrit, locate the repository for your registry.
+
+. Switch to the `master` branch and open the _deploy-templates/values.yaml_ configuration file.
+.. For `crunchyPostgres`, set the storage size using the `global.crunchyPostgres.storageSize` parameter.
+.. For `kafka`, set the storage size using the `global.kafkaOperator.storage.kafka.size` parameter.
+
++
+.Updating storage size for crunchyPostgres and kafka components
+[source,yaml]
+----
+global:
+    crunchyPostgres:
+        storageSize: 50Gi
+
+    kafkaOperator:
+        storage:
+            kafka:
+                size: 20Gi
+----
+
++
+.Updating storage size for crunchyPostgres and kafka components
+image::platform-develop:platform-prod-deployment/expand-pvc-values-yaml-registry-1.png[]
+
+III. Expand PVC + deploy-templates/values.gotmpl ::
+
+This approach applies to some critical services, such as `gerrit`, `jenkins`, `nexus`, and `registryRegulationManagement`.
++
+To expand disk space for these components:
+
+. (Optional) Open the OpenShift console and navigate to *Storage* > *PersistentVolumeClaims* in your registry project — for example, `demo-reg`. Then click *`Expand PVC`*.
+
+. In the central Platform Gerrit, locate the repository for the target registry.
+
+. Switch to the `master` branch and open the _deploy-templates/values.gotmpl_ configuration file.
+.. For `gerrit`, set the storage size using the `gerrit.storage.size` parameter.
++
+.Example: Expanding storage for the gerrit component
+[source,yaml]
+----
+gerrit:
+    storage:
+        size: 10Gi
+----
+.. For `jenkins`, set the storage size using the `jenkins.storage.size` parameter.
++
+.Example: Expanding storage for the jenkins component
+[source,yaml]
+----
+jenkins:
+    storage:
+        size: 30Gi
+----
+.. For `nexus`, set the storage size using the `nexus.storage.size` parameter.
++
+.Example: Expanding storage for the nexus component
+[source,yaml]
+----
+nexus:
+    storage:
+        size: 150Gi
+----
+.. For `registryRegulationManagement`, set the storage size using the `registryRegulationManagement.volume.size` parameter.
++
+.Example: Expanding storage for the registryRegulationManagement component
+[source,yaml]
+----
+registryRegulationManagement:
+    volume:
+        size: 20Gi
+----
+
+[NOTE]
+====
+Each service is deployed with a default disk size.
+As an administrator, you can leave the defaults or, if you know that the allocated size is insufficient for your needs, expand the volume immediately.
+
+The recommended initial expansion is *+50%*.
+For example, if the default disk size for the `jenkins` component is `10Gi`, it is recommended to increase it to `15Gi`.
+====
+
+[NOTE]
+====
+If you are unsure which expansion method to use, start with the first one — expand the disk space via *`Expand PVC`*.
+
+Then trigger the Jenkins pipeline *MASTER-Build-`<registry-name>`* (`<registry-name>` refers to the registry name).
+If an error occurs during the pipeline run, open *Console Output*, identify the issue, and adjust the approach accordingly.
+====
+
+[TIP]
+====
+We also recommend reviewing the storage configuration guidelines on the following pages:
+
+* xref:admin:file-system/ceph-scrubbing.adoc[]
+* xref:admin:file-system/ceph-cluster-maintenance.adoc[]
+* xref:admin:file-system/ceph-osd-scaling-and-rebalancing.adoc[]
+* xref:admin:file-system/ceph-space.adoc[]
+* xref:admin:file-system/ceph_scaling.adoc[]
+* xref:admin:file-system/s3/lifecycle-policy.adoc[]
+====
+
+=== Granting L2 access to the notification, monitoring, and logging system in the registry
+
+Grant access rights to the `cluster-mgmt` component in the *Platform Management* section of the Control Plane.
+All you need to do is create a Platform administrator — the appropriate permissions will be assigned automatically.
+
+[NOTE]
+====
+This rule applies only if business requirements allow L2 engineers to act as Platform administrators.
+Typically, this will be acceptable, but there may be cases where different registries on the same Platform have separate L2 teams.
+In such cases, access restrictions might need to be considered.
+====
+
+TIP: For more information, see xref:admin:control-plane/platform-management/settings/control-plane-assign-platform-admins.adoc[].
+
+=== Configuring backups
+
+==== Configuring registry backups
+
+The Platform supports:
+
+* Manual backups (_see xref:admin:backup-restore/control-plane-backup-restore.adoc[]_)
+* Automatic scheduled backups (_see xref:admin:backup-restore/backup-schedule-registry-components.adoc[]_)
+
+After a backup is created, the registry can be restored directly from it.
+
+==== Configuring registry object bucket replication
+
+The Platform uses two types of storage:
+
+- **MinIO** — for Platform component backups (Velero).
+- **Ceph OBC (Object Bucket Claims)** — for active registry data.
+
+[IMPORTANT]
+====
+*Velero does not cover Ceph OBC buckets.*
+A separate object bucket replication mechanism is used to protect this data.
+====
+
+Replication is configured via the Control Plane and copies Ceph OBC data to S3-compatible storage:
+
+- *By default* — to MinIO.
+- *With custom settings* — to another S3-compatible storage (Amazon S3, GCS, etc.).
+
+TIP: For more details, see xref:admin:backup-restore/backup-schedule-registry-components.adoc#replication-schedule-backup[Ceph OBC data replication].
+
+=== Configuring user registration, authentication, and access rights
+
+In the global region, registry users are authenticated through a standard login and password form.
+Qualified electronic signatures (QES) are not used.
+
+User registration and authentication are managed via the *Keycloak* service:
+
+- Administrators manually create user accounts in the *officer portal* and *citizen portal* realms.
+- Alternatively, self-registration can be enabled in Keycloak by switching on the *User registration* option in the realm settings.
+
+When creating a user, the administrator specifies:
+
+- *Username* and *Email*
+- *First Name* and *Last Name*
+- Temporary password (must be changed at first login)
+- One or more roles manually assigned to the user (e.g., `officer`, `citizen`, or custom roles)
+
+Authentication is performed through a login form in the Officer or Citizen Portal.
+
+TIP: For more information, see
+xref:registry-develop:registry-admin/user-management/user-register.adoc[].
+
+==== Configuring user roles and business process access
+
+Registry roles and access rights are configured at the regulations level:
+
+- User roles are defined in the `roles/officer.yml` and `roles/citizen.yml` files.
+- Access to business processes is defined in the `bp-auth/officer.yml` and `bp-auth/citizen.yml` files.
+
+When roles are defined in the registry configuration, they become available for assignment in Keycloak.
+After registration and authentication, users can access only those business processes assigned to their roles.
+
+This access control follows the *Role-Based Access Control (RBAC)* model.
+
+TIP: For more information, see xref:registry-develop:registry-admin/regulations-deploy/registry-admin-deploy-regulation.adoc[] and xref:registry-develop:bp-modeling/bp/access/roles-rbac-bp-modelling.adoc[].
+
+////
+//TODO: Clarify
+=== Рекомендації щодо онбордингу надавачів та отримувачів послуг
+
+* Надавачам послуг:
+
+** xref:registry-develop:registry-admin/cp-auth-setup/cp-officer-self-registration.adoc[]
+** xref:registry-develop:best-practices/bp-officer-self-register-manual.adoc[]
+** xref:registry-develop:best-practices/bp-officer-self-register-auto.adoc[]
+
+* Отримувачам послуг:
++
+** xref:arch:architecture/platform/operational/user-management/citizen-onboarding.adoc[]
+////
+
+=== Recommendations for avoiding abandoned business processes
+
+In the context of the Camunda Engine, "abandoned" or outdated business processes refer to processes that were started but not completed.
+This may happen when a business process is interrupted, canceled, or terminated due to an error, exception, or other issues.
+
+There are several ways to address this:
+
+. Prevent abandoned processes through proper modeling.
+Use *Timer Boundary Events* of type *Duration* attached to each User Task to automatically complete or terminate inactive processes.
++
+.Business process with a timer boundary
+image::platform-prod-deployment/platform-prod-deploy-abandoned-bp.png[]
++
+NOTE: It is recommended to set timers longer than 14 days because business process logs are retained in Elasticsearch for 14 days by default.
+After that, logs are deleted, making it impossible to identify the root cause of issues.
+
++
+[TIP]
+====
+* For more information about timers, see xref:registry-develop:bp-modeling/bp/bpmn/events/timer-event.adoc[].
+* For best practices on configuring timers, see xref:registry-develop:best-practices/bp-timer-launch.adoc[].
+====
+
+. If abandoned processes already exist, use the Business Process Administration Portal (Camunda Cockpit) to manually delete them one by one.
++
+TIP: For details, see xref:registry-develop:registry-admin/registry-admin-bp-management-cockpit.adoc[].
+
+. If there are many abandoned processes and manual deletion becomes impractical, use scripts to bulk delete them.
++
+TIP: For more information, see xref:registry-develop:registry-admin/abandoned-processes/delete-abandoned-processes.adoc[].
+
+=== Configuring rate limits
+
+_API rate limits_ allow you to restrict the number of HTTP requests to a service or route within a specified time period.
+
+The rate-limiting mechanism is implemented using the
+https://docs.konghq.com/hub/kong-inc/rate-limiting/[Rate-Limiting] plugin for Kong API Gateway.
+A security administrator with the appropriate access rights can configure the necessary limit values.
+
+[TIP]
+====
+For more information, see:
+
+* xref:registry-develop:registry-admin/rate-limits/api-rate-limits.adoc[].
+* xref:registry-develop:registry-admin/rate-limits/rate-limits-sc-files-bp.adoc[].
+====
+
+=== Configuring network-level access restrictions for registry components (CIDR)
+
+In the *Registries* section of the *Control Plane* console, an administrator can define a CIDR to restrict external access to administrative endpoints, as well as the Officer and Citizen Portals of the registry.
+
+TIP: For more information, see xref:admin:control-plane/cidr/control-plane-cidr-access-endpoints.adoc#cidr-registry-components[Restricting access to registry components].
+
+=== Configuring custom DNS names
+
+You can configure custom DNS names separately for:
+
+* Officer Portal — `officer-portal`
+* Citizen Portal — `citizen-portal`
+* Authentication and authorization service — `keycloak`:
+** Set the custom DNS at the Platform management level.
+** Use the defined DNS names in the registries.
+
+TIP: For more information, see xref:admin:control-plane/custom-dns/custom-dns-overview.adoc[].
+
+=== Assigning Platform and registry administrators
+
+First, authenticate using the system user `KubeAdmin` and create the initial Platform administrator.
+After that, the Platform administrator can independently add new Platform administrators via the Control Plane interface.
+
+TIP: For more information, see xref:admin:control-plane/platform-management/settings/control-plane-assign-platform-admins.adoc[].
+
+Once a Platform administrator is created, they can create a registry and assign the first registry administrator.
+Afterward, the registry administrator can independently add new registry administrators through the Control Plane interface.
+
+TIP: For more information, see xref:registry-develop:registry-admin/create-users/create-registry-admins.adoc[].
+
+=== Deploying a geoserver and working with geospatial data in the registry
+
+NOTE: Required only for registries that need to work with geospatial data.
+
+Registry administrators and regulation developers can configure geospatial data handling.
+
+At the core of the solution is the https://geoserver.org/[Geoserver] component — an open-source server that allows retrieving data from databases in the *https://uk.wikipedia.org/wiki/GeoJSON[GeoJSON]* format.
+
+TIP: For more information, see xref:registry-develop:registry-admin/geoserver.adoc[].
+
+=== Initial data loading and additional data import
+
+Initial data loading or additional data import into the database can be performed through the data structure modeling procedure:
+xref:registry-develop:data-modeling/initial-load/data-initial-data-load-pl-pgsql.adoc[].
+
+[TIP]
+====
+Additional useful resources:
+
+* Training course (Example of initial data loading during a test task): xref:registry-develop:study-project/study-tasks/task-1-registry-db-modeling.adoc[]
+
+* See also: loading data from a CSV file into the database as part of a business process: xref:registry-develop:bp-modeling/bp/loading-data-from-csv.adoc[]
+====
+
+== Recommendations for non-functional testing of registries on the Platform
+
+=== Performance testing
+
+Platform performance testing is conducted by EPAM for each release using a predefined OpenShift cluster configuration.
+Testing is performed separately for each deployed registry, with a specific number of active users under planned full load during business hours.
+
+Performance testing is carried out using *Carrier* — a comprehensive tool that helps measure, analyze, and optimize the performance of Platform services and deployed registries.
+
+TIP: For more information about the testing results, see xref:testing:performance-testing/perf-report/perf-report-overview.adoc[].
+
+=== Security testing
+
+The Registry Platform is built based on the *DevSecOps* secure software development methodology.
+Automated security checks for known vulnerabilities are performed continuously.
+Regular security testing is conducted, including penetration testing, threat modeling, and automated scanning.
+
+TIP: For more information about the Platform's security testing, see xref:testing:security-testing/security-testing.adoc[].
+
+[#checklist-launch-public-service]
+== Checklist for launching a public service
+
+[NOTE]
+====
+This checklist mainly applies to launching a public service based on a registry and integrating with external systems such as Diia (a Ukrainian government mobile app and administrative portal) and others.
+Note that this checklist is not exhaustive and can be extended if needed.
+
+Additionally, this checklist can be adapted and used when preparing for the launch of any registry developed on the Platform.
+====
+
+1.Functionality ::
++
+[%interactive]
+* [ ] Verify that all key service features and capabilities work as intended.
+* [ ] Test all user interactions and workflows to ensure a seamless user experience (UAT-Beta).
+* [ ] Conduct thorough functional testing to identify any vulnerabilities or bugs.
+
+2.Performance ::
++
+[%interactive]
+* [ ] Estimate the expected request flow for load testing requirements: during the first days after launch and during regular operations.
+* [ ] Conduct load testing to assess how the service handles heavy user loads and concurrent requests.
+* [ ] Check response times and ensure the service meets performance requirements.
+* [ ] Optimize system performance and scalability for future growth.
+
+3.Security ::
++
+[%interactive]
+* [ ] Conduct comprehensive security testing, including penetration testing and vulnerability assessments.
+* [ ] Implement appropriate security measures such as encryption, authentication, and access control.
+* [ ] Ensure compliance with applicable data protection and privacy regulations.
+
+4.Compatibility ::
++
+[%interactive]
+* [ ] Test the service across different browsers, operating systems, and devices.
+* [ ] Verify that the service displays and functions correctly across various platforms.
+* [ ] Ensure compatibility with accessibility technologies for users with disabilities.
+
+5.Usability and user experience ::
++
+[%interactive]
+* [ ] Perform usability testing to gather user feedback and identify any usability issues.
+* [ ] Ensure intuitive navigation, clear instructions, and user-friendly design.
+* [ ] Incorporate user feedback to enhance the overall user experience.
+
+6.Accessibility ::
++
+[%interactive]
+* [ ] Ensure compliance with accessibility standards to guarantee that the service is usable by people with disabilities.
+* [ ] Test compatibility with assistive technologies such as screen readers and keyboard navigation.
+
+7.Data management ::
++
+[%interactive]
+* [ ] Apply proper data management practices, including data storage, backups, and disaster recovery plans.
+* [ ] Ensure data integrity, security, and privacy measures are in place.
+* [ ] Comply with relevant data protection regulations.
+
+8.Documentation and support ::
++
+[%interactive]
+* [ ] Prepare user guides, FAQs, and documentation to help users understand and use the service.
+* [ ] Provide support channels such as help desks or online support to address user inquiries and issues.
+
+9.Training ::
++
+[%interactive]
+* [ ] Provide training for government personnel and administrators responsible for managing the service.
+* [ ] Ensure they have a deep understanding of the service's functionality and processes.
+
+10.Legal and compliance ::
++
+[%interactive]
+* [ ] Ensure compliance with relevant laws, regulations, and standards.
+* [ ] Review licensing requirements, intellectual property rights, and any legal obligations related to the service.
+
+11.Performance monitoring and analytics ::
++
+[%interactive]
+* [ ] Use monitoring and analytics tools to track the service's performance.
+* [ ] Monitor user behavior, system usage, and key performance indicators to identify areas for improvement.
+
+12.Communication and launch planning ::
++
+[%interactive]
+* [ ] Develop a comprehensive communication and launch plan to inform stakeholders and users about the service.
+* [ ] Coordinate with relevant government agencies, departments, and media channels for a successful launch.
+* [ ] Plan necessary resources (L1–L3) across all teams involved in development and support, ensuring readiness for unexpected issues on launch day.
+* [ ] Communicate with all teams before launch to double-check launch readiness.
+
+[#avoid-typical-prod-issues-in-services]
+== Lessons learned
+
+=== Out-of-memory errors in Java services
+
+Problem occurrence ::
++
+Two Java services, `bp-webservice-gateway` and `bpms`, were repeatedly restarted by OpenShift due to out-of-memory (OOM) errors.
+`bp-webservice-gateway` handles incoming requests from Trembita (Diia), while `bpms` processes business workflows initiated by authorized officers and `bp-webservice-gateway` (Diia).
+
+Root cause ::
++
+The allocated non-heap memory was insufficient for the current load.
+
+Details ::
++
+* `bp-webservice-gateway`:
+** Heap: `512MB` (`Xms=Xmx`)
+** Total container limit: `768MB` (±`805MB`) (Request=Limit)
+
+* `bpms`:
+** Heap: `1536MB` (`Xms=Xmx`)
+** Total container limit: `2GB` (±`2146MB`) (Request=Limit)
+
+Problem resolution ::
++
+Container limits were adjusted:
+
+* `bp-webservice-gateway`: new container limit set to `1GB` (Request=Limit)
+* `bpms`: new container limit set to `3GB` (Request=Limit)
+
+Long-term strategy ::
++
+. Adapt performance testing scripts to reproduce similar memory issues.
+. Review memory request/limit settings for `bp-webservice-gateway` and `bpms`.
+
+=== High CPU load in Java services
+
+Problem occurrence ::
++
+Each `bpms` replica started consuming more than 1 CPU, indicating increased data processing demand.
+
+Root cause ::
++
+The total number of incoming requests significantly increased after the launch of the `eReconstruction` service in the Diia application.
+
+Problem resolution ::
++
+Scaled the `bpms` service to 4 replicas.
+
+Long-term strategy ::
++
+Not applicable.
+
+=== Database connection timeouts in Java services
+
+Problem occurrence ::
++
+Over 100 database connection timeouts were detected on the Spring Boot Grafana dashboard for the `bpms` and `registry-rest-api` services.
+
+Root cause ::
++
+* BPMS holds connections during the entire business process execution, which can cause connection timeouts for queued database requests (see xref:#redis-availability[]).
+* In `registry-rest-api`, the connection timeout was set to 4 seconds, and the connection pool size was 10. However, connections were sometimes held longer than 4 seconds (see xref:#slow-sql-queries[]).
+
+Problem resolution ::
++
+* Increased the total number of available database connections.
+* Expanded the connection pool in BPMS.
+* Scaled `registry-rest-api` service to 5 replicas.
+
+Long-term strategy ::
++
+Enable configuration of connection timeouts and connection pools for `registry-rest-api` through external settings.
+
+=== OOM command not allowed error in Redis
+
+Problem occurrence ::
++
+An error `"OOM command not allowed when used memory > 'maxmemory'."` was detected in the `bp-webservice-gateway` logs during request processing from Trembita.
+
+Root cause ::
++
+Redis had a configured memory limit, which was exceeded.
+This overflow prevented Redis from accepting new data until memory was either freed or the limit was increased.
+
+Problem resolution ::
++
+Increased the memory limit for Redis.
+
+Long-term strategy ::
++
+Pre-configure appropriate memory limits for Redis based on expected workloads.
+
+[#slow-sql-queries]
+=== Slow SQL queries in the database
+
+Problem occurrence ::
++
+Numerous database queries taking longer than 1 second (up to 10 seconds) were detected in logs, indicating slow query performance.
+
+Root cause ::
++
+The system suffered from a cascading effect due to complex SQL queries against tables and views without proper indexing, leading to:
+
+* Slow SQL queries: Poor indexing caused inefficient query execution and delays.
+* Database connection timeouts for queued requests.
+* `HTTP 500` errors for client applications (Officer Portal or BPMS service).
+* Longer HTTP requests from BPMS services.
+* Prolonged database connections held by Camunda (BPMS).
+
+Problem resolution ::
++
+Created indexes for all identified slow queries.
+
+Long-term strategy ::
++
+Implement index creation during the data structure modeling phase of registry development.
+
+[#redis-availability]
+=== Redis availability issues
+
+Problem occurrence ::
++
+Redis experienced slow responses, causing delays of up to 10 seconds for incoming requests.
+This triggered Redis readiness probe failures, indicating that Redis could not efficiently handle the incoming load.
+Even CLI logins into Redis showed significant delays.
+
+Root cause ::
++
+BPMS uses a method to clear form data from Redis after business process completion.
+This method relies on the "`keys`" command, which has `O(n)` complexity for searching Redis keys.
+When Redis stored a large amount of data (e.g., 100,000 records), the key search became slow, increasing overall latency and causing request timeouts.
+As a result, unused data accumulated in Redis, further degrading its performance.
+
+Problem resolution ::
++
+Optimized Redis memory handling by addressing slow SQL queries and adjusting resource usage.
+
+Long-term strategy ::
++
+Ensure efficient data modeling and indexing practices to avoid performance bottlenecks.

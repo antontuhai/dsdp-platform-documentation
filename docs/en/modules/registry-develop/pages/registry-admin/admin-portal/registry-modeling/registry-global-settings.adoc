@@ -1,0 +1,87 @@
+= Configuring global registry settings
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+The platform provides the ability to manage the global settings of the registry within the administrator portal interface.
+
+image:registry-admin/admin-portal/global-settings/registry-global-settings-1.png[]
+
+Currently, the registry administrator can configure the following parameters: ::
+
+* xref:#support-email[Support service mailing address]
+
+* xref:#registry-full-name[Full registry name]
+
+* xref:#registry-short-name[Abbreviated registry name]
+
+* xref:#ui-theme[Interface theme]
+
+The list of settings will be expanded in the future.
+
+CAUTION: Editing the components of the registry regulations can only be done within change candidate versions. For the master version, only the view option is available.
+
+IMPORTANT: To apply the desired parameters, click the *Save changes* button as shown in the image above.
+
+[#support-email]
+== Support service mailing address
+
+If a user of the Officer or the Citizen portal encounters a critical error, they can contact support using this address.
+
+The parameter is set in the *Support service mailing address* field.
+
+image:registry-admin/admin-portal/global-settings/registry-global-settings-2.png[]
+
+[IMPORTANT]
+====
+The email address should be in the format "test@example.com". If the entered address does not match the specified format, the user will receive a corresponding validation error:
+
+`❗ The email address should be in the format "test@example.com"`
+
+image:registry-admin/admin-portal/global-settings/registry-global-settings-3.png[]
+====
+
+[WARNING]
+====
+Users cannot enter domain addresses that are prohibited by current legislation in Ukraine, for example, domains like `mail.ru` or `yandex.ru`. The system will display a corresponding validation error:
+
+`❗ This email address cannot be used due to security policy`
+
+image:registry-admin/admin-portal/global-settings/registry-global-settings-4.png[]
+====
+
+[#registry-full-name]
+== Full registry name
+
+_The full name_ is the official legal name of the registry. It is used in official correspondence, documents, and cabinet headers, among others.
+
+CAUTION: It can have 3 to 512 characters. Permissible characters are: "A-Z," "a-z" of the Ukrainian alphabet, "0-9," "-", ",", ".", apostrophe ('), space.
+
+.Full name of the Unified state register
+====
+
+`STATE REGISTER OF LEGAL ENTITIES, INDIVIDUAL ENTREPRENEURS, AND PUBLIC FORMATIONS`
+====
+
+image:registry-admin/admin-portal/global-settings/registry-global-settings-5.png[]
+
+[#registry-short-name]
+== Abbreviated registry name
+
+_The abbreviated name_ is used in informal communication and where there is limited space for the full name, such as in the upper part of portals.
+
+CAUTION: It can have 1 to 42 characters. Permissible characters are: "A-Z," "a-z" of the Ukrainian alphabet, "0-9," "-", ",", ".", apostrophe ('), space.
+
+image:registry-admin/admin-portal/global-settings/registry-global-settings-6.png[]
+
+[#ui-theme]
+== Interface theme
+
+The selected theme is applied to all portals (Citizens, Officers, Administrators). It does not affect the interface of the platform's administrative control panel and *Control Plane* registries.
+
+Currently, two themes for user interfaces are supported:
+
+* Light theme (default)
+* Dark theme
+
+image:registry-admin/admin-portal/global-settings/registry-global-settings-7.png[]

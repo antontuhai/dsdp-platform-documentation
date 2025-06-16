@@ -1,0 +1,16 @@
+= System requirements
+:sectanchors:
+:sectlinks:
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+In this section, you will find straightforward and understandable system requirements that will help ensure the reliable operation of the Platform and the Registry instance.
+
+*_System requirements for the Platform instance_* detail the technical specifications for deploying your Platform in various environments, mainly _AWS_ and _vSphere_, and provide an overview of the infrastructure service costs.
+
+*_System requirements for the Registry instance_* provide specific characteristics and needs for deploying the registry on the _Platform_. This section also contains exhaustive information about the registry cost.
+
+== Section overview
+
+* xref:arch:architecture/platform-system-requirements/platform-requirements.adoc[System requirements for the Platform instance]
+* xref:arch:architecture/platform-system-requirements/registry-requirements.adoc[System requirements for the Registry instance]

@@ -1,0 +1,12 @@
+= User task extensions
+:sectanchors:
+:sectlinks:
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Section overview
+
+* xref:bp-modeling/bp/element-templates/user-task-templates/citizen-sign-task.adoc[]
+* xref:bp-modeling/bp/element-templates/user-task-templates/officer-sign-task.adoc[]
+* xref:bp-modeling/bp/element-templates/user-task-templates/user-form.adoc[]
+

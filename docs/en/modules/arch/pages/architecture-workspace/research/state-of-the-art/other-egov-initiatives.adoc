@@ -1,0 +1,436 @@
+= Global approaches to building e-government platforms
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+== Introduction
+
+Governments around the world are rethinking how public services are delivered. To make them more accessible, efficient, and scalable, many are turning to modern e-governance platforms.
+
+This short overview highlights three notable government tech initiatives from different countries:
+
+* *Digit-Core* — a modular platform developed in the EU to accelerate the creation of interoperable digital services.
+* *Singapore Government Tech Stack* — a comprehensive suite of tools and APIs for fast, secure service development.
+* *eGovernment Standard Framework (eGSF)* — South Korea’s architecture for standardizing and streamlining public service delivery.
+
+Each platform takes a unique approach to designing, building, and operating digital government services.
+
+By reviewing their structures and principles, we can better understand which global practices might be adapted or considered for developing the *Registries Platform*.
+
+== Digit-Core
+
+*_Digit-Core_* is a *modular, open-source platform* designed to simplify the development and deployment of digital public services. It was created specifically for government agencies and public-sector organizations. The platform is maintained and promoted by the *Indian non-profit eGov Foundation* and is released under https://github.com/egovernments/DIGIT-OSS/blob/master/LICENSE[MIT license].
+
+Originally, Digit-Core was built to speed up the creation of municipal services. It provides reusable building blocks for applications such as:
+
+* property tax payments
+* utility billing
+* service connection requests
+* urban planning approvals
+* complaints and grievance tracking
+* and others
+
+Today, the platform’s scope has expanded, but its *core focus* remains—*enabling streamlined, end-to-end digital service delivery for citizens*.
+
+The typical user journey follows this pattern:
+
+.Typical usage pattern
+image::architecture-workspace/research/state-of-the-art/digit-flow.png[width=640,float="center",align="center"]
+
+* A citizen registers or logs in, submits a service request with the required documents, makes a payment, and tracks the request status.
+* A government official (officer) reviews the request, updates the status, adds comments, and closes it once the service is delivered or rejected.
+* The citizen can raise a support issue or provide feedback when needed.
+* Technical administrators monitor performance and identify areas for improvement.
+* Leadership teams get access to analytics for planning, budgeting, and continuous service improvement.
+
+Digit-Core follows a *microservices architecture* designed to run in *Kubernetes-based* environments. It provides a set of APIs, backend services, and reference implementations.
+
+.Digit-Core microservices architecture
+image::architecture-workspace/research/state-of-the-art/digit.png[width=640,float="center",align="center"]
+
+[NOTE]
+====
+The platform core *doesn't include* certain infrastructure components such as an API gateway, message queue, relational database, or analytics database (shown in gray). *Instead, it requires the hosting environment to provide*:
+
+* Netflix Zuul as an API gateway
+* Apache Kafka for messaging
+* PostgreSQL for relational data
+* Elasticsearch for analytics
+====
+
+Developers use *Java* and *Spring Boot* to build services, and *ReactJS* or *Flutter* to create cross-platform frontend apps for Android and iOS.
+
+To simplify the development process, Digit includes:
+
+* A code generation utility that scaffolds new services based on API specifications and declarative workflow definitions.
+* A reusable component library for building consistent, user-friendly interfaces across modules—for UI development.
+
+Beyond technology, Digit also *promotes a governance model* for implementing digital public services using the Digit-Core platform.
+
+.Governance structure
+image::architecture-workspace/research/state-of-the-art/digit-governance.png[width=640,float="center",align="center"]
+
+This model brings together stakeholders—from senior leadership to developers—across all implementation stages, from vision to rollout.
+
+.Program governance process 1
+image::architecture-workspace/research/state-of-the-art/digit-governance1.png[width=640,float="center",align="center"]
+
+.Program governance process 2
+image::architecture-workspace/research/state-of-the-art/digit-governance2.png[width=640,float="center",align="center"]
+
+=== Core features and capabilities
+
+Digit-Core offers a modular set of services and components that can be integrated to build scalable digital service delivery. Key capabilities include:
+
+.Core features and capabilities
+[cols="1,3", options="header"]
+|===
+^| Service
+^| Description
+
+| *Citizen portal*
+| A customizable frontend for service applicants. It can be based on Digit’s reference implementation or developed independently.
+
+| *File storage service*
+| Allows users to upload documents during the service request process.
+
+| *Data storage service*
+| Asynchronously saves submitted requests and updates to a PostgreSQL database.
+
+| *Encryption service*
+| Ensures that personally identifiable information (PII) is encrypted before storage.
+
+| *Indexing service*
+| Transforms and enriches request data, strips out PII, and sends anonymized data to an Elasticsearch-based analytics store.
+
+| *Analytics dashboard service*
+| Queries the analytics store and provides aggregated data to the front-end panel for administrators and managers.
+
+| *Billing service*
+| Calculates and generates service fees based on configurable business rules.
+
+| *Payment gateway service*
+| Integrates with third-party payment providers to support online payments. It redirects users to the provider’s site and then returns them to the citizen portal upon completion.
+
+| *Payment recording service*
+| Logs all successful transactions for auditing and tracking.
+
+| *PDF generation service*
+| Creates receipts and documents using configurable templates.
+
+| *Workflow service*
+| Manages tasks and approvals based on a defined state-transition model.
+
+| *Employee service*
+| Supports employee registration and authentication for the staff portal.
+
+| *Employee (Officer) portal*
+| A role-based interface for service providers (officers). It can be built using Digit’s reference implementation or developed independently. The portal lists pending requests based on the employee’s role. Staff can take action on these requests directly within the interface.
+
+| *Notification services (SMS and Email)*
+| Deliver SMS and email updates to users as their requests progress (request statuses and actions).
+
+| *Location service*
+| Allows administrators to define a hierarchical structure for service-delivery organizations based on geography or internal divisions—such as country, state, district, department, and sub-department. Each unit can maintain its configuration of services, roles, and workflows, enabling localized control and flexibility across different jurisdictions.
+
+| *Localization service*
+| Provides support for multi-language content and manages translated labels and messages.
+|===
+
+The platform is actively evolving. Upcoming features include support for digital signatures, audit trails, low-code service development, and more. For details, refer to the official https://core.digit.org/roadmap[Yearly Roadmap].
+
+=== Key advantages
+
+* Open-source and MIT-licensed
+* Public documentation, tutorials, and active developer support
+* Vibrant and growing community
+* Modular architecture that’s flexible and highly configurable
+* Extensible through custom apps and services
+* Built-in support for multi-language applications
+* Supports mobile app development with Flutter
+* Field-tested implementation methodology with clear governance practices
+
+=== Limitations and challenges
+
+* Requires a relatively high level of IT expertise for setup, configuration, and ongoing development.
+See the full list of developer and DevOps skills here: https://core.digit.org/focus-areas/setup-basics/setup-requirements/tech-enablement-training-essential-skills-and-pre-requisites[Essential Skills and Pre-requisites].
+* Some gaps in the official documentation—especially in the administration section, where only article headers are provided.
+* Requires significant investment in infrastructure and operational support.
+
+== Singapore Government Tech Stack (SGTS)
+
+The *_Singapore Government Tech Stack (SGTS)_* is a national initiative to develop and promote a shared technology infrastructure for public-sector agencies in Singapore.
+
+At the foundation of this initiative is the https://www.developer.tech.gov.sg/products/categories/infrastructure-and-hosting/government-on-commercial-cloud/overview.html[Government on Commercial Cloud (GCC)] — a *"wrapper" platform* that provides agencies with a unified way to access commercial cloud services from approved providers.
+
+.GCC high-level framework
+image::architecture-workspace/research/state-of-the-art/gcc-fig1.png[]
+
+GCC offers centralized tools for onboarding, billing, monitoring, and compliance with government standards when using cloud infrastructure.
+
+As of now, the GCC supports Amazon Web Services (AWS) and Microsoft Azure, with Google Cloud planned in the 2023 roadmap.
+
+Built on top of GCC, the https://www.developer.tech.gov.sg/singapore-government-tech-stack/[Singapore Government Tech Stack] provides a set of Software-as-a-Service (SaaS) components hosted within GCC. These services are available to government agencies for free or on a subscription basis. SGTS also includes guidelines and standards for building digital government services based on best practices.
+
+In other words, when developing or launching digital services, agencies can rely on the shared infrastructure provided by GCC and reuse the cloud-hosted components available through SGTS.
+
+=== Core features and capabilities
+
+SGTS comprises two layers:
+
+* *Base layer*—standardizes tools for development and environment management
+* *Service layer*—enables reuse of shared capabilities across agencies
+
+.SG Tech Stack layers
+image::architecture-workspace/research/state-of-the-art/sgts-layers.png[width=360,float="center",align="center"]
+
+The following section outlines the components of both layers and their functions.
+
+==== Base layer
+
+The base layer of SGTS focuses on standardizing development tools and environment management across agencies. It provides foundational components that simplify service deployment, ensure security, and reduce operational overhead. The table below outlines the core elements of this layer and their roles:
+
+.Base layer features
+[cols="1,3", options="header"]
+|===
+^| Component
+^| Description
+
+| *Service management console*
+| Helps government officers discover, subscribe to, and manage SGTS's services through a unified dashboard.
+
+| *Identity and Access Management (IAM) with Zero Trust platform*
+| Protects against unauthorized access to government systems.
+
+| *Unified status monitoring portal*
+| Provides a centralized view of the operational status of government services.
+
+| *Security monitoring system*
+| Offers compliance recommendations and automatically scans the environment, sending alerts when systems fall below baseline security standards.
+
+| *Fully managed container and Kubernetes development platform*
+| Reduces overhead for setting up and maintaining application infrastructure.
+
+| *CI/CD tools with integrated security and governance controls*
+| Enable developers to plan, build, test, and deploy code to production environments. This toolset includes products such as GitLab, Confluence, Jira, Nexus IQ, SonarQube, and others.
+|===
+
+==== Service layer
+
+The service layer provides reusable, cloud-hosted components that help agencies deliver smarter, more connected digital services. The following table outlines the available services:
+
+.Service layer features
+[cols="1,3", options="header"]
+|===
+^| Component
+^| Description
+
+| *API exchange gateway*
+| Enables developers, agencies, and businesses to manage the full lifecycle of SOAP and REST APIs—from registration to publishing and deprecation.
+
+| *Asynchronous data exchange*
+| A Kafka-based service for real-time, event-driven data exchange across government systems. Agencies can publish and subscribe to real-time data streams using a self-service portal on GCC.
+
+| *Booking*
+| Allows agencies to offer appointment-based services to citizens. It includes features for managing calendars, availability, working hours, and reservations.
+
+| *GovWallet*
+| A secure digital wallet module that agencies can use to transfer government funds to citizens and recipients quickly and safely.
+
+| *Large file transfer*
+| A centralized, secure, and fully managed file transfer service.
+
+| *Video stream exchange*
+| Helps agencies integrate and unify video feeds (e.g., webcams, surveillance systems) into a single cloud-based platform, making it easier to access and manage live streams.
+
+| *Video analytics platform*
+| Allows agencies to develop custom video analytics models or use pre-built ones, such as pedestrian counting or crowd density analysis from surveillance footage.
+
+| *Text analytics platform*
+| Automatically extracts key topics and generates summaries from text content. Currently used primarily in Quality Service Management (QSM).
+
+| *Speech-to-text platform*
+| Transcribes speech from audio or video files and supports real-time transcription during live streaming.
+
+| *IoT tech stack*
+| A set of tools and services for collecting and transmitting data from sensors to the cloud, enabling IoT applications.
+
+| *Digital identity services*
+| A suite of seven integration services that connect with Singapore’s most widely used digital identity systems.
+
+| *Design system*
+| A standardized set of UI components, templates, and design patterns to support consistent digital service design.
+
+| *Application analytics*
+| Provides insights such as website traffic, user feedback, performance improvement suggestions, and benchmarking against other agencies within government organization—all from a single dashboard.
+|===
+
+=== Key advantages
+
+* Provides a standardized technology infrastructure for government agencies.
+* Encourages reuse of shared components to reduce duplicated efforts.
+* Enables centralized governance to ensure alignment, coordination, and consistency.
+
+=== Limitations and challenges
+
+* Not intended for use outside Singapore’s public sector.
+* Closed-source platform.
+* Most documentation is restricted and available only upon request to Singaporean government agencies.
+* Focused primarily on internal government operations, with no built-in services for direct citizen interaction.
+
+== eGovernment Standard Framework (South Korea)
+
+The *_eGovernment Standard Framework (eGSF)_* is a technical framework designed to simplify and standardize the development of web applications for government services in South Korea. It was introduced by the Korean government in the mid-2000s and is built on the *Java platform*.
+
+eGSF is based on the *Spring* ecosystem and incorporates a range of open-source libraries and extensions for working with databases, caching, security, logging, web development, and more.
+
+.Open-source components by layer
+[cols="1,3", options="header"]
+|===
+^| Layer
+^| Open-source components
+
+| Presentation layer
+| Spring MVC, Apache Commons Validator, jQuery
+
+| Business layer
+| Spring
+
+| Persistence layer
+| DBCP, iBatis/MyBatis, Hibernate
+
+| Integration layer
+| Apache CXF
+
+| Foundation layer
+| Spring, Log4j, Spring Security
+
+| Batch layer
+| Spring Batch
+
+| Mobile UX/UI layer
+| jQuery Mobile
+
+| Mobile device API layer
+| Apache Cordova
+|===
+
+On top of this, eGSF includes a shared component library specifically built to support the development of government services. These original components are **also distributed as open-source software** under the *Apache License, Version 2.0*.
+
+The framework package includes developer tools and learning materials. The development tools are based on freely available open-source solutions, extended with plugins that support eGSF-specific workflows.
+
+.Development toolchain
+[cols="1,3", options="header"]
+|===
+^| Toolset
+^| Open-source tools
+
+| Implementation tools
+| Eclipse, PMD
+
+| Test tools
+| JUnit, EasyMock, DbUnit, EclEmma
+
+| Configuration management tools
+| Subversion, jTrac
+
+| Build & deploy tools
+| Maven, Jenkins, Nexus
+|===
+
+Overall, eGSF enables the creation of monolithic web applications that are built on the Java platform and optimized for deployment within the government IT ecosystem.
+
+.Application architecture
+image::architecture-workspace/research/state-of-the-art/eGSF.png[width=640,float="center",align="center"]
+
+=== Core functions and capabilities
+
+Beyond the standard capabilities provided by Spring and its embedded open-source libraries, eGSF includes additional components that allow developers to integrate the following features into their applications:
+
+* User and role management, including support for organizational structures.
+* Authentication and authorization, including key- or certificate-based login and single sign-on (SSO).
+* User analytics and reporting, including stats on visits, logins, and content interactions.
+* Community forums with basic social networking features.
+* Scheduling and periodic reporting for users and organizations.
+* Address book management.
+* Email integration for sending and receiving messages.
+* Social platform integration.
+* Web content management system (CMS).
+* Mapping and geolocation integration.
+* Online surveys and voting tools.
+* System utilities for printing, file handling, networking, and shared UI components.
+
+In addition to desktop components, eGSF also includes features tailored for mobile applications. These include both adapted versions of desktop modules and mobile-first services, such as:
+
+* Real-time messaging
+* Synchronization services
+* Location-based services
+* Multimedia controls
+* Mobile device identification
+
+A full list of available components is published on the official websites:
+https://www.egovframe.go.kr/wiki_en/doku.php?id=v3.5:runtime_framework_common3.5[eGSF Common Components]
+https://www.egovframe.go.kr/eng/sub.do?menuNo=17[eGSF Mobile Common Components]
+
+=== Key advantages
+
+* Fully open-source and licensed under Apache License, Version 2.0.
+* Public documentation, training materials, and support available from the development team.
+* Support for mobile application development.
+
+=== Limitations and challenges
+
+* Requires a high level of IT expertise, including knowledge of legacy technologies that are rarely used today.
+* Relies on outdated tools that offer limited flexibility, user experience, and scalability compared to modern alternatives.
+* Based on a monolithic, non–cloud-native architecture typical of mid-2000s software.
+* Does not address data storage, secure persistence, or data lineage—making it less suitable for modern registry-based systems.
+
+== Comparison
+
+Each of the reviewed platforms overlaps with the functionality of the *Registries Platform* to some extent, but none of them offers feature parity across the board. While they cover different aspects—such as infrastructure, workflows, or service templates—none provides a comprehensive solution that matches the full scope of the Registries Platform.
+
+Beyond the shared capabilities, the Registries Platform delivers several unique advantages not found in any of the systems discussed:
+
+* The platform includes a fully configured set of dependencies out of the box, including container orchestration, traffic routing, databases, monitoring, and backup tools. This eliminates the need for separate setup and maintenance of infrastructure components, ensuring security and reliability standards while reducing the burden on technical administrators.
+
+* Unlike all the compared platforms, the Registries Platform is built as a *low-code* solution. It allows developers to focus on business logic, prototype faster, and maintain or extend systems with less manual coding. This approach accelerates development cycles and lowers the barrier for teams working on digital public services.
+
+* The platform includes a secure data persistence and access layer that complies with data immutability and provenance requirements. This is a critical capability for building trustworthy, audit-ready government registries.
+
+== Conclusion
+
+The following areas stand out as opportunities for further development within the Registries Platform. These features are either missing or not yet fully addressed:
+
+* Integrated billing and payment processing.
+* Mobile-friendly citizen interfaces.
+* Internationalization and multilingual support.
+* A well-documented implementation methodology, especially around collaboration with public-sector stakeholders and government-as-a-client delivery models.
+
+== Sources
+
+.*_Digit-Core_*
+[%collapsible]
+====
+* https://core.digit.org/[Introducing the DIGIT Platform]
+* https://github.com/egovernments/DIGIT-OSS[DIGIT open-source repository]
+* https://2650579244-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2F-Mj5Rt0VXmfqKdJwsrck%2Fuploads%2F4UtspENf9KJ9jcmORd95%2FDIGIT%20Rollout%20-%20Proposed%20Governance%20Structure.pdf?alt=media&token=0751c180-9f66-43e2-b261-b6e7f1390ea5[DIGIT program governance (PDF deck)]
+* https://github.com/egovernments/Digit-Core/discussions[DIGIT community discussion board]
+* https://www.youtube.com/@digit_dpg[DIGIT YouTube channel]
+====
+
+.*_Singapore Government Tech Stack (SGTS)_*
+[%collapsible]
+====
+* https://www.developer.tech.gov.sg/singapore-government-tech-stack/[Singapore Government Tech Stack overview]
+* https://docs.developer.tech.gov.sg/[Singapore Government Tech Stack documentation]
+====
+
+.*_eGovernment Standard Framework (eGSF)_*
+[%collapsible]
+====
+* https://www.egovframe.go.kr/eng/sub.do?menuNo=7[Introduction to the eGovernment Standard Framework]
+* https://www.egovframe.go.kr/eng/sub.do?menuNo=9[eGSF architecture overview]
+* https://www.egovframe.go.kr/eng/sub.do?menuNo=4[eGSF downloads]
+* https://www.egovframe.go.kr/eng/sub.do?menuNo=15[eGSF common components]
+* https://www.egovframe.go.kr/eng/sub.do?menuNo=17[eGSF mobile components]
+====
+
+

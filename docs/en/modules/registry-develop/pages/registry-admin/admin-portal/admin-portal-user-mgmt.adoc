@@ -1,0 +1,28 @@
+= Managing users
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+The *User management* section allows you to import registry users (officers) through a CSV file. After uploading the file, users and all their privileges are automatically created in the system.
+
+NOTE: This section is independent of the selected version of the regulation. Any changes apply to all versions of the regulation, including the master version.
+
+image:admin:user-management/user-management-05.png[]
+
+The execution result of the import process and possible errors can be viewed in the technical logs of the Kibana service.
+
+[IMPORTANT]
+====
+The registry administrator must be provisioned with the `user-management` role for importing users from a CSV file. Please ensure this role is assigned within Keycloak's `-admin` realm. If you find yourself without this role and try adding users, you'll be greeted with a validation error saying, "Sorry, something went wrong."
+
+image:registry-admin/admin-portal/user-import/user-management-error.png[]
+====
+
+The system also maintains an audit of user uploads to the system. For this purpose, the Redash service provides a "User Management Log".
+
+[TIP]
+====
+For detailed information on importing users through a file and granting access rights, you can refer to the following link:
+
+* xref:registry-admin/create-users/import-users-officer.adoc[]
+====

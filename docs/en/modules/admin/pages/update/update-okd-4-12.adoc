@@ -1,0 +1,1028 @@
+= Updating OKD from version 4.11 to 4.12
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+This document describes the procedure for updating OKD from `4.11` to `4.12` on both *AWS* and *vSphere* infrastructures.
+
+[NOTE,caption=Recommended OKD version update sequence]
+====
+[%collapsible]
+.Expand or collapse a list
+=====
+{empty}
+----
+4.11.0-0.okd-2022-07-29-154152
+----
+↓
+----
+4.11.0-0.okd-2022-08-20-022919
+----
+↓
+----
+4.11.0-0.okd-2022-10-28-153352
+----
+↓
+----
+4.11.0-0.okd-2022-12-02-145640
+----
+↓
+----
+4.12.0-0.okd-2023-03-18-084815
+----
+↓
+----
+4.12.0-0.okd-2023-04-16-041331
+----
+=====
+====
+
+[CAUTION]
+====
+It is **not recommended** to update OKD to version `4.11.0-0.okd-2023-01-14-152430` due to a known bug affecting the *Ceph* component. Follow the recommended update sequence.
+====
+
+[NOTE,caption=Average update duration]
+====
+* A full minor version OKD update takes approximately `1h 10m` to `1h 35m` (about `6h 30m` total for all minor updates).
+* Replacing the AMI for master nodes before updating to OKD 4.12 on *AWS* takes about `2h`.
+* Replacing the `fedora-coreos` image for the VM template on *vSphere* takes about `10m`.
+====
+
+[NOTE]
+====
+You can pause the OKD update process and resume at any convenient time, as long as the cluster is **not** currently in the middle of an OKD update or AMI replacement for master nodes.
+
+You can safely stop after completing any of the following steps:
+
+* xref:#update-to-2022-08-20[Update OKD to version 4.11.0-0.okd-2022-08-20-022919]
+* xref:#update-to-2022-10-28[Update OKD to version 4.11.0-0.okd-2022-10-28-153352]
+* xref:#update-to-2022-12-02[Update OKD to version 4.11.0-0.okd-2022-12-02-145640]
+* xref:#update-to-2023-03-18[Update OKD to version 4.12.0-0.okd-2023-03-18-084815]
+====
+
+[#prerequisites]
+== Prerequisites
+
+To successfully perform the update procedure, ensure the following conditions are met:
+
+. An OKD cluster at version `4.11` or higher.
+. Platform version on the cluster is `1.9.7` or higher (see details in xref:admin:installation/okd-requirements.adoc[]).
+. The *`oc cli`* tool installed locally at version `4.12` or higher.
+
+. For *AWS* infrastructure:
+* An existing *IAM* user with access to the *EC2* service.
+* The user has permissions to enable and disable cluster nodes.
+
+. For *vSphere* infrastructure:
+* Access to *vSphere Client*.
+* SSH access to each cluster node via an SSH key.
+
+. The *`jq`* tool installed locally for terminal operations.
+. `cluster-admin` role on the OKD cluster.
+. Familiarity with the update process from the official source: link:https://docs.okd.io/4.12/updating/[Official OKD update documentation].
+
+[CAUTION]
+====
+If you are using *vSphere* infrastructure, **be sure to verify SSH access to all cluster nodes** before starting the update.
+
+Do **not** begin the OKD update process if SSH access is not properly configured.
+
+Note that access to nodes using the command `oc debug node/{node_name}` will **not** be available during the update!
+====
+
+[#preparatory-steps]
+== Preparatory steps before the update
+
+. Before starting the update process, make sure your OKD cluster is running without errors:
++
+--
+* Open the *OKD* web interface.
+* Go to menu:Administration[Cluster Settings].
+* Carefully check the cluster status. Make sure the cluster status dashboard shows no warnings (`WARNING`) or errors (`ERROR`). This ensures the cluster is ready for the update.
+--
++
+image:admin:infrastructure/update-okd/update-okd-1.png[]
++
+[NOTE]
+====
+If, during the cluster status check, you encounter the message:
+
+----
+Cluster operator machine-config should not be upgraded between minor versions: PoolUpdating: One or more machine config pools are updating, please see oc get mcp for further details
+----
+
+and in the *MachineConfigPool* resource named *master*, you see the error:
+
+----
+Node ip-*-*-*-*.eu-central-1.compute.internal is reporting: "machineconfig.machineconfiguration.openshift.io \"rendered-master-***\" not found"
+----
+
+*it is recommended* to run the following command in `oc cli` and wait for all master nodes to restart:
+
+[source,bash]
+----
+$ oc delete mc 99-okd-master-disable-mitigations 99-master-okd-extensions
+----
+====
+
+. Check that the *Upstream configuration* parameter is set to `https://amd64.origin.releases.ci.openshift.org/graph`. This points to the official update source.
++
+image:admin:infrastructure/update-okd/update-okd-2.png[]
+
+. In menu:Administration[Cluster Settings], go to the *ClusterOperators* tab. Check that *none* of the operators are in the `Updating` state.
++
+image:admin:infrastructure/update-okd/update-okd-3.png[]
+
+[#update-procedure]
+== Update procedure
+
+. First, ensure your cluster is ready for the Kubernetes API removals introduced in OKD 4.12. Run the following command in the terminal:
++
+[source,bash]
+.okd
+----
+$ oc -n openshift-config patch cm admin-acks --patch '{"data":{"ack-4.11-kube-1.25-api-removals-in-4.12":"true"}}' --type=merge
+----
+
+. Pause all *MachineHealthCheck* resources before updating the cluster. This helps avoid node restarts during the update.
++
+[source,bash]
+.pause
+----
+$ oc get machinehealthcheck -n openshift-machine-api
+$ oc -n openshift-machine-api annotate mhc <mhc-name> cluster.x-k8s.io/paused=""
+----
+
+. *Turn off all registries.* +
+Use the following process, which can be automated with the provided bash script. The script performs these steps for each registry (*codebase*):
+
+.. Check the *Istio* status.
+.. Patch the *IstioControlPlane* resource to disable *Istio* for the registry.
+.. Annotate the *MachineSet* resource of the registry with its current replica count.
+.. Annotate the *Machine* resources within the registry’s *MachineSet* for later deletion.
+.. Mark each registry node as `Unscheduled`.
+.. Delete all pods on the node to prepare it for removal.
+.. Pause all *CronJobs* in the registry.
+.. Scale the registry’s *MachineSet* down to zero replicas.
+
++
+This process ensures a safe and efficient shutdown of registries, preparing them for removal or update.
+
++
+.📌 *_Script: registries_turn_off.sh_*
+[%collapsible]
+====
+[source,shellscript]
+----
+#!/usr/bin/env bash
+
+CHECK-HEALTH-OF-ISTIO() {
+  echo "Checking if IstioOperator resource is healthy..."
+  isIstioHealthy=$(oc get -n istio-system IstioOperator istiocontrolplane -o jsonpath='{.status.status}')
+  counterForCheckingIstio=3
+  while [ ${counterForCheckingIstio} -gt 0 ]; do
+    if [[ ${isIstioHealthy} == "HEALTHY" ]]; then
+      echo "IstioOperator resource is healthy"
+      break
+    else
+      counterForCheckingIstio=$[ $counterForCheckingIstio - 1 ]
+      if [ ${counterForCheckingIstio} -eq 0 ]; then
+        echo "IstioOperator resource with name istiocontrolplane in namespace istio-system is not healthy!"
+        echo "Fix it manually and try again later!"
+        exit 1
+      else
+        echo "IstioOperator resource with name istiocontrolplane in namespace istio-system is not healthy!"
+        echo "Sleeping for 30 seconds"
+        sleep 30
+        echo "Trying again..."
+      fi
+    fi
+  done
+}
+
+PATCH-ISTIO() {
+  CHECK-HEALTH-OF-ISTIO
+  echo "Turning off Istio ingress gateway in registry ${1}"
+  indexOfIstioIngressGateways=$(oc get -n istio-system IstioOperator istiocontrolplane -o json | jq '.spec.components.ingressGateways | map(.namespace == "'${1}'") | index(true)')
+  oc patch -n istio-system IstioOperator istiocontrolplane --type json -p '[{"op": "replace", "path": "/spec/components/ingressGateways/'${indexOfIstioIngressGateways}'/enabled", "value": false}]'
+}
+
+CHECK-HEALTH-OF-ISTIO
+for registry in $(oc get codebases -n control-plane --no-headers -o custom-columns=":metadata.name" --field-selector=metadata.name!=cluster-mgmt); do
+  registryMachineSet=$(oc get -n openshift-machine-api MachineSet -o=jsonpath='{.items[?(@.metadata.annotations.meta\.helm\.sh/release-namespace=="'"${registry}"'")].metadata.name}')
+  registryMachineSetReplicas=$(oc get -n openshift-machine-api MachineSet ${registryMachineSet} -o jsonpath='{.spec.replicas}')
+  if [ $registryMachineSetReplicas -ne 0 ]; then
+    echo "Turn off registry ${registryMachineSet}"
+    PATCH-ISTIO "${registry}"
+
+    isAnnotationPresent=$(oc get -n openshift-machine-api MachineSet ${registryMachineSet} -o=jsonpath='{.metadata.annotations.registryMachineSetReplicas}')
+
+    if [ ${isAnnotationPresent} ]; then
+      echo "Annotation [registryMachineSetReplicas] is already present in MachineSet ${registryMachineSet}"
+    else
+      echo "Annotate MachineSet ${registryMachineSet} before scale down"
+      oc annotate -n openshift-machine-api MachineSet ${registryMachineSet} registryMachineSetReplicas=${registryMachineSetReplicas}
+    fi
+
+    for machine in $(oc get -n openshift-machine-api Machines -l machine.openshift.io/cluster-api-machineset=${registryMachineSet} -o jsonpath='{range .items[*].metadata}{.name}{"\n"}{end}'); do
+      echo "Annotate Machine ${machine} before deletion"
+      oc annotate -n openshift-machine-api machine/${machine} machine.openshift.io/cluster-api-delete-machine="true"
+      oc annotate -n openshift-machine-api machine/${machine} machine.openshift.io/exclude-node-draining="true"
+    done
+
+    for node in $(oc get -n openshift-machine-api Nodes -l node=${registry} -o jsonpath='{range .items[*].metadata}{.name}{"\n"}{end}'); do
+      echo "Cordon Node ${node}"
+      oc adm cordon ${node}
+
+      oc delete -n ${registry} pods --all --force --grace-period=0
+
+      echo "Drain Node ${node}"
+      oc adm drain ${node} --ignore-daemonsets --force --grace-period=0 --delete-emptydir-data
+    done
+
+    for cronjob in $(oc get -n velero CronJobs -o jsonpath='{range .items[*].metadata}{.name}{"\n"}{end}' | grep ${registry}); do
+      echo "Suspend CronJob ${cronjob}"
+      oc patch -n velero CronJobs ${cronjob} -p '{"spec":{"suspend":true}}'
+    done
+
+    oc scale -n openshift-machine-api --replicas=0 MachineSet ${registryMachineSet}
+  else
+    echo "Registry ${registryMachineSet} is disabled"
+  fi
+done
+----
+====
+
+. Patch the `istiod` deployment in your Kubernetes cluster by scaling the number of replicas to zero. This helps avoid interruptions during the cluster update.
+Run this command using `oc` (OpenShift CLI):
++
+.patch deployment istiod
+[source,bash]
+----
+$ oc scale deployment istiod --replicas=0 -n istio-system
+----
++
+This command sets the `istiod` deployment’s replica count to `0` in the `istio-system` namespace, temporarily stopping it.
+
+. Update the *istioOperator* resource named *istiocontrolplane* in the `istio-system` namespace. Modify its configuration by setting the `enabled` field to `false` for the `istio-ingressgateway-control-plane-main` block. This can be done by editing the YAML configuration file.
++
+image:admin:infrastructure/update-okd/update-okd-4.png[]
+
+. Increase the number of `worker` node replicas from 3 to 4 in your OKD cluster by updating the relevant *MachineSet*.
+This prevents resource shortages during the OKD update.
++
+[NOTE]
+====
+Before moving to the next step, make sure the new `worker` node has fully initialized and become active in the cluster.
+====
++
+image:admin:infrastructure/update-okd/update-okd-5.png[]
+
+* Before updating OKD, be aware that worker nodes may hang or fail to update during the process. If you notice this behavior, it’s recommended to delete the *Machine* resource for the problematic node.
+You can find this resource in the **Compute** section of the cluster management interface.
++
+image:admin:infrastructure/update-okd/update-okd-6.png[]
++
+[NOTE]
+====
+Warnings and errors may appear during the OKD update. In most cases, this is normal and resolves automatically.
+====
++
+image:admin:infrastructure/update-okd/update-okd-7.png[]
+
+[#update-to-2022-08-20]
+--
+[start=7]
+. Update OKD to version **`4.11.0-0.okd-2022-08-20-022919`**.
++
+Go to menu:Administration[Cluster Settings] in the OKD web interface. Then select the desired version from the available list (*Select new version* field).
+After selecting the version, wait for the update process to complete and for the next update prompt to appear.
++
+[NOTE]
+====
+If your current OKD version already matches `4.11.0-0.okd-2022-08-20-022919`, you can skip this step.
+====
++
+image:admin:infrastructure/update-okd/update-okd-8.png[]
+--
+
+[#update-to-2022-10-28]
+[start=8]
+. Update OKD to version **`4.11.0-0.okd-2022-10-28-153352`**.
++
+Go to menu:Administration[Cluster Settings] in the OKD web interface. Then select the desired version from the available list (*Select new version* field).
+After selecting the version, wait for the update process to complete and for the next update prompt to appear.
++
+image:admin:infrastructure/update-okd/update-okd-9.png[]
+
+[#update-to-2022-12-02]
+[start=9]
+. Update OKD to version **`4.11.0-0.okd-2022-12-02-145640`**.
++
+Go to menu:Administration[Cluster Settings] in the OKD web interface. Then select the desired version from the available list (*Select new version* field).
+After selecting the version, wait for the update process to complete and for the next update prompt to appear.
++
+image:admin:infrastructure/update-okd/update-okd-10.png[]
++
+[#aws-ami-update]
+. *_For AWS infrastructure_*: due to an OKD bug (https://github.com/okd-project/okd/issues/1657), the update cannot continue to version 4.12 without switching all `master` nodes to a new **AMI**.
+This must be done by following the official documentation: https://docs.openshift.com/container-platform/4.11/backup_and_restore/control_plane_backup_and_restore/replacing-unhealthy-etcd-member.html.
++
+[WARNING]
+====
+You must replace the AMI one `master` node at a time.
+**Before replacement, the node must be powered off!**
+====
+Steps to replace the **AMI** for a master node:
++
+[#shut-down-master-node]
+.. Shut down the master node you plan to replace.
+For *AWS* infrastructure, go to the **AWS UI**, navigate to the **EC2** service, and perform the **Stop** action on the selected instance.
++
+[#available-etcd-pods-status]
+.. Check the status of the available **etcd** pods. All pods should be in the `Running` state.
++
+[source,bash]
+----
+$ oc -n openshift-etcd get pods -l k8s-app=etcd
+----
++
+.Command output example
+image::admin:infrastructure/update-okd/update-okd-11.png[]
++
+[#connect-to-any-etcd-pod]
+.. Connect to any **etcd** pod *that does not belong to the master node you plan to replace*.
+You can identify this by the **etcd** pod name.
++
+[source,bash]
+----
+$ oc rsh -n openshift-etcd etcd-ip-10-0-154-204.ec2.internal
+----
++
+[#get-etcd-member-list]
+.. Retrieve the list of **etcd** members.
++
+[source,bash]
+----
+$ etcdctl member list -w table
+----
++
+.Command output example
+image::admin:infrastructure/update-okd/update-okd-12.png[]
+
+.. Remove the **etcd** member corresponding to the master node you plan to delete.
++
+[source,bash]
+----
+$ etcdctl member remove 6fc1e7c9db35841d
+----
+
+.. Verify that the **etcd** member has been removed. There should be only two remaining members.
++
+[source,bash]
+----
+$ etcdctl member list -w table
+----
++
+[NOTE]
+====
+Run this command several times to ensure that **etcd** does not automatically recreate the removed member.
+====
+
+.. Exit the **etcd** pod and disable **Quorum Guard** for **etcd**.
++
+[source,bash]
+----
+$ oc patch etcd/cluster --type=merge -p '{"spec": {"unsupportedConfigOverrides": {"useUnsupportedUnsafeNonHANonProductionUnstableEtcd": true}}}'
+----
+
+.. Find the secrets for the master node you plan to delete and remove them.
++
+[source,bash]
+----
+$ oc get secrets -n openshift-etcd | grep ip-10-0-131-183.ec2.internal
+----
++
+.Example: Deleting secrets for the selected node
+----
+$ oc delete secret -n openshift-etcd etcd-peer-ip-10-0-131-183.ec2.internal
+$ oc delete secret -n opensshift-etcd etcd-serving-ip-10-0-131-183.ec2.internal
+$ oc delete secret -n openshift-etcd etcd-serving-metrics-ip-10-0-131-183.ec2.internal
+----
++
+[NOTE]
+====
+The secrets may regenerate after deletion — this is normal behavior.
+====
+
+.. List the machines.
++
+[source,bash]
+----
+$ oc get machines -n openshift-machine-api -o wide
+----
+
+.. Save the configuration file for the master node you plan to delete.
++
+[source,bash]
+----
+$ oc get machine clustername-8qw5l-master-0 -n openshift-machine-api -o yaml > new-master-machine.yaml
+----
+
+.. Edit the saved configuration file (*_new-master-machine.yaml_*).
+The editing steps to replace a master node in OKD include:
+
+... Replace the `.metadata.name` field with a new value.
+It is recommended to retain the base part of the old machine name and change only the final number to the next available one, e.g., from `clustername-8qw5l-master-0` to `clustername-8qw5l-master-3`.
+
+... Remove the `.status` field.
+
+... Remove the `.spec.providerID` field.
+
+... Replace the value in `.spec.providerSpec.value.ami.id` with the new AMI ID, e.g., `ami-0037cfd83bf77778c`.
+
+.. Delete the machine for the master node you plan to replace.
++
+[source,bash]
+----
+$ oc delete machine -n openshift-machine-api clustername-8qw5l-master-0
+----
++
+[NOTE]
+====
+This step can take up to 20 seconds.
+====
+
+.. Verify that the machine has been deleted.
++
+[source,bash]
+----
+$ oc get machines -n openshift-machine-api -o wide
+----
++
+[CAUTION]
+====
+After deleting the machine, it is critical to wait **2–3 minutes** before proceeding to the next step: xref:#apply-new-machine-config[Applying the new machine configuration] (*step n*).
+Skipping this pause can cause unexpected issues, such as networking problems on the new node.
+If you encounter problems launching the new node, repeat the deletion process starting from xref:#shut-down-master-node[Shutting down the master node].
+====
++
+[#apply-new-machine-config]
+.. Apply the configuration file for the new machine.
++
+After waiting 2–3 minutes following the node deletion, apply the new configuration file.
++
+[source,bash]
+----
+$ oc apply -f new-master-machine.yaml
+----
++
+If the `oc apply` command does not respond when applying the new machine configuration, it may indicate that the cluster has started a reboot process.
+In this case, wait for the cluster to become available again before reapplying the configuration file.
+
+.. Verify that the new machine is being created and that the new node is launching.
++
+[source,bash]
+----
+$ oc get machines -n openshift-machine-api -o wide
+----
++
+[source,bash]
+----
+$ oc get nodes
+----
++
+[NOTE]
+====
+Be aware that creating a new machine in the cluster may take several minutes.
+During this process, the cluster nodes may reboot, causing temporary unavailability.
+Plan your operations carefully to avoid unexpected service interruptions.
+====
+
+.. Once the new master node has been successfully launched and integrated into the cluster, re-enable **Quorum Guard** for `etcd`.
+This ensures that `etcd` maintains quorum and continues to operate stably, preserving cluster integrity and high availability.
++
+[source,bash]
+----
+$ oc patch etcd/cluster --type=merge -p '\{"spec": \{"unsupportedConfigOverrides": null}}'
+----
+
+.. Wait for the new **etcd** pod to start on the new node.
++
+[source,bash]
+----
+$ oc -n openshift-etcd get pods -l k8s-app=etcd
+----
++
+[NOTE]
+====
+At this stage, cluster nodes may restart. This is expected behavior.
+====
+
+.. In the follow-up steps — xref:#available-etcd-pods-status[Checking the status of the existing etcd pods],
+xref:#connect-to-any-etcd-pod[Connecting to any etcd pod], and
+xref:#get-etcd-member-list[Viewing the list of etcd members] —
+you can verify that the new node is present in the etcd quorum.
++
+[#etcd-reconciliation]
+.. After successfully replacing the node, be sure to wait for **etcd reconciliation**.
+You can check this by inspecting the etcd resource:
++
+[source,bash]
+----
+$ oc get etcd/cluster -oyaml
+----
++
+[TIP]
+====
+A key indicator of successful reconciliation is that all nodes have the same `revision` value.
+This signals that all nodes are synchronized and operating correctly after the replacement.
+====
++
+image::admin:infrastructure/update-okd/update-okd-13.png[]
++
+[#operators-status-active]
+.. Go to menu:Administration[Cluster Settings > ClusterOperators] in the OKD management web interface to check the status of all operators.
+All operators should show the `Active` status.
+Note that the `kube-apiserver` operator often shows the `Progressing` status during node revision updates — this is normal, and you should wait until it switches to `Active`, indicating that the update is complete and the cluster is stable.
++
+image::admin:infrastructure/update-okd/update-okd-14.png[]
+
+.. Once **etcd reconciliation** is complete (see xref:#etcd-reconciliation[Etcd reconciliation]) and all operators show the `Active` status (see xref:#operators-status-active[Operator status: Active]),
+you can proceed to replace the AMI for the next master node, starting again from xref:#shut-down-master-node[Shutting down the master node].
++
+[WARNING]
+====
+Do not skip these steps.
+Completed etcd reconciliation and all operators in `Active` status are critical preconditions for safely replacing the AMI on the next master node.
+Ignoring these requirements can lead to unpredictable cluster issues.
+====
+
+[#update-to-2023-03-18]
+[start=11]
+. After successfully replacing the AMIs on all master nodes (for **AWS** infrastructure, see xref:#aws-ami-update[Replacing AMI for master nodes]), update OKD to version **`4.12.0-0.okd-2023-03-18-084815`**.
++
+To do this, go to menu:Administration[Cluster Settings] in the OKD web interface.
+Then select the required version from the available list ( **Select new version** field).
++
+*_On vSphere infrastructure_*, when updating OKD to version `4.12.0-0.okd-2023-03-18-084815`, you may encounter an issue related to an OKD bug affecting **SELinux policies**
+(see details: https://github.com/okd-project/okd/issues/1475[]).
+This bug can cause nodes to become unavailable during the update, with a `Not Ready` status that does not resolve over time.
++
+.Example of problematic nodes during update when running `oc get nodes`
+image::admin:infrastructure/update-okd/update-okd-15.png[]
+
+.. To resolve this issue, connect via **SSH** to the affected node showing `Not Ready` status.
++
+[NOTE]
+====
+You can find the IP address of the node in `Not Ready` status by running:
+[source,bash]
+----
+$ oc get nodes -o wide
+----
+====
+
+.. Once connected via **SSH**, run the following command on the affected node’s terminal to restore the default security context settings on all files and directories:
++
+[source,bash]
+----
+$ restorecon -R -v /etc/NetworkManager/dispatcher.d/
+----
+
+.. After running the command, restart the node via **vSphere Client** using the path **Power** > **Restart Guest OS**.
++
+image::admin:infrastructure/update-okd/update-okd-16.png[]
++
+[NOTE]
+====
+If you encounter issues restarting the node, perform another restart using **Power** > **Reset**.
+====
+
+.. After each node restarts, verify that it has successfully rejoined the cluster and shows the `Ready` status.
+You can check this using:
++
+[source,bash]
+----
+$ oc get nodes
+----
+Once you confirm that the node is operational and marked as `Ready`, you can repeat the procedure for the next node still in `Not Ready` status.
+This approach ensures that all cluster nodes are stable after the update.
++
+[CAUTION]
+====
+It’s essential to perform this process for every node that experienced issues and remains in `Not Ready` status for an extended time.
+This ensures that all cluster nodes are updated and functioning correctly.
+====
+
+.. As an additional troubleshooting step, if the previous actions do not resolve the `Not Ready` status, you can temporarily set **SELinux** to **Permissive** mode.
+Run the following command on each affected node via **SSH** (no reboot required):
++
+[source,bash]
+----
+$ setenforce 0
+$ systemctl restart NetworkManager
+----
++
+[CAUTION]
+====
+Switching **SELinux** to **Permissive** mode is only a temporary workaround during the update process.
+It’s expected that **SELinux** will automatically revert to **Enforcing** mode in the next OKD version update, specifically in *step 14*.
+====
+
+.. Wait for the update to complete to version `4.12.0-0.okd-2023-03-18-084815`.
+
+.. If you plan to pause before continuing with the next update to **OKD** version `4.12.0-0.okd-2023-04-16-041331`,
+it’s recommended to manually restore **Enforcing** mode.
+After the successful update to `4.12.0-0.okd-2023-03-18-084815`, run the following commands on each node:
++
+[source,bash]
+----
+$ setenforce 1
+$ systemctl restart NetworkManager
+----
+
+. *_On AWS infrastructure_*, before updating **OKD** to version `4.12.0-0.okd-2023-04-16-041331`, add the list of **IP addresses** from the `router-default` service to the **ingresscontroller** resource.
+
+.. Locate the *Service* resource named `router-default` in the `openshift-ingress` namespace and copy the list of **IP addresses** from the annotation `"service.beta.kubernetes.io/load-balancer-source-ranges"`.
++
+.router-default.yaml
+image::admin:infrastructure/update-okd/update-okd-17.png[]
+
+.. Apply this list of IP addresses to the **ingresscontroller** resource named `default` in the `openshift-ingress-operator` namespace.
++
+[source,bash]
+----
+$ oc patch ingresscontroller default -n openshift-ingress-operator --type='json' -p='[{"op": "add", "path": "/spec/endpointPublishingStrategy", "value": {"loadBalancer": {"allowedSourceRanges": ['${ip_list}'], "dnsManagementPolicy": "Managed", "scope": "External"}, "type": "LoadBalancerService"}}]'
+----
++
+[NOTE]
+====
+Replace `${ip_list}` with the previously copied list of **IP addresses**.
+====
+
+.. If you encounter a `Command too long` error when trying to apply changes using the `oc patch` command,
+you need to manually edit the `ingresscontroller` resource named `default` in the `openshift-ingress-operator` namespace.
+Manually insert the IP address list in the YAML configuration, ensuring the correct YAML structure.
++
+.📌 *_IP addresses. YAML configuration file for ``ingresscontroller``_*
+[%collapsible]
+====
+[source,yaml]
+----
+spec:
+  endpointPublishingStrategy:
+    loadBalancer:
+      allowedSourceRanges:
+        - 174.128.55.224/29
+        - 174.128.60.0/24
+        - 91.120.48.0/27
+        - 91.120.48.32/27
+        - 195.56.119.208/28
+        - 195.56.109.192/28
+        - 85.223.209.0/24
+        - 85.223.141.72/29
+        - 87.245.220.0/26
+        - 3.67.249.129/32
+        - 18.198.70.194/32
+        - 18.192.234.58/32
+        - 213.108.75.174/32
+        - 176.102.33.181/32
+        - 213.160.142.156/32
+        - 80.94.82.14/32
+        - 188.190.252.22/32
+        - 176.37.203.227/32
+        - 178.150.71.4/32
+        - 178.150.19.142/32
+        - 176.36.85.141/32
+        - 93.74.201.250/32
+        - 91.218.97.99/32
+        - 78.47.172.92/32
+        - 95.67.49.154/32
+        - 18.184.216.234/32
+        - 85.223.141.72/29
+        - 85.223.209.0/24
+        - 217.20.186.32/30
+        - 89.162.139.0/27
+        - 80.92.226.192/29
+        - 188.163.232.128/25
+        - 87.245.220.0/26
+        - 85.223.208.64/29
+        - 193.110.100.132/30
+        - 80.92.226.132/30
+        - 85.223.157.168/29
+        - 91.202.109.220/30
+        - 46.164.141.64/29
+        - 94.153.227.200/30
+        - 94.153.227.200/30
+        - 217.20.173.100/30
+        - 83.170.216.64/27
+        - 176.102.36.64/26
+        - 3.122.30.161/32
+        - 3.123.171.165/32
+        - 3.125.134.79/32
+        - 3.65.5.240/32
+        - 3.73.147.132/32
+      dnsManagementPolicy: Managed
+      scope: External
+    type: LoadBalancerService
+----
+====
+
+. *_On vSphere infrastructure_*, before updating OKD to version `4.12.0-0.okd-2023-04-16-041331`, replace the `fedora-coreos` image for the VM template.
+This is due to a known bug that may complicate creating new nodes after upgrading to OKD `4.12.0-0.okd-2023-03-18-084815`.
+For details on this bug and resolution steps, see https://access.redhat.com/solutions/6979105[Red Hat Solution 6979105].
++
+To resolve this, follow these steps.
++
+[#download-image-rhcos-ova]
+.. Download the **RHCOS OVA** image version `37.20230218.3.0`.
+You can get it from https://builds.coreos.fedoraproject.org/browser?stream=stable&arch=x86_64
+or directly via https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/37.20230218.3.0/x86_64/fedora-coreos-37.20230218.3.0-vmware.x86_64.ova.
+
+.. Open **vSphere Client** and navigate to the cluster directory where you plan to update the VM template.
+Right-click the directory name and select **Deploy OVF Template**.
++
+image::admin:infrastructure/update-okd/update-okd-18.png[]
++
+[#deploy-ovf-template]
+.. The **Deploy OVF Template** wizard will open.
+
+... In section **Select an OVF template**, choose **Local file** and provide the path to the **RHCOS OVA** image you downloaded in xref:#download-image-rhcos-ova[Download RHCOS OVA image].
++
+image::admin:infrastructure/update-okd/update-okd-19.png[]
+
+... In section **Select a name and folder**, enter any name for the virtual machine and select your cluster directory.
++
+image::admin:infrastructure/update-okd/update-okd-20.png[]
+
+... In section **Select a compute resource**, choose the compute resource where the virtual machine will reside.
++
+image::admin:infrastructure/update-okd/update-okd-21.png[]
+
+... In section **Select storage**, pick the storage destination for the virtual machine.
++
+image::admin:infrastructure/update-okd/update-okd-22.png[]
+
+... In section **Select networks**, choose the network for the virtual machine.
++
+image::admin:infrastructure/update-okd/update-okd-23.png[]
+
+... Leave section **Customize template** unchanged.
++
+image::admin:infrastructure/update-okd/update-okd-24.png[]
+
+... In the final section, click **Finish**.
++
+image::admin:infrastructure/update-okd/update-okd-25.png[]
+
+.. Wait for the new virtual machine to be created, visible in the lower section of **vSphere Client**.
++
+image::admin:infrastructure/update-okd/update-okd-26.png[]
++
+.. To proceed with creating the VM template, locate the old template used for node deployments and copy its name.
++
+image::admin:infrastructure/update-okd/update-okd-27.png[]
+
+.. Find the newly created virtual machine (xref:#deploy-ovf-template[Deploy OVF template]), right-click its name, and select menu:Clone[Clone to Template].
++
+image::admin:infrastructure/update-okd/update-okd-28.png[]
+
+.. The **Clone Virtual Machine to Template** wizard will open.
+
+... In section **Select a name and folder**, enter the name copied in the old template before and append the suffix `-1` (since the old template with the original name still exists).
+Also, select your cluster directory.
++
+image::admin:infrastructure/update-okd/update-okd-29.png[]
+
+... In section **Select a compute resource**, pick the compute resource for the template.
++
+image::admin:infrastructure/update-okd/update-okd-30.png[]
+
+... In section **Select storage**, choose the storage destination for the template.
++
+image::admin:infrastructure/update-okd/update-okd-31.png[]
+
+... Leave section **Customize vApp** unchanged.
++
+image::admin:infrastructure/update-okd/update-okd-32.png[]
+
+... In the final section **Ready to complete**, click **Finish**.
++
+image::admin:infrastructure/update-okd/update-okd-33.png[]
+
+.. Ensure the cluster directory now contains two templates:
+* The old one.
+* The new one with the `-1` suffix.
+The new template should display updated details in the **Summary** tab.
++
+image::admin:infrastructure/update-okd/update-okd-34.png[]
+
+.. The new template is now successfully created and ready for use.
+_But_ to allow **OKD** to use the new template, rename it to match the previous template name (remove the `-1` suffix).
+You can either delete the old template or rename it.
+In the cluster directory, locate the old template, right-click it, and choose either **Rename** or **Delete from Disk**.
+If renaming — append any number or letter sequence to the old name.
++
+image::admin:infrastructure/update-okd/update-okd-35.png[]
+
+.. The final step is renaming the new template by removing the `-1` suffix.
+In the cluster directory, find the new template with the `-1` suffix, right-click it, and select **Rename**.
++
+image::admin:infrastructure/update-okd/update-okd-36.png[]
++
+The **Rename** window will open. Remove the `-1` suffix.
++
+image::admin:infrastructure/update-okd/update-okd-37.png[]
+
+.. (*_Optional_*) To verify functionality, try scaling up one instance for any registry in **OKD**.
+In **OKD**, go to the **machineSets** section, find the relevant machine set for the registry, and set the replica count to `1`.
++
+image::admin:infrastructure/update-okd/update-okd-38.png[]
+
+. After successfully adding the IP list to the *ingresscontroller* resource (_for *AWS* infrastructure_) or replacing the *`fedora-coreos`* image in the VM template (_for *vSphere* infrastructure_),
+go to *Administration* > *Cluster Settings*, click **Select a version**, and choose OKD version `4.12.0-0.okd-2023-04-16-041331`.
++
+NOTE: When upgrading OKD to version `4.12.0-0.okd-2023-04-16-041331`, you may encounter the error:
+`"message: Retrieving payload failed version="4.12.0-0.okd-2023-04-16-041331""`
+(see details at
+https://github.com/okd-project/okd/discussions/1566#discussioncomment-5633599).
++
+.Error example
+image::admin:infrastructure/update-okd/update-okd-39.png[]
++
+To resolve this, run the following terminal command:
++
+[source,bash]
+----
+$ oc patch --type='merge' --patch='{"spec":{"desiredUpdate":{"force":true}}}' clusterversion version
+----
+
+. After successfully upgrading OKD to version `4.12.0-0.okd-2023-04-16-041331`, remove the *MachineHealthCheck* pause:
++
+[source,bash]
+----
+$ oc get machinehealthcheck -n openshift-machine-api
+$ oc -n openshift-machine-api annotate mhc <mhc-name> cluster.x-k8s.io/paused-
+----
+
+. Enable the *istiod* deployment:
++
+[source,bash]
+----
+$ oc scale deployment istiod --replicas=2 -n istio-system
+----
+
+. In the *istioOperator* resource named *istiocontrolplane*, in the `istio-system` namespace, set the *enabled* field to `true` for the block named `istio-ingressgateway-control-plane-main`.
++
+image::admin:infrastructure/update-okd/update-okd-40.png[]
+
+. Re-enable the disabled registries.
++
+It is recommended to bring up 1–2 registries at a time using the provided bash script, which performs the following for each registry (codebase):
++
+--
+* Patches the *istiocontrolplane* resource to reactivate `istio` for the registry.
+* Unsuspends all *CronJobs* in the registry.
+* Scales the MachineSet replicas for the registry according to its annotation (if no annotation is found, defaults to *`2`* replicas).
+--
++
+Example usage:
+`./registry_turn_on.sh <registry-name>` (enter `<registry-name>` without brackets).
+For example: `./registry_turn_on.sh test-registry`.
++
+.📌 *_registry_turn_on.sh_*
+[%collapsible]
+====
+[source,shellscript]
+----
+#!/usr/bin/env bash
+
+PATCH-ISTIO() {
+  echo "Turning on Istio ingress gateway in registry ${1}"
+  indexOfIstioIngressGateways=$(oc get -n istio-system IstioOperator istiocontrolplane -o json | jq '.spec.components.ingressGateways | map(.namespace == "'${1}'") | index(true)')
+  oc patch -n istio-system IstioOperator istiocontrolplane --type json -p '[{"op": "replace", "path": "/spec/components/ingressGateways/'${indexOfIstioIngressGateways}'/enabled", "value": true}]'
+}
+
+registry=${1}
+echo "Registry is ${registry}"
+registryMachineSet=$(oc get -n openshift-machine-api MachineSet -o=jsonpath='{.items[?(@.metadata.annotations.meta\.helm\.sh/release-namespace=="'"${registry}"'")].metadata.name}')
+registryMachineSetReplicas=$(oc get -n openshift-machine-api MachineSet ${registryMachineSet} -o jsonpath='{.spec.replicas}')
+if [ $registryMachineSetReplicas -eq 0 ]; then
+  echo "Turn on registry ${registryMachineSet}"
+  PATCH-ISTIO "${registry}"
+
+  for cronjob in $(oc get -n velero CronJobs -o jsonpath='{range .items[*].metadata}{.name}{"\n"}{end}' | grep ${registry}); do
+    echo "Unsuspend CronJob ${cronjob}"
+    oc patch -n velero CronJobs ${cronjob} -p '{"spec":{"suspend":true}}'
+  done
+
+  isAnnotationPresent=$(oc get -n openshift-machine-api MachineSet ${registryMachineSet} -o=jsonpath='{.metadata.annotations.registryMachineSetReplicas}')
+
+  if [ ${isAnnotationPresent} ]; then
+    echo "Annotation [registryMachineSetReplicas] is present in MachineSet ${registryMachineSet}"
+    echo "Scale up ${registryMachineSet} to ${isAnnotationPresent} replicas"
+    oc scale -n openshift-machine-api --replicas=${isAnnotationPresent} MachineSet ${registryMachineSet}
+  else
+    echo "Annotation [registryMachineSetReplicas] is not present in MachineSet ${registryMachineSet}"
+    echo "Scale up ${registryMachineSet} to 2 replicas by default"
+    oc scale -n openshift-machine-api --replicas=2 MachineSet ${registryMachineSet}
+  fi
+
+else
+  echo "Registry ${registryMachineSet} is running"
+fi
+----
+====
+
+. Reduce the number of worker nodes from 4 back to 3 replicas.
++
+image::admin:infrastructure/update-okd/update-okd-41.png[]
+
+. Manually update the `ocs-operator` via the OKD web interface.
++
+Update steps:
++
+.. For the *Subscription* resource named *ocs-operator* in the `openshift-storage` namespace, update the following fields:
++
+----
+.spec.channel - "stable-4.12"
+----
++
+----
+.spec.installPlanApproval - "Automatic"
+----
++
+----
+.spec.startingCSV - "ocs-operator.v4.12.0"
+----
+
+.. For the *Subscription* resource named *mcg-operator-stable-4.11-redhat-operators-openshift-marketplace* in the `openshift-storage` namespace, update:
++
+----
+.spec.channel - "stable-4.12"
+----
++
+----
+.spec.installPlanApproval - "Automatic"
+----
++
+If editing *Subscription* resources causes errors:
++
+image::admin:infrastructure/update-okd/update-okd-42.png[]
++
+Resolve the issue by running these commands and editing via the terminal:
++
+[source,bash]
+----
+$ oc -n openshift-storage get subscriptions –o wide
+$ oc -n openshift-storage edit subscription ocs-operator
+$ oc -n openshift-storage edit subscriptions mcg-operator-stable-4.11-redhat-operators-openshift-marketplace
+----
++
+(*_Optional_*) If the *ocs-operator* update does not start automatically after these changes, go to the **OpenShift Container Storage** operator and trigger the update manually.
++
+image::admin:infrastructure/update-okd/update-okd-43.png[]
++
+NOTE: Due to a display issue where **OpenShift Container Storage** might not appear under menu:Operators[Installed Operators],
+locate the operator through the *ocs-operator* deployment in the `openshift-storage` namespace.
+Once found, click the *Managed by* link to reach the operator page.
++
+image::admin:infrastructure/update-okd/update-okd-44.png[]
+
+. Run the *cluster-mgmt* pipeline.
+
+== Key issues resolved during the OKD upgrade process
+
+Problems not covered in the official documentation or recommendations:
+
+* Issue with *Machine Config Pool* resource — the MCP for master nodes could not locate the required *Machine Config* resource.
+* Invalid *Upstream configuration* value blocking cluster upgrade.
+* Compatibility issues with `redis-operator` on OKD 4.12 and its subsequent update.
+* Compatibility issues with `kafka-operator` on OKD 4.12 and its subsequent update.
+* Update and functionality problems with `ocs-operator` on OKD 4.12 due to invalid CRDs.
+* Issue with deleting *NooBaa* components via the *StorageCluster* resource.
+* Compatibility issues with `istio-operator` and Ceph on OKD 4.12, requiring updates.
+* Issue with `mailu-postfix` pods failing with `"fatal: the Postfix mail system is already running"` after upgrading to OKD 4.12.
+* Failure to upgrade OKD 4.11 to 4.12 due to an incompatible master node base image, resolved through manual AMI replacement.
+* Upgrade issues on *OVNKubernetes* and *OpenshiftSDN* plugins.
+* Master and worker node failures during OKD 4.12 upgrade due to `ovsdb-server`, `openvswitch`, `systemd-sysusers`, and `unbound-anchor` services.
+* Blocking of worker node upgrade by *PodDisruptionBudgets* during the `drain` process.
+* Lack of SSH key or password authorization blocking access to master and worker nodes for troubleshooting.
+* `kubelet` process issues on master nodes when upgrading on *OVNKubernetes*.
+* Failures in `machine-config-operator` and `machine-config-controller` pods halting the upgrade.
+* *SELinux* issues on vSphere (under review).
+* Hash mismatch in OKD 4.12 images blocking upgrade start.
+* Registry agent failures with new `oc cli` versions.
+* `ocs-operator` upgrade failure on OKD 4.12 — update did not start after modifying the *Subscription* resource.
+
+== Requires further testing
+
+* OKD upgrade on vSphere — _in progress_.
+* QA testing of Install/Update scenarios (OKD, Platform, registries) on AWS — _in progress_.
+* QA testing of Install/Update scenarios (OKD, Platform, registries) on vSphere.
+* QA testing of backup and recovery procedures for Control Plane and registries — _in progress_.
+* OKD upgrade from `4.11.0-0.okd-2022-07-29-154152` deployed in the *EnvOne*, *KRRT* environment.
+* Backup and recovery of master nodes and *etcd*.
+* General recovery process in case of a failed or stopped OKD upgrade.

@@ -1,0 +1,161 @@
+= Embedded subprocess
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+An *_Embedded subprocess_* is a subprocess that is configured and run inside the main (parent) business process.
+
+[TIP]
+====
+An embedded subprocess allows the user to avoid running two business processes separately, leaving the Portal every time to start each process. Embedding a subprocess provides a smooth transfer between business processes without separating the main process and the subprocess.
+
+For example, the main process has a purpose of entering contract data, but it requires approval of the changes by an authorized officer. This approval process logically fits into an embedded subprocess, thus having a dedicated process for everything, and still fitting into one sequence flow.
+====
+
+image:bp-modeling/bp/subprocesses/embedded-subprocess/embedded-subprocess-1.png[]
+
+An embedded subprocess must only contain one none start eventfootnote:[*None events* are undefined events, also called "empty."].
+
+On embedded subprocess activation, a *Start event* initiates it. The subprocess remains active while at least one element in its container is active. At the end of the last element of the subprocess, meaning the final event, the subprocess ends, and the output sequence flow continues in the Parentfootnote:[*Parent Process* is a process that initiates subprocess start. A subprocess is a *Child Process* to a *Parent Process*.] process.
+
+
+== Using embedded subprocess in modeling
+
+We'll show how to use the Embedded Subprocess BPMN-element with a data input business process (_further in this text -- main or parent process) and changes approval embedded subprocess (_further in this text -- subprocess) as an example.
+
+[TIP]
+====
+At the modeling stage, create 1 pool with a business process and save it in one _.bpmn_ file.
+====
+
+=== Process modelling stages
+
+To model 2 processes (in our case -- the main process and the subprocess), using Embedded subprocess element, we'll go through the following stages:
+
+. xref:#create-pool-bp[].
+. xref:#bp-start-event[].
+. xref:#bp-user-form-insert-data[].
+. xref:#create-expanded-subprocess[].
+* xref:#bp-start-event-subprocess[].
+* xref:#bp-user-form-approval-decision[].
+* xref:#bp-end-event-subprocess[].
+. xref:#bp-end-event[].
+
+[#create-pool-bp]
+=== Creating a pool for the business process
+
+_Model a pool for the main process by taking the following steps_:
+
+NOTE: Modeling of business process diagram must be performed within the *Create Pool/Participant* element.
+
+. Open *Camunda Modeler* and create a new BPMN diagram by clicking *File* -> *New File* -> *BPMN Diagram* in the top left corner.
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-1.png[]
+. On the left panel, find the *Create pool/Participant* element and drag it to the modeling canvas.
++
+image:registry-develop:bp-modeling/bp/modeling-instruction/bp-2.png[]
+
+. Fill in the following fields with the corresponding values:
+
+* In the `Participant Name` field, enter the name of the pool -- `Data input business process`.
+* In the `Process id` field, enter business process ID (for example, `processId`).
+* In the `Process Name` field, enter business process name -- `Data input business process`.
+
++
+image:bp-modeling/bp/subprocesses/embedded-subprocess/embedded-subprocess-2.png[]
+
+[#bp-start-event]
+=== Modeling main process start event
+
+_Create a start event by taking the following steps_:
+
+. On the left panel, find *CreateStartEvent* element and drag it to the modeling canvas.
+
+. On the right panel, fill in the following parameters with the corresponding values:
+
+* In the `Name` field, enter name for the start event -- `Process start`.
+* In the `Initiator` field, enter `initiator`.
+
++
+TIP: `initiator` -- is a special variable set for the user who started the process.
+
++
+image:bp-modeling/bp/subprocesses/embedded-subprocess/embedded-subprocess-3.png[]
+
+[#bp-user-form-insert-data]
+=== Modelling the user task for entering online order data
+
+_To create a user task for data entering, take the following steps:_
+
+. Create a new task, define its type by clicking the key icon and selecting *User Task* from the menu.
+. On the right panel, click `Open Catalog`, select *User Form* template, and click `Apply` to confirm.
+. On the right panel, fill in the following fields:
+
+* In the `Id` field, set task ID -- `user-form-1`.
+* In the `Name` field, enter task name -- `Order data form`.
+* In the `Form key` field, enter form key that will correspond with the form service name -- `add-order-bp-add-order-test`.
+* In the `Assignee` field, enter the variable of the user who initiated the process instance -- `${initiator}`.
+
+image:bp-modeling/bp/subprocesses/embedded-subprocess/embedded-subprocess-4.png[]
+
+[#create-expanded-subprocess]
+=== Modelling embedded subprocess
+
+Next, we need to _model the embedded subprocess_. It is configured inside a dedicated container within the same pool.
+
+. On the left panel, find the *Create expanded SubProcess* element, and drag it into the pool.
+
++
+image:bp-modeling/bp/subprocesses/embedded-subprocess/embedded-subprocess-5.png[]
+
+. Next, model the three elements within the subprocess:
+
+* subprocess start event;
+* user task for changes approval;
+* subprocess end event.
+
+[#bp-start-event-subprocess]
+==== Modelling subprocess start event
+
+_Configure subprocess start event_.
+
+[NOTE]
+As opposed to configuring the main process, subprocess start event is added automatically, along with the *Create expanded SubProcess* container.
+
+On the right panel, fill in the `Name` field with the start event name -- `Subprocess start`.
+
+image:bp-modeling/bp/subprocesses/embedded-subprocess/embedded-subprocess-6.png[]
+
+[#bp-user-form-approval-decision]
+==== Creating the changes approval user task
+
+_Create the user task for changes approval by taking the following steps_:
+
+. Create a new task, define its type by clicking the key icon, and selecting *User Task* from the menu.
+. On the right panel, click `Open Catalog`, select *User Form* template, and click `Apply` to confirm.
+. On the configuration panel, fill in the following fields:
+
+* In the `Name` field, enter task name -- `Making decision on contract approval`.
+* In the `Form key` field, enter the form key that corresponds with the service name of the form -- `add-applicationsecond`.
+* In the `Assignee` field, enter the variable used to store the user that initiated the instance -- `${initiator}`.
+
++
+image:bp-modeling/bp/subprocesses/embedded-subprocess/embedded-subprocess-7.png[]
+
+[#bp-end-event-subprocess]
+==== Modelling subprocess end event
+
+. Create subprocess end event.
+. On the right panel, for the `Name` parameter, enter the value `Subprocess end`.
++
+image:bp-modeling/bp/subprocesses/embedded-subprocess/embedded-subprocess-8.png[]
+
+[#bp-end-event]
+=== Modeling main process end event
+
+. Create main process end event.
+. On the right panel, for the `Name` parameter, enter the value `Process end`.
++
+image:bp-modeling/bp/subprocesses/embedded-subprocess/embedded-subprocess-9.png[]

@@ -1,0 +1,571 @@
+= Deploying a demo registry with reference examples for the _global_ region
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+== Overview
+
+You can deploy a *demo registry* on the Platform that includes reference examples for modeling registry regulations.
+These regulations follow the same structure as the standard regulations used in any registry deployed on the Platform.
+
+The demo registry includes:
+
+* Reference examples: prefixed with `reference-`
+* Testing examples: prefixed with `feature-`
+
+These can include:
+
+* `.bpmn` business process diagrams
+* `.json` forms for submitting process data
+* `.xml` schemas for deploying the registry data model
+* and more
+
+[NOTE]
+====
+These reference examples and other provided samples are developed by the Platform core team.
+They are regularly updated and expanded with each new release, helping you:
+
+* Stay up to date with the latest practices and trends.
+* Experiment and test various scenarios in a controlled environment.
+====
+
+== Deploying the demo registry and regulations
+
+Follow these steps to deploy the demo registry and copy the sample regulations.
+
+[step-1]
+=== Step 1: Create the _demo_ registry
+
+Create a new registry named `demo` by following the instructions at:
+xref:admin:registry-management/control-plane-create-registry.adoc[].
+
+[IMPORTANT]
+====
+To complete this process, make sure the Platform administrator is added as a registry administrator during creation under the *Administrators* section.
+
+When deploying in the *global* region, sections like *Key data* and *Data for signature verification* do not include region-specific keys or certificates.
+
+.Control Plane. Key data tab
+image::admin:registry-management/registry-create/cp-create-registry-5.png[]
+====
+
+[step-2]
+=== Step 2: Access Platform-specific Gerrit component
+
+. Open the *Control Plane* admin console.
+. Go to menu:Platform management[Quick links > Platform administrative zone] and follow the link to the *Gerrit* central component.
++
+.Platform management. Quick links
+image::admin:registry-management/cp-platform-mgmt-quick-links-en.png[]
+
+. In your Gerrit account settings, find the *HTTP credentials* section.
++
+.Gerrit. User settings
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-2.png[]
+
+. Generate a new HTTP password and save it to a notebook.
++
+.Gerrit. HTTP credentials
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-2-1.png[]
++
+NOTE: You’ll need this HTTP password later when cloning the `global-registry-demo-regulation` Gerrit repository.
+
+[step-3]
+=== Step 3: Clone the _global-registry-demo-regulation_ repository
+
+. In Gerrit, go to menu:Browse[Repositories] and use the *Filter* field to find the *`global-registry-demo-regulation` repository*.
++
+.Gerrit. Search repo
+image::registry-admin/cp-deploy-global-registry-demo-regulation/cp-deploy-global-registry-demo-regulation-3.png[]
+
+. Clone the repository to your local machine:
+
+.. Select the *Anonymous HTTP* tab (default) and copy the *Clone with commit-msg hook* command.
++
+.Gerrit. Clone repo with hook
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-4.png[]
++
+[NOTE]
+====
+Why use `commit-msg hook`? ::
+
+Gerrit uses *hooks*—scripts that run before or after certain Git events, such as before `git commit` or `git push`.
++
+The *Clone with commit-msg hook* command automatically adds the `commit-msg hook` to your local repository.
+This hook generates a unique *Change-Id* for each commit, which Gerrit uses to track change versions.
+
+====
+
+.. Open https://git-scm.com/downloads[Git Bash] and navigate to the target directory:
++
+.Navigate to the target directory
+[source,bash]
+----
+cd <path/to/your/local/directory>
+----
+
+.. Paste the copied *Clone with commit-msg hook* command and press *Enter*.
++
+.Git Bash. Clone repo with hook
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-5.png[]
+
+.. Wait for the repository to finish cloning.
++
+.Demo regulations structure
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-6.png[]
+
+[step-4]
+=== Step 4: Access the registry-specific Gerrit component
+
+. Open the *Control Plane* admin console.
+. Go to menu:Registries[Quick links > Registry administration zone] and follow the link to the *Gerrit* component for the demo registry.
++
+.Registries. Quick links
+image::admin:registry-management/quick-links/quick-links-2-en.png[]
+
+. In your Gerrit account settings, find the *HTTP credentials* section.
++
+.Gerrit. User settings
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-2.png[]
+
+. Generate a new HTTP password and save it.
++
+.Gerrit HTTP credentials
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-2-1.png[]
++
+NOTE: You’ll need this HTTP password for authentication when cloning and interacting with the `registry-regulations` Gerrit repository.
+
+[step-5]
+=== Step 5: Clone the _registry-regulations_ repository
+
+. In Gerrit, go to menu:Browse[Repositories] and use the *Filter* field to find the *`registry-regulations` repository*.
++
+NOTE: After you deploy the registry, the `registry-regulations` repository is initially empty. You need to populate it further.
+
+. Clone the repository to your local machine:
+
+.. Select the *Anonymous HTTP* tab (default) and copy the *Clone with commit-msg hook* command.
++
+[NOTE]
+====
+Why use `commit-msg hook`? ::
+
+Gerrit uses *hooks*—scripts that run before or after certain Git events, such as before `git commit` or `git push`.
++
+The *Clone with commit-msg hook* command automatically adds the `commit-msg hook` to your local repository.
+This hook generates a unique *Change-Id* for each commit, which Gerrit uses to track change versions.
+====
+
+.. Open https://git-scm.com/downloads[Git Bash] and navigate to your target directory:
++
+[source,bash]
+----
+cd <path/to/your/local/directory>
+----
+
+.. Paste the copied *Clone with commit-msg hook* command and press *Enter*.
+
+.. Wait for the repository to finish cloning.
+
+[step-6]
+=== Step 6: Copy the demo regulations content
+
+On your local machine, copy the content of the `global-registry-demo-regulation` repository and paste it (replacing contents) into the `registry-regulations` repository.
+
+IMPORTANT: Make sure to copy only the content, without the `.git` system folder.
+
+[step-7]
+=== Step 7: Publish the changes
+
+NOTE: At this step, you are populating the `registry-regulations` online Gerrit repository.
+
+. Publish the changes to the demo registry regulations.
+After publishing, the regulation entities—such as the data model, business processes, and forms—will be available for use in the user portals:
+
+* *Administrative portal* (`admin-portal`)
+* *Officer portal* (`officer-portal`)
+* *Citizen portal* (`citizen-portal`)
+
+. Prepare a commit and push it to the `registry-regulations` repository.
+In *Git Bash*, run the following commands one by one:
+
++
+.Add changes to the Stage
+[source,bash]
+----
+git add --all
+----
+This command stages all new, modified, or deleted files in the current directory and its subdirectories.
+
++
+.Commit changes
+[source,bash]
+----
+git commit -m "added demo registry data"
+----
+This command creates a new commit with the staged changes.
+The `-m` flag lets you add a short commit message describing the changes (in this case: `"added demo registry data"`).
++
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-8.png[]
+
++
+.Push changes
+[source,bash]
+----
+git push origin HEAD:refs/for/master
+----
+This command pushes the changes to the remote repository.
+Here, `origin` refers to the remote repository, and
+*`HEAD:refs/for/master`* pushes the current branch for code review before merging into `master`.
+This is the Gerrit-specific way of submitting changes for review.
++
+.Git Bash. Add, commit and push
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-9.png[]
+
+[step-8]
+=== Step 8: Complete the Gerrit review and merge
+
+. After pushing the changes, follow the Gerrit link shown in the terminal.
++
+[TIP]
+====
+The registry-specific Gerrit URL will look like:
+
+----
+https://admin-tools-<openshift-project-name>.<dns-wildcard>/gerrit
+----
+
+* `<openshift-project-name>` — your registry’s name (in this example, `demo`)
+* `<dns-wildcard>` — the OpenShift environment’s domain name
+* `gerrit` — the endpoint leading to the Gerrit service in your registry.
+====
+
+. Wait for the system code review pipeline *MASTER-Code-review-registry-regulations* to complete.
+You can check progress at the bottom of the Gerrit page.
+After a successful check, your change request will receive the `Verified +1` status.
+
+. As a moderator, approve the change by clicking the *Code-Review+2* button.
++
+.Gerrit. Code review process
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-10.png[]
+
+. Apply the changes to the `master` branch by clicking *Submit* (this performs a `git merge`).
++
+This triggers the automatic publishing pipeline — *MASTER-Build-registry-regulations*.
+You can monitor the deployment progress in Gerrit.
+
++
+TIP: Once published successfully, the demo registry will include reference examples (prefixed with `reference-`) and testing examples (prefixed with `feature-`).
+
+[step-9]
+=== Step 9: (Optional at the initial stage) Configure mock integrations
+
+. The demo registry's regulations include mock integrations with external systems, located in the `mock-integrations` directory.
+While this step is optional at the initial deployment stage, we recommend configuring it to enable integration interactions during registry development.
+
++
+.Control Plane. Configure external integration mock
+image::registry-admin/cp-deploy-global-registry-demo-regulation/cp-deploy-global-registry-demo-regulation-15.png[]
+
+. In the *Control Plane*, select menu:Settings for interaction with other systems[Add external system  > Use external integration mock] and fill in the following values for each integration:
++
+[TIP]
+====
+.External integration mock settings
+----
+  driving-sc-registry:
+    authentication type: AUTH_TOKEN
+    authorization token: 2805a4ffd4abdc20013dfc898d71270aee71ed23
+  health-registry:
+    authentication type: AUTH_TOKEN
+    authorization token: 8054d18818efdc6f2c668c759ac72b4c57a1a547
+  payment-registry:
+    authentication type: AUTH_TOKEN
+    authorization token: 6546dc7b8656da0b1ec92b7234d2b21ee33632ce
+  population-registry:
+    authentication type: BASIC
+    username: testuser
+    password: bd3e223a142e8e5119359d1dae196801dcc7513f
+----
+Each integration must be added individually and will apply after you confirm the *Change Request*.
+
+➡️ For detailed setup instructions, see xref:registry-admin/external-integration/cp-mock-integrations.adoc[Setting up mock integrations].
+====
+
+[step-10]
+=== Step 10: Verify in the Administrative portal
+
+Go to the *Administrative portal* and check that the business processes, UI forms, and other components are available.
+Reference examples will have the `reference-` prefix.
+
+TIP: You can find the Administrative portal link in  menu:Control Plane[Registries > `demo` registry > Quick links > Registry modeling web interface (Administrative portal)].
+
+.Administrative portal. Process models
+image::registry-admin/cp-deploy-global-registry-demo-regulation/cp-deploy-global-registry-demo-regulation-11.png[]
+
+These reference business processes will also appear as services in the Officer and Citizen portals.
+
+== Understanding the demo registry regulation contents
+
+The demo registry regulation follows the same structure as any standard registry deployed on the Platform.
+For details, see xref:arch:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[Digital regulations].
+
+The demo registry includes:
+
+* Reference examples — prefixed with `reference-`
+* Testing examples — prefixed with `feature-`
+
+These cover:
+
+* `.bpmn` business process diagrams
+* `.json` forms for submitting process data
+* `.xml` schemas for deploying the registry data model
+* and more
+
+.Demo registry regulations overview
+image::registry-admin/cp-deploy-consent-data/cp-deploy-consent-data-6.png[]
+
+=== Setting up officer access
+
+To allow an officer to access the relevant reference processes in the Officer portal, you need to:
+
+1. Create a user in the Keycloak realm named `<registry-name>-officer` (for the demo registry, this is `demo-officer-portal`).
+2. Assign the necessary access rights.
+
+Access rights can include general officer roles (such as `officer`) or more specific roles, depending on your registry’s logic.
+
+.Keycloak. Assign `officer` role
+image::registry-admin/cp-deploy-global-registry-demo-regulation/cp-deploy-global-registry-demo-regulation-12.png[]
+
+[TIP]
+====
+For detailed instructions on creating users and assigning roles, see xref:registry-admin/create-users/overview.adoc[].
+====
+
+.Available services. Groups
+image::registry-admin/cp-deploy-global-registry-demo-regulation/cp-deploy-global-registry-demo-regulation-13.png[]
+
+.Available services. Services
+image::registry-admin/cp-deploy-global-registry-demo-regulation/cp-deploy-global-registry-demo-regulation-14.png[]
+
+=== Reviewing roles and permissions
+
+*Roles* are defined in the `roles/*.yml` files:
+
+* Officer roles are listed in `roles/officer.yml`.
+* Citizen roles are listed in `roles/citizen.yml`.
+
+.Demo registry `officer` roles
+====
+.roles/officer.yml
+[source,yaml]
+----
+roles:
+  - name: officer
+    description: Officer role
+----
+====
+
+*Authorization rules* are set in the `bp-auth/*.yml` files:
+
+* Officer access is defined in `bp-auth/officer.yml`.
+* Citizen access is defined in `bp-auth/citizen.yml`.
+* External system access is defined in `bp-auth/external-system.yml`.
+
+.Authorization. Process-to-role mapping example
+====
+
+.bp-auth/officer.yml
+[source,yaml]
+----
+authorization:
+  realm: "officer"
+  process_definitions:
+    - process_definition_id: 'reference-officer-view-driving-licence'
+      process_name: 'View digital driving licence'
+      process_description: 'View digital driving licence'
+      roles:
+        - officer
+    - process_definition_id: 'reference-officer-driving-licence-excerpt'
+      process_name: 'Excerpt digital driving licence'
+      process_description: 'Excerpt digital driving licence'
+      roles:
+        - officer
+----
+====
+
+=== Using mock integrations
+
+The demo registry includes processes that depend on mock integrations with external systems.
+For example, the `mock-integrations/population-registry.json` file contains mock user data used in the *Create driving license* process.
+
+.📌 *_Example responses from the external system ``population-registry``_*
+[%collapsible]
+====
+[source,json]
+.mock-integrations/population-registry.json
+----
+{
+  "mappings": [
+    {
+      "priority": 100,
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?.*"
+      },
+      "response": {
+        "status": 404,
+        "body": "Person not found or ID is invalid. Please, try again."
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=1111111111"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"1111111111\", \"firstName\": \"Emma\", \"lastName\": \"Hartley\", \"dob\": \"1997-10-24\", \"countryOfBirth\": \"Marlandia\" }"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=2222222222"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"2222222222\", \"firstName\": \"Charles\", \"lastName\": \"Wilfred\", \"dob\": \"1987-12-12\", \"countryOfBirth\": \"Marlandia\" }"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=3333333333"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"3333333333\", \"firstName\": \"Lucy\", \"lastName\": \"Green\", \"dob\": \"1988-06-07\", \"countryOfBirth\": \"Marlandia\" }"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=4444444444"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"4444444444\", \"firstName\": \"Aaron\", \"lastName\": \"Fisher\", \"dob\": \"1993-11-19\", \"countryOfBirth\": \"Sadlandia\" }"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=5555555555"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"5555555555\", \"firstName\": \"John\", \"lastName\": \"Smith\", \"dob\": \"1993-11-19\", \"countryOfBirth\": \"Sweden\" }"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=6666666666"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"6666666666\", \"firstName\": \"Edgar\", \"lastName\": \"Alan Po\", \"dob\": \"1993-11-19\", \"countryOfBirth\": \"Poland\" }"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=7777777777"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"7777777777\", \"firstName\": \"Edgar\", \"lastName\": \"Alan Po\", \"dob\": \"1993-11-19\", \"countryOfBirth\": \"Poland\" }"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=8888888888"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"8888888888\", \"firstName\": \"Tom\", \"lastName\": \"Ford\", \"dob\": \"1993-11-19\", \"countryOfBirth\": \"Poland\" }"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=9999999999"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"9999999999\", \"firstName\": \"Gabriella\", \"lastName\": \"Parker\", \"dob\": \"1993-11-19\", \"countryOfBirth\": \"Poland\" }"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=0000000000"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"0000000000\", \"firstName\": \"Rafael\", \"lastName\": \"Kim\", \"dob\": \"1993-11-19\", \"countryOfBirth\": \"Poland\" }"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPattern": ".*/api/v1/get-person\\?id=1212121212"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": "{ \"id\": \"1212121212\", \"firstName\": \"Aria\", \"lastName\": \"Singh\", \"dob\": \"1993-11-19\", \"countryOfBirth\": \"Poland\" }"
+      }
+    }
+  ]
+}
+----
+====
+
+== Useful pages
+
+* xref:registry-develop:study-project/index.adoc[]
+* xref:admin:registry-management/control-plane-create-registry.adoc[]
+* xref:registry-admin/external-integration/cp-mock-integrations.adoc[]

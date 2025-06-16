@@ -1,0 +1,22 @@
+{{- if eq .Values.global.platform "kubernetes" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.name }}
+  annotations:
+    description: "Route for {{ .Values.name }} application"
+  labels:
+    app: {{ .Values.name }}
+spec:
+  rules:
+  - host: {{ .Values.name }}-{{ .Release.Namespace }}.{{ .Values.dnsWildcard }}
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{ .Values.name }}
+            port:
+              number: 80
+        path: /
+        pathType: ImplementationSpecific
+{{- end }}

@@ -1,0 +1,14 @@
+= Searching processes by name
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+Utilize the functionality of searching for business processes by name. This helps to streamline and expedite work with process diagrams.
+
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-13.png[]
+
+Open the *Process models* section and enter at least the first 3 characters of the process name in the `Search by name` field &#128269;`. As a result, you will receive a list that matches the entered value.
+
+NOTE: You can search for a process by both the business name and the technical name.
+
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-14.png[]

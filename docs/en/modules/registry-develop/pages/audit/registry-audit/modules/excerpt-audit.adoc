@@ -1,0 +1,45 @@
+= Excerpt templates audit
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+|===
+|Name |Criticality
+
+|<<_ex_01>> |Medium
+|<<_ex_02>> |Medium
+|===
+
+== Audit cases
+
+[#_ex_01]
+=== EX-01. Data sets for extracts
+IMPORTANT: Criticality: Medium
+
+Description ::
+During extract template testing, it is important to verify extracts with different data sets and volumes close to production-level scenarios.
+Certain scenarios where template elements move to a new page depending on the data volume may not be covered during development.
+
+Impact ::
+* Some template elements, such as tables, might be incorrectly positioned on a page depending on the amount of data.
+
+Recommendations ::
+* Test extracts with different data volumes that cause template elements to move to a new page.
+* Fix potential issues and adapt templates to properly handle element movement across pages.
+
+[#_ex_02]
+=== EX-02. Required parameters in excerpt templates
+IMPORTANT: Criticality: Medium
+
+Description ::
+When modeling extract templates, remember that all incoming parameters are considered required by default.
+
+Impact ::
+If a required parameter is not provided when requesting extract generation from a business process, the generation will fail with an error that may be difficult to diagnose.
+
+Recommendations ::
+* Classify extract template input parameters as required or optional.
+* For required parameters, add validation in the business process before calling extract generation.
+* For optional parameters, ensure the template can handle their absence and consider setting default values, such as the "-" symbol.

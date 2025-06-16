@@ -1,0 +1,29 @@
+= Registry regulations audit
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+This document contains a list of recommendations for assessing the quality of a registry’s regulations and identifying potential issues that may arise during their use. The recommendations are grouped according to the structure of the
+xref:arch:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[Digital registry regulations].
+
+Before deploying a registry to production, it is strongly recommended to perform a full audit of the registry regulations according to the sections described below:
+
+* xref:registry-develop:audit/registry-audit/modules/bp-audit.adoc[Business process audit]
+* xref:registry-develop:audit/registry-audit/modules/dm-audit.adoc[Data model audit]
+* xref:registry-develop:audit/registry-audit/modules/form-audit.adoc[UI form audit]
+* xref:registry-develop:audit/registry-audit/modules/sec-audit.adoc[Security audit]
+* xref:registry-develop:audit/registry-audit/modules/excerpt-audit.adoc[Excerpt template audit]
+* xref:registry-develop:audit/registry-audit/modules/report-audit.adoc[Analytical report template audit]
+* xref:registry-develop:audit/registry-audit/modules/integration-audit.adoc[External integration audit]
+* xref:registry-develop:audit/registry-audit/modules/general-audit.adoc[General recommendations]
+
+The audit process itself is outside the scope of this document, but the following approaches may be applied:
+
+* Self-review by the development team
+* Audit performed by an external audit team
+* Audit performed by an external audit team with active involvement of the development team. This approach may include conducting workshops, interviewing the development team according to audit points, and further independent analysis of the codebase.
+
+Applying the quality assessment points is recommended not only before production deployment but should be a continuous practice during the development of the registry regulations. Familiarization with the recommendations should be mandatory for all participants involved in the registry regulations development before starting work.
+
+➡️ You can download an example of an audit report at:
+link:{attachmentsdir}/audit/audit-reg-example-1-en.docx[Audit report Example 1].

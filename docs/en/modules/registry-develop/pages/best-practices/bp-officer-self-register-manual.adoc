@@ -1,0 +1,614 @@
+= Self-registering officers with manual moderation
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General overview
+
+Let us take a look at the business process of automatic registration of *Officers* (service providers) with manual data verification by a moderator.
+
+The business process consists of two pools representing two participants: the Officer applicant who self-registers and the moderator who verifies the data. Information exchange between participants is carried out through *message events*.
+
+The applicant enters personal data on a form, which is sent to the moderator for verification. The moderator has a specific time frame (_here -- 2 minutes_) to make a decision, controlled by a *timer boundary event*. If a decision is not made in time, the process follows an alternative path and terminates, and the user is not registered.
+
+In case of a positive decision, the data is signed with a qualified electronic signature (QES) and a system key, then stored in the system's database table (_here_ - `officer`) according to the previously created data model. Information about the decision is sent to the applicant through a notification event. If the decision is negative, the process follows an alternative path, and the user is not registered.
+
+Upon a positive decision, the information is passed to a service task with the delegate *Save user roles*, which changes the user's role from *`unregistered-officer`* to *`officer`*. Thus, the user is registered in the system.
+
+The applicant is redirected to a page confirming successful self-registration with the status `Registration complete`. Afterward, the applicant is redirected to a login page.
+
+After re-authentication with the role *`officer`*, the Officer gains access to all services available in the registry. A registered user with the role `officer` can initiate, view, edit, and provide services, according to their permissions and duties in the system.
+
+In this way, the business process of automatic registration of Officers (service providers) with manual data verification by a moderator streamlines the registration process, ensuring effective control by the moderator and reducing the time required for user registration.
+
+== Prerequisites
+
+To enable the self-registration business process, the following prerequisites must be met:
+
+=== Enabling the Officer self-registration option
+
+Enable the option for Officer self-registration in the Control Plane administrative panel.
+
+TIP: For more details, see
+xref:registry-admin/cp-auth-setup/cp-officer-self-registration.adoc[].
+
+=== Data structure modeling
+
+Create a data model for the registry following the example below.
+
+[TIP]
+====
+You can find an example .xml schema in the demo registry regulations.
+
+The schema will be available under the name *_tablesOfficers.xml_*.
+====
+
+._Reference data model example. Tables for storing self-registered users_
+[%collapsible]
+====
+[source,xml]
+----
+<changeSet author="registry owner" id="table officers">
+        <createTable tableName="officers" ext:historyFlag="true" remarks="Officer's list">
+            <column name="officers_id" type="UUID" defaultValueComputed="uuid_generate_v4()">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_officers_id"/>
+            </column>
+            <column name="user_name" type="TEXT" remarks="User's username in Keycloa">
+                <constraints nullable="false"/>
+            </column>
+            <column name="full_name" type="TEXT" remarks="User's full name">
+                <constraints nullable="false"/>
+            </column>
+            <column name="drfo" type="TEXT" remarks="Registration number of the taxpayer's account card">
+                <constraints nullable="false"/>
+            </column>
+            <column name="edrpou" type="TEXT" remarks="User's number at the Unified state register of enterprises and organizations of Ukraine">
+                <constraints nullable="false"/>
+            </column>
+            <column name="realm_roles" type="TEXT" remarks="List of user's  roles in the regulations"/>
+            <column name="work_start_date" type="DATE" remarks="Date of employment"/>
+            <column name="unit_name" type="TEXT" remarks="Name of the unit according to the hierarchy"/>
+            <column name="hierarchy_code" type="TEXT" remarks="Surrogate key derived from structure_code"/>
+            <column name="structure_code" type="TEXT" remarks="Unique hierarchy code for the corresponding unit"/>
+            <column name="selfregistration_decision" type="BOOLEAN" remarks="Moderator's decision regarding self-registration"/>
+        </createTable>
+    </changeSet>
+----
+====
+
+This data model creates a table named *`officers`* in the database, which stores information about registered users (Officers) who have self-registered in the system.
+
+._Description of the table columns_
+[%collapsible]
+====
+
+* *`officers_id`*: This is the primary key of the table with a unique identifier for each Officer, using the UUID data type, which is automatically generated using the `uuid_generate_v4()` function.
+* *`user_name`*: Usernames from the Keycloak system (an identity and user access management system).
+* *full_name*: Full name of the user.
+* *drfo*: Registration number of the taxpayer's account card of the user.
+* *`edrpou`* : User's number at the Unified state register of enterprises and organizations of Ukraine.
+[NOTE,caption=UA-specific]
+The *drfo* and *edrpou* are attributes specific to the Ukrainian implementation and may not apply or function as described in other contexts or regions.
+Please consult the local guidelines or documentation if you are implementing this outside of Ukraine.
+* *realm_roles*: List of user roles in the regulations.
+* *work_start_date*: Date of employment.
+* *`unit_name`*: Name of the unit according to the organization's hierarchy.
+* *hierarchy_code*: Surrogate key generated based on the `structure_code`.
+* *`structure_code`*: Unique hierarchy code for the corresponding unit.
+* *`selfregistration_decision`*: Boolean value reflecting the moderator's decision regarding user self-registration.
+====
+
+== Reference process example
+
+[TIP]
+====
+You can find an example BPMN model of the process as well as custom JSON forms for it in the demo registry regulations.
+
+The process will be available under the name *_officer-selfregistration-handmoderation.bpmn_*. You can find the form names within the respective business process tasks in the *`Form key`* field.
+====
+
+=== Creating pools for process participants
+
+Create two pools (Participants) for process participants -- the Officer-applicant who self-registers and the moderator who verifies the data.
+
+.Pool for the Officer-applicant who self-registers:
+image::best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-1.png[]
+
+.Pool for the moderator who verifies the data:
+image::best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-2.png[]
+
+Specify the following for each of the pools:
+
+* *`Participant Name`*: process pool name
+* *`Process ID`*: Process identifier in the registry regulations.
+* *`Process name`*: Business name of the process.
+* Activate the *`Executable`* checkbox.
+
+=== Starting the process
+
+Model the starting event. This event initiates the automatic start of the process after authentication with the *`unregistered-officer`* role.
+
+* Specify the task name.
+* Set the process initiator as *`initiator`*.
++
+[TIP]
+====
+[%collapsible]
+
+.What is initiator?
+=====
+
+* "*`Start initiator = initiator`*" indicates that the initiator's value (i.e., the person or system that initiated the process) will be set as the *`initiator`*.
+
+In the context of business processes, the initiator is the one who initiates the process or is responsible for its start. Typically, the initiator is a user who triggers an action, or it can be a system that automatically initiates the process.
+
+In this case, the `initiator` can be used to identify the person or system that started the process for further stages of the business process or for access control to resources.
+=====
+====
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-3.png[]
+
+=== Sending token data for registration confirmation
+
+Model an intermediate message throwing event -- *Message Intermediate Throw Event*.
+
+TIP: For more details about the *Message Intermediate Throw Event*, you can refer to the page on xref:bp-modeling/bp/bpmn/events/message-event.adoc#message-intermediate-throw-event[Modeling and configuring this type of event in the documentation].
+
+This message event is an element in the business process that sends data (`full name`, `drfo`, and `EDRPOU` from the token) about the user to another process participant or process. In this case, it describes the sending of data from the initiator-applicant (the person trying to register) to the moderator for manual data confirmation.
+
+Configure the event as follows: ::
+
+. In the *Implementation* section:
+
+* Type: *`Delegate expression`*.
+
+* Expression: ${startProcessByMessageDelegate}. The variable is an implementation of the delegate.
+
+. In the *Global message reference* section:
+
+* Choose *`startModerationBpMessage`* from the available list.
+* Duplicate the value *`startModerationBpMessage`* in the *Name* field for convenience.
+
+. In the *Inputs* section, specify the input data to pass to another process:
+
+* Create a local variable *`messagePayload`*.
+* Define its type as *`Map`* (key-value pairs).
+* Pass a set of key-value pairs as *`Map entries`* in the *Key* and *Value* fields using the `initiator()` function:
+
+** drfo/Registration number of the taxpayer's account card (UA-specific)
+*** *`Key: drfo`*
+*** *`Value: ${initiator().drfo}`*
+
+** drfo/Registration number of the taxpayer's account card (UA-specific)
+*** *`Key: edrpou`*
+*** *`Value: ${initiator().edrpou}`*
+
+** User's full name
+*** *`Key: fullName`*
+*** *`Value: ${initiator().fullName}`*
+
+** User's username in the system
+*** *`Key: userName`*
+*** *`Value: ${initiator().userName}`*
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-4.png[]
+
+=== Moderator receiving token data for registration confirmation
+
+Model a message start event—*Message Start Event*.
+
+TIP: For more detailed information about the *Message Start Event*, you can refer to the page on xref:bp-modeling/bp/bpmn/events/message-event.adoc#message-start-event[Modeling and configuring message start event].
+
+This event is an element in the business process that receives data (`full name`, `drfo`, and `EDRPOU` from the token) about the user from another process participant or process. In this case, it describes the receipt of data from the initiator-applicant (the person trying to register) by the moderator for manual data confirmation.
+
+Configure the event as follows:
+
+. Define the event identifier as `start_message_event`. It will be used in the subsequent script task.
+. In the *Global message reference* section:
+
+* Choose *`startModerationBpMessage`* from the available list.
+* Duplicate the value *`startModerationBpMessage`* in the *Name* field for convenience.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-5.png[]
+
+=== Script for data preparation for display on the UI form
+
+Create a Script Task and add a Groovy script that prepares data for displaying on the UI form of the process.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-6.png[]
+
+Open the script editor and add the following script:
+
+._Script for data preparation for display on UI form_
+[%collapsible]
+====
+[source,groovy]
+----
+set_transient_variable('payload', S(message_payload('start_message_event').data, 'application/json'))
+----
+
+This script performs the following actions:
+
+. Extracts data from the *`start_message_event`* message and converts it into JSON format. This is done using the function *`message_payload('start_message_event').data`*. Function S handles the JSON processing.
+
+. After the data is transformed into JSON, the script creates a temporary variable named *`payload`* and assigns it the value of this data. The function *`set_transient_variable()`* is used to create a process temporary variable that will store the *`payload`* variable.
+====
+
+=== Determining the business key of the process
+
+This task is a service task that utilizes the *Define process business key* delegate, which executes specific code or logic during the execution of this task.
+
+[TIP]
+====
+[%collapsible]
+
+.What is a business key?
+=====
+
+The _Business key_, or _Process business key_ (*Business Key*), is a domain-specific identifier for an instance of a business process in https://camunda.com/bpmn/reference[Camunda BPM]. It is an additional attribute used during the modeling of business processes to ensure their unique identification, as well as the identification of user tasks within the process.
+=====
+====
+
+The input parameter *`businessKey`* is set in the BP extension. This parameter receives values from a temporary variable called *`payload`*, which was created earlier, specifically from the attribute *`fullName`*.
+
+After completing this task, the business key of the process will be set as the value of *`fullName`* from the temporary variable *`payload`*.
+
+In this context, the service task receives the full name of the applicant from JSON data transmitted in the message and sets it as the business key for the current process instance:
+
+----
+${payload.value.prop('fullName').value()}
+----
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-7.png[]
+
+[TIP]
+====
+For more details about business keys, please see
+xref:bp-modeling/bp/modeling-facilitation/bp-business-keys.adoc[].
+====
+
+=== Reviewing data for moderator registration on the UI form
+
+This task is a user task with the identifier *`makeDecisionActivity`*, intended for execution by an officer-moderator (*`candidateGroups="officer-moderator"`*).
+
+The task uses the *`formKey`* parameter with the value *`selfregistration-decision`*, indicating the UI form to be shown to the moderator for reviewing the data of the officer-applicant and making a decision on self-registration.
+
+Using the User Form delegate, the *`Form data pre-population`* input parameter is defined, which receives data from the temporary variable "payload" specified in the earlier script. This parameter passes applicant data to the form displayed to the moderator.
+
+After the moderator reviews the data and makes a decision, the process continues according to the moderator's choice (confirmation or rejection of self-registration).
+
+Configure it as follows: ::
+
+. In the *`Name`* field, enter the name of the user task.
+. Apply the delegate *`User Form`* template.
+. In the *`ID`* field, specify the task identifier as *`makeDecisionActivity`*.
+. In the *`Form key`* field, define the key for linking to the corresponding modeled business process form - *`selfregistration-decision`*.
+. In the `Candidate roles` field, input the role of the officer-moderator in the process, as defined in the regulations -- *`officer-moderator`*.
+. In the *`Form data pre-population`* field, pass data to the UI form as the variable "${payload}."
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-8.png[]
+
+=== Timer for the moderator's decision regarding registration
+
+This is a *Timer Boundary Event* attached to the User Task *`makeDecisionActivity`*. This event contains a timer event definition that sets a timer with a duration of 2 minutes (*`PT2M`*).
+
+When the User Task `makeDecisionActivity` is activated, the timer starts counting down from 2 minutes. If the moderator does not make a decision within this time, the timer triggers, and the process proceeds to the next step according to the alternative flow (meaning the user will not be registered).
+
+Configure it as follows:
+
+. In the *Name* field, specify a name for the event.
+. In the *Timer* section:
+
+* In the *`Type`* (`Timer Definition Type`) field, specify the timer type as *`Duration`*.
++
+[TIP]
+.Детальніше про таймери -- дивіться на сторінках:
+.For more details about timers, refer to the following pages:
+====
+* xref:bp-modeling/bp/bpmn/events/timer-event.adoc[].
+* xref:best-practices/bp-timer-launch.adoc[]
+====
+
+* In the *`Value`* field, specify the timer value in a specific format, e.g., *`PT2M`* for 2 minutes.
+
+TIP: You can configure the timer using the standard *`ISO 8601`* format or a *`cron`* expression.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-9.png[]
+
+=== Sending a message that the self-registration decision was not accepted (alternative flow)
+
+This is a *Message End Event* that has a message event definition and uses the `${sendMessageDelegate}` delegate responsible for sending messages.
+
+TIP: For more details about the *Message End Event*, you can refer to the xref:bp-modeling/bp/bpmn/events/message-event.adoc#message-end-event[Modeling and configuration of Message End Event page].
+
+If the process reaches this event, it means that the self-registration decision was not accepted (for example, due to a timer triggering). In this case, the event sends a message with information that the decision was not accepted to another process or participant using the *`sendMessageDelegate`* delegate. Information about the identifier of the process that called this process (*`correlationProcessInstanceId`*) is passed as an input parameter.
+
+The *`process_caller()`* function is used to obtain information about the process that triggered the current process.
+
+In our case, the function retrieves the identifier (*`id`*) of the process that triggered the current process. This identifier is passed as an input parameter (`correlationProcessInstanceId`) to the `sendMessageDelegate` delegate, which sends the message.
+
+Configuration steps: ::
+
+. In the *Implementation* section, specify:
+
+* Type as *`Delegate expression`*.
+* Expression as *`${sendMessageDelegate}`*. The variable is an implementation of the delegate.
+
+. In the *Global message reference* section:
+* Choose *`decisionOverdueMessage`* from the available options.
+* Duplicate the *`decisionOverdueMessage`* value in the *Name* field for convenience.
+
+. In the *Inputs* section, specify the input data to be passed to another process:
+
+* Create a local variable called *`correlationProcessInstanceId`*.
+* Define its type as *`String or Expression`*.
+* In the *Value* field, pass the identifier of the process that triggered the current process using the *`process_caller()`* function:
+${process_caller().id}
++
+[source,juel]
+----
+${process_caller().id}
+----
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-10.png[]
+
+=== Receiving a message that the self-registration decision was not accepted (alternative flow)
+
+This event is an *Intermediate Message Catch Event* in the BPMN process. It is used to wait for and catch an incoming message sent by another process or participant. Such events are typically used for synchronization or coordination between different processes or participants in a business process.
+
+TIP: For more details about the *Intermediate Message Catch Event*, you can refer to the xref:bp-modeling/bp/bpmn/events/message-event.adoc#message-intermediate-catch-event[Modeling and configuration of intermediate message catch event] page.
+
+Configuration steps for the event: ::
+
+In the *Global message reference* section:
+
+. Choose *`decisionOverdueMessage`* from the available options.
+. Duplicate the *`decisionOverdueMessage`* value in the *Name* field for convenience.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-11.png[]
+
+=== Displaying information about process completion on a form (alternative flow)
+
+This task is a user task intended to provide information to the user that the registration process has ended due to a timeout for decision-making.
+
+This task is assigned to the process initiator (*`camunda:assignee="${initiator}"`*), who is the applicant. The form associated with this task has the key *`selfregistration-decision-overdue`* (`camunda:formKey="selfregistration-decision-overdue"`), which displays information about the process completion due to a timeout.
+
+Configuration steps: ::
+
+. In the *Name* field, enter the name of the user task.
+. Apply the delegate template for this task -- *User Form*.
+. Link the User Task to a UI form using the *`Form key`* parameter. Enter the value.
+. In the *`Assignee`* field, specify the variable for the person to whom the current task is assigned - *`${initiator}`*.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-11-1.png[]
+
+The process then concludes based on the end event in the alternative flow.
+
+=== Signing data with a Qualified Electronic Signature (QES)
+
+This task is a user task within the BPMN business process and is designed for signing the applicant's decision using a Qualified Electronic Signature (QES).
+
+This task is assigned to the user who performed the `makeDecisionActivity` task. The form associated with this task has the key *`selfregistration-sign-decision`*, which displays the QES decision signing form. The input data for the form is passed from the results of the *`makeDecisionActivity`* task.
+
+After the user signs the decision, the process will continue along the main flow.
+
+Configuration steps: ::
+
+. In the *`Name`* field, enter the name of the user task.
+. Apply the delegate template for this task -- *`Officer Sign Task`*.
+. In the *`ID`* field, enter the task identifier as *`signDecisionActivity`*.
+. In the *`Form key`* field, specify the key to link to the corresponding modeled business process form - *`selfregistration-sign-decision`*.
+
+. In the *Assignee* field, specify who the task is assigned to for execution. Use the *`completer()`* function to assign it to the user who completed the makeDecisionActivity task:
+${completer('makeDecisionActivity').userName}
++
+[source,juel]
+----
+${completer('makeDecisionActivity').userName}
+----
+
+. In the *`Form data pre-population`* field, pass the data to the UI form using the `submission()` function:
++
+[source,juel]
+----
+${submission('makeDecisionActivity').formData}.
+----
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-12.png[]
+
+=== Signing data with a system key
+
+This task is a Service Task within the BPMN business process and is designed for signing data with a system key, i.e., an automatic signature by the system.
+
+This task uses the *`digitalSystemSignatureDelegate`* delegate, which is responsible for the logic of signing with the system key.
+
+Input parameters for this task include *`x_access_token`* and *`payload`*. `x_access_token` is obtained from the user who completed the *`signDecisionActivity`* task, and `payload` contains the form data from the results of that task.
+
+The task generates an output parameter *`subject_system_signature_ceph_key`*, which contains the generated system signature storage key.
+
+Configuration steps: ::
+
+. Model a service task for signing data with a system key.
+. Use the *System signature by DSO service* delegate from the template catalog for applying the system signature.
+. Pass input data to the submission function in the appropriate field:
+${submission('signDecisionActivity').formData}
++
+----
+${submission('signDecisionActivity').formData}
+----
+
+. Pass the token of the last user task executor in the business process using: *`${completer('signDecisionActivity').accessToken}`*.
+
+. Store the response in the *`subject_system_signature_ceph_key`* variable.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-13.png[]
+
+=== Creating a record in the registry database
+
+This task creates a user record in the system's database table. It uses the `dataFactoryConnectorCreateDelegate` delegate to perform the actions. The task receives input parameters from previous tasks, such as keys and form data, and passes them to create the user.
+
+Input parameters include: ::
+
+* *`x_digital_signature_derived_ceph_key`*: The key derived from the signed document.
+* *`resource`*: The resource to be created (in this case, `officers`).
+* *`x_access_token`*: The access token of the `signDecisionActivity` task executor.
+* *`x_digital_signature_ceph_key`*: The system key of the document signed in the `signDecisionActivity` task.
+* *`payload`*: The form data from the `signDecisionActivity` task.
+
+Configuration steps: ::
+
+. Create a service task.
+. Use the *Create entity in data factory* delegate to create an entity in the database.
+. Specify the resource/API endpoint as *`officers`*, which corresponds to the name of the data model table you defined when creating the registry data model - *`officers`*.
+. Pass input data through the *`submission()`* function in the appropriate field:
++
+[source,juel]
+----
+${submission('signDecisionActivity').formData}
+----
+
+. Pass the token of the last user task executor in the business process using: *`${completer('signDecisionActivity').accessToken}`*.
+. Specify the source of the system signature using the `sign_submission()` function:
+*`${sign_submission('signDecisionActivity').signatureDocumentId}`*.
+. Specify *`${subject_system_signature_ceph_key`*} as the variable that holds the Ceph document key containing information about the signed data.
+. Store the response in a result variable, for example,`response`.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-14.png[]
+
+=== Determining the execution status of the process
+
+This task sets the result of the "Self-registration completed" process execution using the *`defineBusinessProcessStatusDelegate`* delegate template. The task accepts input data from the previous task and passes the result to the next stage of the process.
+
+Set the execution result as follows: ::
+
+. Select the delegate template *Define business process status* from the available list.
+. In the *Status* field, enter the status as `Self-registration completed`.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-15.png[]
+
+=== Sending the decision back to the applicant registration process
+
+This task serves as the concluding event (*Message End Event*) in the moderator's self-registration confirmation process. It performs the following functions:
+
+. Establishes a connection with the registrant process using the *`correlationProcessInstanceId`* parameter, which obtains its value from the ID of the calling process (*`${process_caller().id}`*).
+
+. Transfers decision-related data regarding self-registration through the *`messageData`* parameter. This parameter contains information about a positive or negative decision (*`${submission('signDecisionActivity').formData.prop('selfregistrationDecision').value()}`*).
+
+. Utilizes the delegate *`${sendMessageDelegate}`* to send a message with the aforementioned data.
+
+TIP: For more details on the *Message End Event*, please refer to the xref:bp-modeling/bp/bpmn/events/message-event.adoc#message-end-event[Modeling and configuring the message end event] page.
+
+Configure the following settings: ::
+
+. In the *Implementation* section, specify:
+
+* Type: *`Delegate expression`*.
+* Expression: *`${sendMessageDelegate}`*. This variable represents the delegate implementation.
+
+. In the *Global message reference* section:
+* Choose *`decisionMessage`* from the available list.
+* Duplicate the value *`decisionMessage`* in the *Name* field for convenience.
+
+. In the *Inputs* section, specify the input data to be sent to another process:
+* Create a local variable *`correlationProcessInstanceId`*.
+
+** Define its type as *`String or Expression`*, i.e., a string or expression.
+** In the *`Value`* field, pass the identifier of the process that invoked the current process. You can do this using the *`process_caller()`* function:
++
+[source,juel]
+----
+${process_caller().id}
+----
+
+* Create a local variable *`messageData`*.
+** Define its type as *`Map`*, i.e., key-value pairs.
+** Pass a set of key-value pairs as *`Map entries`* in the `Key` and *Value* fields. You can do this using the `submission()` function:
+
+*** *`Key: isDecisionPositive`* (indicates the key for a positive result confirming the Officer's registration)
+*** *`Value: ${submission('signDecisionActivity').formData.prop('selfregistrationDecision').value()}`*
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-16.png[]
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-16-1.png[]
+
+=== Receiving a message confirming self-registration decision and recording it in the Data Factory
+
+This event serves as an *Intermediate Message Catch Event* in the BPMN process. It is used to wait for and intercept an incoming message sent by another process or participant. Typically, such events are used for synchronization or coordination between different processes or participants in a business process.
+
+TIP: For more details on the *Intermediate Message Catch Event*, you can refer to the xref:bp-modeling/bp/bpmn/events/message-event.adoc#message-intermediate-catch-event[Modeling and configuring the intermediate message catch event] page.
+
+Configuration steps: ::
+
+In the *Global message reference* section:
+. Select *`decisionMessage`* from the available list.
+. Duplicate the value *`decisionMessage`* in the `Name` field for convenience.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-17.png[]
+
+=== Modeling a XOR gateway and adding logic through condition expressions
+
+Model an XOR gateway that, based on a certain condition, will determine the next flow of the business process.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-18.png[]
+
+If the decision regarding registration is negative and is conveyed by a message from the moderator's process as the key *`${!isDecisionPositive}`*, then the process will follow an alternative flow, and the user will not complete the registration. The role of such a user will remain *`unregistered-officer`*.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-18-1.png[]
+
+If the decision regarding registration is positive and is conveyed by a message from the moderator's process as the key *`${isDecisionPositive}`*, then the process will follow the main flow, and the user will complete the registration. The role of such a user will change in the subsequent service task from *`unregistered-officer`* to *`officer`*.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-18-2.png[]
+
+== Displaying information on the lack of registration permission (alternative flow)
+
+This task is a user task and is intended to provide information to the user about the lack of registration permission.
+
+This task is assigned to the process initiator (*`camunda:assignee="${initiator}"`*), who is the applicant. The form associated with this task has the key *`selfregistration-denied-handmoderation`* `(`camunda:formKey="selfregistration-denied-handmoderation`"`), which displays information about the lack of registration permission.
+
+Configuration steps: ::
+
+. In the `Name` field, enter the name of the user task.
+. Apply the delegate template for this task -- *User Form*.
+. Associate the user task with the UI form using the *`Form key`* parameter. Enter the value *`selfregistration-denied-handmoderation`*.
+. In the *Assignee* field, specify the variable for the person assigned to the current task - *`${initiator}`*.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-19.png[]
+
+Next, set the outcome that the registration was not completed, and the process concludes, according to the end event in the alternative flow.
+
+=== Removing the unregistered-officer role and assigning the Officer role to the Officer
+
+After confirming the registration, data is passed to a service task that uses the *`Save user roles`* delegate to reassign roles to users and save them to the Keycloak database.
+
+This task performs the following actions:
+
+. Removes the *`unregistered-officer`* role from the user who completes self-registration.
+. Adds the officer role to the user after successful self-registration.
+
+The task uses the *`${keycloakSaveUserRoleConnectorDelegate}`* delegate, which interacts with Keycloak to change the user's roles. Role information and other parameters are passed through input parameters:
+
+* *realm* is set to *`OFFICER`*.
+* *roles* contains a list of roles to be added to the user (in this case, *`officer`*).
+* *`username`* receives the value of the username of the user completing self-registration (*`${initiator().userName}`*).
+* *`roleType`* is set to *`ALL ROLES`*, indicating that changes will be applied to all user roles.
+
+image:bp-modeling/bp/element-temp/service-task/save-user-roles/delegate-save-user-roles-1.png[]
+
+TIP: For more details about the delegate, you can refer to the xref:bp-modeling/bp/element-templates/service-task-templates/save-user-roles.adoc[] page.
+
+=== Displaying information on successful registration process completion
+
+This user task displays an informational message to the user after a successful self-registration. The user should review the information and confirm its viewing. The task uses the *`User Form`* template and the form key *`selfregistration-success`* to display the corresponding user interface. The task is assigned to the initiator of the self-registration process (*`${initiator}`*).
+
+Configuration steps: ::
+
+. In the *Name* field, enter the name of the user task.
+. Apply the delegate template for this task -- *User Form*.
+. Associate the user task with the UI form using the *`Form key`* parameter. Enter the value *`selfregistration-success`*.
+. In the *Assignee* field, specify the variable for the person assigned to the current task - *`${initiator}`*.
+
+image:best-practices/officer-auto-register/manual-moderation/officer-self-register-manual-mod-20.png[]
+
+=== Setting the execution result and completing the process
+
+In the following tasks, set the execution result of the process using a service task and the *Define business process status* delegate, and conclude the process with an End event.

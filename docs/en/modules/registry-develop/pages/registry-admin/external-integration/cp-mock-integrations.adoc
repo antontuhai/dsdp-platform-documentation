@@ -1,0 +1,398 @@
+= Emulating external integrations
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General overview
+
+You can configure mock integrations with external systems via SOAP or REST in the Control Plane administrative panel: https://wiremock.org/[WireMock].
+
+image:release-notes:wn-1-9-5/whats-new-1-9-5-2.png[]
+
+Key features: ::
+
+* [*] 🔄 Support of *SOAP* and *REST*: Mock integrations can be created for both protocols—SOAP and REST, providing greater flexibility when working with different external systems.
+
+* [*] 🔧 Management via  *Control Plane*: аActivation and management of mocks is done through the Control Plane administrative panel within the *_dev_* registry templates.
+
+* [*] 🛠️ *WireMock* -- powerful testing tool: WireMock is an HTTP server simulator allowing mock HTTP interactions. This instrument is convenient for simulating the work of external APIs and services.
+
+* [*] 📁 Customization of mocks via *_mock-integrations_*: You can define the structure of mock integrations at the registry policy level using the mock-integrations directory _mock-integrations_.
+
+Use cases: ::
+
+* [*] 🧪 Testing: Create unit and integration tests using WireMock to emulate external APIs and services.
+
+* [*] 💻 Development: If a production service is not yet ready or temporarily unavailable, WireMock will help simulate its behavior, allowing development to continue uninterrupted.
+
+* [*] 🔍 Replicating errors: Use WireMock to model different states and HTTP service errors to gain a deeper understanding and help resolve issues.
+
+This functionality is intended to improve development and testing quality, providing more control and flexibility when working with external systems.
+
+== Action plan for using external integration emulators
+
+[%interactive]
+* [ ] xref:admin:registry-management/control-plane-create-registry.adoc[Deploy registry] from a development template *`-dev*`. The Platform provides several available templates. Choose, for example, *`-dev-recommended*`.
+* [ ] xref:#activate-wiremock[Activate the emulators using] when configuring integration with other systems in *Control Plane*.
+* [ ] xref:registry-admin/external-integration/ext-integration-overview.adoc[Configure integration interaction in Control Plane].
+* [ ] xref:#wiremock-templates[Configure emulator templates in the policy of your registry].
+* [ ] xref:#create-wiremock-route[Create a route for the WireMock service and use the interface to work with the collection of mock integrations].
+* [ ] xref:#wiremock-testing-postman[Configure interaction with the WireMock API via Postman].
+* [ ] xref:#bp-soap-rest-connectors[Model interaction with external systems in business processes through integration connectors].
+
+
+[#activate-wiremock]
+== Activation of emulators for external integrations
+
+You can enable the use of emulators when configuring external integrations in the Control Plane administrative panel interface, specifically during:
+
+* Configuring interaction with registries via secure exchange gateway "Trembita" within SOAP protocol
+
+include::platform:ROOT:partial$admonitions/ua-specific.adoc[]
+
+* xref:registry-admin/external-integration/cp-integrate-ext-system.adoc[Configuring interaction with other systems]
+
+Activate the toggle switch *Use an external integration mock* for the corresponding type of interaction.
+
+.Enabling emulators for interaction with registries via secure exchange gateway "Trembita" within SOAP protocol
+
+image::release-notes:wn-1-9-5/whats-new-1-9-5-2.png[]
+
+.Enabling emulators for interaction with other systems
+image::registry-admin/external-integration/mock-integrations/mock-integrations-1.png[]
+
+[#wiremock-templates]
+== Defining templates of emulators in the policy
+
+Configuration of external integration emulator templates is defined at the Gerrit repository policy level of your registry in the *_mock-integrations_* directory. The templates should follow the conventions outlined by https://wiremock.org/[WireMock] in *JSON* format.
+
+.Configuration files for the mock templates are located within the policy structure of the registry
+[plantuml, create-tables-regulation-structure, svg]
+----
+@startsalt
+{
+{T
++ <&folder> registry-regulations
+++ <&folder> bpmn
+++ <&folder> <b>data-model</b>
+++ <&folder> <b>mock-integrations</b>
++++ <&file> <b>external-service-1.json</b>
++++ <&file> <b>external-service-2.json</b>
++++ ...
+++ ...
+}
+}
+@endsalt
+----
+
+=== REST
+
+WireMock templates can be divided into two main parts:
+
+. *Request Matching*—defines which HTTP requests should be intercepted. You can specify the URL, method (`GET`, `POST`, etc.), headers, request body, and more.
+
+. *Response Definition*—defines what the response returned for a matched request should look like. You can specify the status code, headers, response body, etc.
+
+.Example of a WireMock template in JSON format:
+[source,json]
+----
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/some/endpoint"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {"key": "value"}
+  }
+}
+----
+
+This template specifies that when WireMock receives a GET request to the URL `/some/endpoint`, it should return a response with a `200'status code, a header of `Content-Type` set to `application/json`, and a response body in the format `{"key": "value"}`.
+
+=== SOAP
+
+WireMock can also be used to mock SOAP web services. SOAP (Simple Object Access Protocol) is a protocol for exchanging messages between applications over HTTP and, unlike REST, uses the *XML* format to structure data.
+
+When mocking a SOAP service using WireMock, you would typically want to create mocks for the SOAP requests and responses they receive. Here is an example of what a WireMock configuration file could look like for mocking a SOAP web service:
+
+.SOAP web service mocking template
+[source,json]
+----
+{
+  "request": {
+    "method": "POST",
+    "url": "/soap-endpoint",
+    "headers": {
+      "Content-Type": "text/xml; charset=utf-8"
+    },
+    "bodyPatterns": [
+      {
+        "matchesXPath": "//your-xpath-expression"
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "text/xml; charset=utf-8"
+    },
+    "body": "<your-soap-response-xml>"
+  }
+}
+----
+
+In this example, WireMock is configured such that when it receives a POST request to the URL `/soap-endpoint` with the appropriate headers and a body that matches the given `XPath` expression, it will return a response with a `200` status code and an XML payload as the response body.
+
+It is essential to prepare the correct XML payload for the SOAP response body and, if necessary, use `XPath` to match elements within the SOAP request payload.
+
+[%collapsible]
+.Imitation of SOAP service behavior for requests to SearchSubjects endpoint.
+====
+
+include::platform:ROOT:partial$admonitions/ua-specific.adoc[]
+
+[source,json]
+----
+{
+  "mappings": [
+    {
+      "priority": 100,
+      "request": {
+        "method": "POST",
+        "bodyPatterns": [
+          {
+            "matchesXPath": "//*[local-name()='serviceCode'][text()='SearchSubjects']"
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "body": "<soap11env:Envelope xmlns:soap11env=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:tns=\"http://nais.gov.ua/api/sevdeir/EDR\" xmlns:xroad=\"http://x-road.eu/xsd/xroad.xsd\" xmlns:id=\"http://x-road.eu/xsd/identifiers\">\n   <soap11env:Header>\n      <tns:AuthorizationToken>token</tns:AuthorizationToken>\n      <xroad:userId>MDTUDDM</xroad:userId>\n      <xroad:client id:objectType=\"SUBSYSTEM\">\n         <id:xRoadInstance>SEVDEIR-TEST</id:xRoadInstance>\n         <id:memberClass>GOV</id:memberClass>\n         <id:memberCode>43395033</id:memberCode>\n         <id:subsystemCode>IDGOV_TEST_01</id:subsystemCode>\n      </xroad:client>\n      <xroad:service id:objectType=\"SERVICE\">\n         <id:xRoadInstance>SEVDEIR-TEST</id:xRoadInstance>\n         <id:memberClass>GOV</id:memberClass>\n         <id:memberCode>00015622</id:memberCode>\n         <id:subsystemCode>2_MJU_EDR_prod</id:subsystemCode>\n         <id:serviceCode>SearchSubjects</id:serviceCode>\n      </xroad:service>\n      <xroad:protocolVersion>4.0</xroad:protocolVersion>\n      <xroad:id>MDTUDDM</xroad:id>\n      <xroad:requestHash algorithmId=\"http://www.w3.org/2001/04/xmldsig-more#gost34311\">kfkfkjkfjkjkfjkfjkjokojkkjlkjkjlkjdlkjljkdlk=</xroad:requestHash>\n   </soap11env:Header>\n   <soap11env:Body>\n      <tns:SearchSubjectsResponse>\n         <tns:SubjectList/>\n      </tns:SearchSubjectsResponse>\n   </soap11env:Body>\n</soap11env:Envelope>",
+        "headers": {
+          "Content-Type": "text/xml"
+        }
+      }
+    }
+]
+}
+----
+====
+
+This template is created using WireMock and simulates a web service that handles SOAP requests.
+
+Let's have a look at how it works: ::
++
+. *`request`* -- specifies the criteria a SOAP request must meet to be intercepted. In our example template, the pattern is looking for `POST` requests whose body matches the following `XPath` expression:
++
+----
+"//*[local-name()='serviceCode'][text()='SearchSubjects']"
+----
++
+The request will be intercepted if it contains an element with the local name "serviceCode" and the text "SearchSubjects".
+
+. *`response`* -- defines the response that WireMock will return when it finds an incoming request that matches the template. In this case, it returns an `HTTP` response with a status code of `200`, a header `Content-Type: text/xml`, and a specific XML payload that responds to the SOAP request.
+
+. *SOAP Envelope* is the top-level element of a SOAP (Simple Object Access Protocol) message and identifies that the message is a SOAP message. It contains information that needs to be conveyed between client and server applications.
++
+SOAP message must contain an Envelope with the following structure:
++
+.Structure of a basic SOAP message
+[source,xml]
+----
+<soap11env:Envelope
+    xmlns:soap11env="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:tns="http://nais.gov.ua/api/sevdeir/EDR"
+    xmlns:xroad="http://x-road.eu/xsd/xroad.xsd"
+    xmlns:id="http://x-road.eu/xsd/identifiers">
+    <soap11env:Header>
+        <!-- Header -->
+    </soap11env:Header>
+    <soap11env:Body>
+        <!-- Body -->
+    </soap11env:Body>
+</soap11env:Envelope>
+----
+
+* *`Envelope`* — this is the root element of the SOAP message, which wraps all the information being transmitted.
+
+* *`Header`* — an optional element that contains additional information (metadata) that may be required to process the message. In our case, the header includes elements for authorization, user identification, client, service, etc.
+
+* *`Body`* — contains the actual data being transmitted. This element is the only mandatory of the SOAP Envelope. In our case, the body comprises a response with the `SearchSubjectsResponse` element.
++
+[NOTE]
+It is also important to note the attributes with namespace declarations (xmlns), which define the namespaces for different parts of the message and are used to avoid conflicts between elements with the same name but from various sources.
+
+[#create-wiremock-route]
+== Creating a route for the service and using WireMock
+
+NOTE: Please contact the Platform's technical administrator to create a service route or work with WireMock. As a registry admin, you may need more rights to develop routes or configure port forwarding.
+
+Following the steps mentioned above, a sub-service wiremock will be created. Now, you can interact with the WireMock API collection in two ways:
+
+* xref:#wiremock-testing-postman[through Postman directly];
+* through a route to the WireMock interface in OpenShift (_see the description below in this section_).
+
+To create a new route for this service manually, follow these steps:
+
+. Sign in to the *OpenShift* console, go to the *Projects* section, and find your registry project.
+
+. Go to *Networking* > *Routes* and create a new route by clicking the *`Create Route`* button.
+
+. Select *Configure via* > *Form view* in a new window.
+
+. In the *Name* field, provide a unique name for the route in your registry project. For example, `test-wiremock-route`.
+
+. In the *Hostname*  field, provide the hostname where the route will be deployed. For example, `test-wiremock-route.apps.1-9-6-1.mdtu-ddm.projects.epam.com`.
++
+NOTE: This is the public hostname for the route. You can leave the field empty, and the system will automatically generate a `hostname`.
+
+. In the *Path* field, provide the router's path to route traffic to the service. For example,`/`.
+
+. In the *Service* field, select the sub-service from the available list -- *`wiremock`*.
+
+. In the *Target port* field, specify the target port where the traffic should be allowed. Select the option `9021->9021 (TCP)`.
+
+. Define security settings for the connection. Routes can be secured using several types of TLS termination.
++
+[NOTE]
+====
+[%collapsible]
+.What is TLS termination?
+=====
+*TLS termination* in OpenShift refers to decrypting TLS-encrypted traffic at a certain level in the structure of your service and is used to secure communication between clients and servers.
+
+In OpenShift, "routes" expose services to the external network. A route allows you to define how external requests should be routed to services inside the cluster.
+
+When creating a route in OpenShift, you can specify precisely where TLS termination should occur:
+
+* *Edge Termination*: TLS termination occurs at the route level. This mechanism means that OpenShift decrypts the traffic before it reaches your application. After decryption, the traffic can be passed to the application as unencrypted or re-encrypted.
+
+* *Passthrough Termination*: OpenShift does not interfere with encryption, and TLS traffic passes the route unchanged. TLS termination occurs at the application or service level.
+
+* *Re-encrypt Termination*: this combines `Edge` and `Passthrough`. TLS termination occurs at the route, and the traffic is encrypted again before being passed to the application. "This can be helpful when using separate certificates for communicating with external and internal services."
+=====
+====
+
+. In the *Insecure traffic*  field, define the policy for HTTP traffic. The available options are:
+
+* `None`
+* `Allow`
+* `Redirect`
+
+. Click *`Create`* and save the changes. As a result, the route for emulating external interaction will be added to the list of available routes in your registry project.
++
+image:registry-admin/external-integration/mock-integrations/mock-integrations-2.png[]
+
+. Follow the link to the corresponding service *`wiremock`*.
++
+image:registry-admin/external-integration/mock-integrations/mock-integrations-3.png[]
++
+[WARNING]
+====
+
+Be sure to add the endpoint *`/__admin/webapp`* to the end of the service URL to avoid the `403 Forbidden' error.
+
+image:registry-admin/external-integration/mock-integrations/mock-integrations-4.png[]
+====
++
+Now, you can see all the published mocks in a convenient interface according to the structure of your registry. You can use the WireMock interface to work with the collection of mocks.
++
+image:registry-admin/external-integration/mock-integrations/mock-integrations-5.png[]
++
+TIP: Explore the capabilities of WireMock at https://wiremock.org/docs/[in the official product documentation].
+
+[#wiremock-testing-postman]
+== API testing using Postman
+
+You can use the collection of mocks by connecting to the sub-service `wiremock` and using the WireMock API to test integration scenarios.
+
+[NOTE]
+====
+You may need https://www.postman.com/downloads/[Postman]—a tool for developing and testing APIs. If necessary, you can use any alternative option.
+
+Also, install https://docs.openshift.com/container-platform/4.12/cli_reference/openshift_cli/getting-started-cli.html[OpenShift CLI] - a command-line utility that provides access to managing and interacting with the OpenShift cluster.
+====
+
+. Sign in to the *OpenShift* console.
+
+. In the top right corner of the interface, click on the user -- `<your name>` , and copy the login command for logging in through `oc cli` -- *`Copy login command`*.
+
+. Click on *`Display Token`* and copy the command in the *Log in with this token* field. The command may look like this:
++
+----
+oc login --token=sha256~kjshdfhfdj_jnksdjnfksdnf-KMCZ0vMR2Y --server=https://api.1-9-6-1.mdtu-ddm.projects.epam.com:6443
+----
+
+. Open the terminal or console on your operating system and paste the copied command for logging in.
++
+This way, you can interact as an administrator with OpenShift through `oc cli`.
+
+. Configure port forwarding from the sub-service `wiremock` to your local machine. To do this, run the following command in the terminal:
++
+.Port forwarding for connecting to the sub-service wiremock
+====
+----
+oc port-forward wiremock-644c996b78-5ftrx 9021:9021 -n abc-01
+----
+
+* `wiremock-644c996b78-5ftrx` is the pod's name with the `wiremock` service in your registry project.
+
+* `9021:9021` are ports for forwarding.
+
+** First port (`9021` before a colon) -- this is the port on your local machine. By default, this is port `9021`. You can choose any free port.
+** Second port (`9021` after a colon) -- this is the port on the target pod (`wiremock-644c996b78-5ftrx`) in the namespace `abc-01`.
+
++
+[TIP]
+=====
+.How do you check the list of open ports on the local machine?
+[%collapsible]
+======
+You can check the list of open ports on your machine using the following commands (_for Windows_):
+
+----
+netstat -ano
+----
+
+This command will display a list of all active TCP connections, their ports, and the PID (Process ID) of the processes that use these connections.
+
+If you want to check a specific port, add it to the `netstat` command with the `findstr` key. For example, to check if the port `8080` is available, you can run the following command:
+
+----
+netstat -ano | findstr 8080
+----
+
+If the command returns no output, port 8080 is available and unused.
+======
+=====
+
+* `abc-01` is the name of your registry.
+====
+
++
+image:registry-admin/external-integration/mock-integrations/mock-integrations-6.png[]
+
+. Open the Postman application and create a new collection. You can name it Wiremock as an example.
+
+. Create a new GET request and send it to the endpoint `http://localhost:9021/__admin/mappings`.  This way, you will get a list of all available mocks in the wiremock service provided by the structure of your registry.
++
+image:registry-admin/external-integration/mock-integrations/mock-integrations-7.png[]
+
+. Create new requests to test the rules and interaction scenarios with external services and systems specified in the mocks.
+
+[#bp-soap-rest-connectors]
+== Usage of integration connectors in business processes
+
+After activating the mocks in the Control Plane and configuring the mock-integrations templates in the registry, you can model integration scenarios in business processes using the corresponding SOAP and REST connectors.
+
+[TIP]
+====
+You can find more detailed information about integration connectors in the following pages:
+
+* xref:bp-modeling/external-integration/api-call/connectors-external-registry.adoc[]
+* xref:bp-modeling/bp/rest-connector.adoc[]
+====

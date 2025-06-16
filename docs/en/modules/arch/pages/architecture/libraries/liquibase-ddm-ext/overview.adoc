@@ -1,0 +1,222 @@
+= Library _liquibase-ddm-ext_
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Problem statement
+
+We use https://docs.liquibase.com/home.html[Liquibase] to create a registry physical data model for PostgreSQL.
+
+By default, Liquibase supports objects deployment and versioning in DB, meaning the creation/deletion of tables, creation of connections between these tables, creation of views, configuration of constraints, etc.
+
+For this purpose Liquibase has a number of constructions -- https://docs.liquibase.com/change-types/home.html[**change types**], each one defining a certain version of changes to the DB, and is formed with XML-tags. For example, `<createTable>`, `<dropTable>`, etc.
+
+Within the Registry Platform, Liquibase is used as the sole instrument for operations with physical data model in PostgreSQL, and its standard functionality is insufficient to cover all the possible scenarios of work with registry regulations.
+
+For this reason, the following solutions have been developed:
+
+- _liquibase-ext-schema_ Liquibase scheme that expands the standard Liquibase tags and attributes list with new *Platform*-specific ones
+- _liquibase-ddm-ext_ Liquibase extensions library that includes program processing of tags and attributes added in _liquibase-ext-schema_, and modifies the behaviour for default tags and attributes
+
+
+== General description
+
+*liquibase-ddm-ext* is a library that expands https://docs.liquibase.com/home.html[Liquibase] functionality, and is responsible for the processing of XML-tags and attributes that may be used in registry regulations modeling.
+
+This library adds the processing of _Platform_-specific new tags and attributes, and also changes the processing logic for some of the tags included in Liquibase by default.
+
+== Implementation principles
+
+The extension uses all the main principles provided to Liquibase developers and users (https://www.liquibase.org/get-started/core-usage[details]), and uses the mechanisms provided to extensions developers (examples of other extensions created by Liquibase developers for open use: https://github.com/orgs/liquibase/repositories).
+
+== Usage scenarios
+
+The solution is used within regulations publication pipeline (_registry-regulation-publication-pipeline_) on data model deployment stage (_create-schema_ stage of the _registry-regulations-data-model_ pipe) for the filling of registry DB scheme, and creation of the metadata required to generate data-model services.
+
+== Adjacent components
+
+- *registry-regulation-publication-pipeline* - calls the Liquibase-utility on regulations publication stage
+- *dataplatform-jenkins-agent* - imports the library to `pom.xml` for further usage by regulations publication pipeline
+- *liquibase-ext-schema* - extended XSD-scheme of Liquibase tags and attributes that may be used in *Platform* registry development. It is included in all regulations files processed by Liquibase using _liquibase-ddm-ext_
+- *service-generation-utility* - generates the _registry-model_, _registry-rest-api_ and _registry-soap-api_ services, using database scheme, filled by Liquibase using _liquibase-ddm-ext_
+
+== List of extensions
+
+[cols="2,1,4"]
+|===
+| Tag name | Included in standard Liquibase | Description
+| `addColumn` | yes | extends the logic of Liquibase-tag for adding columns to existing tables
+| `createAnalyticsIndex` | no | allows for the creation of an index for a previously created view on a DB replica
+| `createAnalyticsView` | no | for the creation of analytical view on a DB replica
+| `createCompositeEntity` | no | for the creation of metadata required to generate the endpoint for storing of several entities within one transaction, in _registry-rest-api_
+| `createDomain` | no | for the creation of user data types (domains)
+| `createMany2Many` | no | for the creation of many-to-many inter-table connections, used for storing and receiving data
+| `createSearchCondition` | no | for the creation of search condition from the DB with certain parameters
+| `createSimpleSearchCondition` | no | for the creation of a simple search condition (search by one field in one table)
+| `createTable` | yes | extends the logic of Liquibase-tag for new table creation
+| `createType` | no | for the creation of ENUM data types
+| `distributeTable` | no | for the creation of https://docs.citusdata.com/en/v6.0/dist_tables/ddl.html[distributed tables]
+| `dropAnalyticsView` | no | for the deletion of analytical view from the DB
+| `dropColumn` | yes | *Not supported by the Platform.*
+When you use the `dropColumn` tag, you'll get a validation error: `'dropColumn' is not allowed`.
+
+| `dropDomain` | no | for the deletion of user data types (domains)
+| `dropSearchCondition` | no | for the deletion of search conditions from DB
+| `dropType` | no | for the deletion of ENUM data types
+| `exposeSearchCondition` | no | for the creation of metadata required to generate the endpoint for search conditions, accessible from external systems, in _registry-rest-api_
+| `grantAll` | no | for the provision of rights for all analytical views
+| `grant` | no | for the provision of rights for a separate view
+| `makeObject` | no | for the defining of a existing table as an object (added with links _subject_ table,  which was previously created)
+| `modifyDataType` | yes | extends the logic of Liquibase-tag for the changing of data type in table column
+| `partialUpdate` | no | for the creation of metadata required to generate partial entity update endpoints  in _registry-rest-api_ (for certain defined columns)
+| `rbac` | no | for the creation of metadata required to control the access to _registry-rest-api_ endpoints for the defined roles
+| `referenceTable` | no | for the creation of https://docs.citusdata.com/en/v11.2/develop/api_udf.html#create-reference-table[reference]-table
+| `renameColumn` | yes | extends the logic of Liquibase-tag for table column renaming
+| `revokeAll` | no | for the deletion of rights for all analytical views
+| `revoke` | no | for the deletion of rights for a separate view
+| `rls` | no | for the application of https://www.nextlabs.com/what-is-row-level-security/[Row-Level Security] rules to work with data in a table
+| `tableReadParameters` | no | or the creation of metadata required to generate proper data read requests in _registry-rest-api_ (with/without attached entities, etc.)
+| `truncateLocalDataAfterDistributingTable` | no | for https://docs.citusdata.com/en/v11.2/develop/api_udf.html#truncate-local-data-after-distributing-table[local data deletion] after the creation of a distributed table
+| `undistributeTable` | no | for the https://docs.citusdata.com/en/v11.2/develop/api_udf.html#undistribute-table[cancellation] of table distribution function
+|===
+
+== Diagrams
+
+In the general process of data model deployment by the regulations publication pipeline, the execution of required Liquibase-scripts by the extension is performed on the `create-schema` stage.
+
+[plantuml, datamodel, svg]
+----
+@startuml
+title Data model deployment
+skinparam monochrome true
+
+rectangle "Checkout" as checkout
+rectangle "Initalization\ncomponent\nregistry" as initRegistry
+rectangle "Creation\DB nscheme" as createSchema
+rectangle "Creation\nproject data\nservice" as createProjects
+rectangle "Creation\npipeline" as createPipelines
+rectangle "Cloning\nproject" as cloneProjects
+rectangle "Generation\nproject code" as generateProjects
+rectangle "Вивантаження\nproject code" as commitProjects
+rectangle "Code building\nprojects" as buildProjects
+rectangle "Deploy data\nservice" as deployProjects
+
+checkout -> initRegistry
+initRegistry -> createSchema
+createSchema -> createProjects
+createProjects -> createPipelines
+createPipelines --> cloneProjects
+cloneProjects -l-> generateProjects
+generateProjects -l-> commitProjects
+commitProjects -l-> buildProjects
+buildProjects -l-> deployProjects
+@enduml
+----
+
+Example of a pipe for the publication of data model in Jenkins. *liquibase-ddm-ext* is called on the *create-schema* stage
+
+image::architecture/libraries/liquibase-ddm-ext/data-model-pipe.png[]
+
+The diagram that displays the approximate structure of packets in an extension, and the main points that comprise the extension of Liquibase default functionality (_AbstractChange_, _CreateTableChange_ classes, etc.)
+
+[plantuml, classes, svg]
+----
+include::partial$architecture/libraries/liquibase-ddm-ext/liquibase-classes.puml[]
+----
+
+== DB
+
+Besides the creation of DB scheme, *liquibase-ddm-ext* also fills the tables with metadata required for the correct generation of _registry_-services.
+
+Tables where the metadata goes: _ddm_liquibase-metadata_, _ddm_rls_metadata_, _ddm_role_permission_.
+
+=== ddm_liquibase_metadata
+
+Table for metadata that doesn't require a structure described in a separate table.
+
+==== Table structure
+
+[source, sql]
+----
+CREATE TABLE public.ddm_liquibase_metadata (
+    metadata_id INTEGER GENERATED BY DEFAULT AS IDENTITY NOT NULL,
+    change_type TEXT NOT NULL,
+    change_name TEXT NOT NULL,
+    attribute_name TEXT NOT NULL,
+    attribute_value TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    CONSTRAINT pk_ddm_liquibase_metadata PRIMARY KEY (metadata_id)
+);
+----
+
+==== Table columns function
+
+[cols="2,4,1"]
+|===
+| *Column name* | *Function* | *Example*
+| change_type | metadata type | search_condition
+| change_name | the object that owns the metadata | search conditions names
+| attribute_name | name of one attribute set by change | pagination
+| attribute_value | value for the attribute | limit
+|===
+
+=== ddm_rls_metadata
+
+The table that contains information on Row-Level Security rules that must be applied to _registry-rest-api_ requests.
+
+==== Table structure
+
+[source, sql]
+----
+CREATE TABLE public.ddm_rls_metadata (
+    rls_id INTEGER GENERATED BY DEFAULT AS IDENTITY NOT NULL,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    jwt_attribute TEXT NOT NULL,
+    check_column TEXT NOT NULL,
+    check_table TEXT NOT NULL,
+    CONSTRAINT pk_ddm_rls_metadata PRIMARY KEY (rls_id)
+);
+----
+
+==== Table columns function
+
+[cols="2,4,1"]
+|===
+| *Column name* | *Function* | *Example*
+| name | name of rule change | write_rls_katottg
+| type | operation to which the rule will apply | write
+| jwt_attribute | jwt-token attribute, where all the information required for checking is contained | katottg_jwt_attr
+| check_table | table, which the RLS is applied to | katottg_table
+| check_column | table column, where the values will be checked for the RLS | katottg_value
+|===
+
+=== ddm_role_permission
+
+The table that contains information for RBAC data access parameters
+
+==== Table structure
+
+[source, sql]
+----
+CREATE TABLE public.ddm_role_permission (
+    permission_id INTEGER GENERATED BY DEFAULT AS IDENTITY NOT NULL,
+    role_name TEXT NOT NULL,
+    object_name TEXT NOT NULL,
+    column_name TEXT,
+    operation TYPE_OPERATION NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    CONSTRAINT pk_ddm_role_permission PRIMARY KEY (permission_id)
+);
+----
+
+==== Table columns function
+
+[cols="2,4,1"]
+|===
+| *Column name* | *Function* | *Example*
+| role_name | user role that is being configured | officer
+| object_name | object, access to which is being restricted | table name, or search condition name
+| column_name | an attribute of the object, access to which is being restricted | table column, or search condition column
+| operation | operation type (read, write, etc.) | S / I / U / D
+|===

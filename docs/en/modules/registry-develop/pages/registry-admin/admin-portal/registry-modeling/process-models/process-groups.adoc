@@ -1,0 +1,268 @@
+= Categorizing available services in user portals
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Problem statement
+
+In user portals, all available services are presented in a single list, which is inconvenient for users of registries with a large number of such services.
+
+To improve user experience, the ability to categorize services using groups and the ability to manage their display order has been implemented. This allows for more efficient display and easier access to the necessary services in registries.
+
+== General principles and provisions
+
+The registry regulations developer can group and sort business processes through the web interface of the administrative portal. Changes to grouping and sorting settings are validated during the publication of the registry regulations and deployed in the corresponding environment.
+
+Subsequently, users of the Officer and Citizen portals will be able to view the list of business processes divided into groups and ordered according to the regulation settings.
+
+[NOTE]
+====
+A business process cannot be assigned to two or more groups simultaneously. The group is not mandatory, and if a business process is not assigned to a group, it is displayed outside of any group. If there are no group settings, it means that no business process is assigned to a group.
+
+Groups that do not have any business processes available to the user are not displayed in user portals but are shown in the Regulations administrator portal's interface. Nesting of groups is not supported.
+====
+
+[#configure-bp-groups-in-admin-portal]
+== Configuring business process groups in the Regulations administrator portal
+
+TIP: You can group business processes, sort groups, and manage accessible services for display in the portals. Users will only see the services they have access to. A group will not be displayed if all its processes are inaccessible to the user.
+
+To configure the categorization of business processes using groups, follow these steps:
+
+. Access the [.underline]#Regulations administrator portal# in your registry.
+
+. Open or create a new candidate version for merging changes.
+
+. Go to the [.underline]#Process models# section and navigate to the *Display in portals* tab.
+
+. Customize the settings according to your needs. The administrator can:
+
+* xref:#create-group[Create a group]
+* xref:#rename-group[Rename a group]
+* xref:#delete-group[Delete a group]
+* xref:#sorting-groups[Sort groups]
+* xref:#add-bp-to-group[Add processes to a group]
+* xref:#delete-bp-from-group[Remove processes from a group]
+* xref:#sorting-grouped-bp[Sort business processes within a group]
+
+=== Operations with process groups
+
+The registry regulations administrator can create, rename, and delete process groups.
+
+NOTE: All creation and editing operations can only be performed within a change candidate version of the regulations. The master version only allows viewing mode (see more at _xref:registry-admin/admin-portal/version-control/version-control-overview.adoc[]_)
+
+[#create-group]
+==== Creating a business process group
+
+To create a group for consolidating business processes, follow these steps: ::
+
+. Open the *Display in portals* tab and click on [.underline]#Create group#.
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-1.png[]
+
+. Enter a unique name for the new group within the regulations.
++
+NOTE: The name can have 3 to 512 characters. Allowed characters include "A-Z," "a-z" of the Ukrainian alphabet, space, apostrophe, hyphen, parentheses, "/", ":", ";", ",", ".", "№," and numbers 0-9.
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-2.png[]
++
+[WARNING]
+====
+* If the data input format is violated, you will receive the following validation error:
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-2-1.png[]
+
+* If a group with the same name already exists, you will receive the following validation error:
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-2-2.png[]
+====
+
+. Click kbd:[Save changes].
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-3.png[]
+
+[#rename-group]
+==== Renaming a business process group
+
+To rename a group, follow these steps: ::
+
+. Open the *Display in portals* tab.
+
+. Next to the corresponding group or inside the group, select the "ellipsis" menu (⋮) and click on kbd:[Rename].
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-4.png[]
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-4-1.png[]
+
+. In the new window, enter the desired name.
++
+NOTE: The name can have 3 to 512 characters. Allowed characters include "A-Z," "a-z" of the Ukrainian alphabet, space, apostrophe, hyphen, parentheses, "/", ":", ";", ",", ".", "№," and numbers 0-9.
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-5.png[]
+
+. Click kbd:[Save changes].
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-6.png[]
+
+[#delete-group]
+==== Deleting a business process group
+
+NOTE: Note that when deleting a group, the business processes are not deleted but become [.underline]#ungrouped#.
+
+To delete a group, follow these steps: ::
+
+. Open the *Display in portals* tab.
+
+. Next to the corresponding group or inside the group, select the "ellipsis" menu (⋮) and click on kbd:[Delete].
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-7.png[]
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-8.png[]
+
+. In the new window, confirm or cancel the action.
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-9.png[]
+
+. Click kbd:[Save changes].
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-10.png[]
+
+[#sorting-groups]
+==== Sorting business process groups
+
+Using the vertical arrows on the interface to move business process groups allows users to conveniently and quickly find and select the desired processes from the list.
+
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-13.png[]
+
+For example, if the interface has a list of groups such as "Personnel," "Requests," "Assets," etc., using the vertical arrows allows sorting these groups based on different logical criteria to provide users with convenient access to the necessary information.
+
+TIP: When creating a group through the Regulations administrator portal, it is placed at the bottom of the group list. Later on, it can be moved wherever necessary.
+
+Additionally, sorting business process groups can help ensure consistency and logical structure in the interface, facilitating user navigation and improving their interaction experience with the system.
+
+=== Operations with processes
+
+[#add-bp-to-group]
+==== Adding business processes to a group
+
+To add a business process to a group, follow these steps: ::
+
+. Open the *Display in portals* tab.
+
+. Create a group (_see xref:#create-group[]_).
+
+. Next to the respective business process, click on the folder icon (&#128193;)
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-11.png[]
+
+. In the new window, select the desired group to which you want to transfer the business process.
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-12.png[]
++
+TIP: You can move the business process to another group or exclude it from the current one. It will be added to the end of the selected list of business processes.
+
+. Click kbd:[Confirm].
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-12-1.png[]
+
+. Save changes.
+
+[#delete-bp-from-group]
+==== Removing a business process from a group
+
+To remove a business process from a group, follow these steps: ::
+
+. Open the *Display in portals* tab.
+
+. Open the existing group with processes.
+
+. Next to the respective business process, click on the folder icon (&#128193;)
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-14.png[]
+
+. In the new window, select `Exclude from the group` to remove the business process from the group.
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-15.png[]
++
+TIP: You can also move the business process to another group. It will be added to the end of the selected list of business processes.
+
+. Click kbd:[Confirm].
++
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-15-1.png[]
+
+. Save changes.
+
+[#sorting-grouped-bp]
+==== Sorting business processes within a group
+
+Implementing the ability to sort business processes in the interface allows users to easily and quickly find and select the required services. Vertical arrows can be used to move processes within groups or outside of them.
+
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-16.png[]
+
+== Modeling the registry regulations
+
+The configuration for categorization (grouping) of business processes in user portals is located in the *_bp-grouping.yaml_* configuration file within the regulations of your registry.
+
+NOTE: If such a file is absent, create and fill it accordingly (_see the example below_).
+
+There are two ways to configure service grouping in user portals: ::
+
+. In the xref:#configure-bp-groups-in-admin-portal[Regulations administrator portal interface] -- in this case, after making changes to the master version of the regulations, the settings will [.underline]#automatically# be applied to the *_bp-grouping.yaml_* file in the Gerrit repository.
+
+. In the structure of the regulations in the Gerrit repository [.underline]#manually# -- in this case, after deploying the regulations through the publication pipeline, the changes will become available in the interfaces of the Regulations administrator portal.
++
+NOTE: By default, the *_bp-grouping.yaml_* grouping settings are empty.
++
+.Registry regulations structure
+[plantuml, registry-settings-regulation-structure, svg]
+----
+@startsalt
+{
+{T
++ <&folder> registry-regulation
+++ <&folder> <b>bp-grouping</b>
++++ <&file> <b>bp-grouping.yaml</b>
+++ <&folder> bpmn
+++ <&folder> dmn
+++ ...
+}
+}
+@endsalt
+----
++
+.Registry configuration example: bp-grouping/bp-grouping.yaml
+====
+[source, yaml]
+----
+groups:
+  - name: First group
+    processDefinitions:
+      - bp-1-process_definition_id
+      - bp-2-process_definition_id
+  - name: Second group
+    processDefinitions:
+      - bp-3-process_definition_id
+  - name: Third group
+ungrouped:
+  - bp-4-process_definition_id
+  - bp-5-process_definition_id
+----
+
+* The `*groups*` array contains groups of business processes.
+
+* The `*ungrouped*` array contains ungrouped business processes.
+
+NOTE: The business processes listed in the `processDefinitions` and `ungrouped` arrays must exist in the registry's regulations, in the *_bpmn_* directory.
+====
+
+NOTE: When a business process is deleted, it is automatically removed from the *_bp-grouping.yaml_* file.
+
+== User portal interfaces
+
+After deploying the regulations and applying the settings, groups of business processes will be displayed in the user portals for the Officers and Citizens.
+
+.Process groups in the Officer portal
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-17.png[]
+
+.Process groups in the Citizen portal
+image::registry-admin/admin-portal/process-models/process-groups/process-groups-18.png[]

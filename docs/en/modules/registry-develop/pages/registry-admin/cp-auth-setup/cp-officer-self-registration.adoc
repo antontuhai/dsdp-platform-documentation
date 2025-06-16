@@ -1,0 +1,88 @@
+= Configuring self-registration for officers
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+The platform provides the ability to configure self-registration for officers, simplifying the registration process for users without the need for administrator involvement.
+
+image:registry-admin/cp-auth-setup-officers/self-registration/cp-officer-self-register-1.png[]
+
+This creates several advantages for organizations and users: ::
+
+* Efficiency: reduces the time and effort administrators spend on creating user accounts, especially in registries with a large number of users.
+
+* User autonomy: allows users to create their own accounts in the system without additional assistance from the administrator.
+
+* Reduced errors: The self-registration process typically involves verifying the data entered by users, reducing the likelihood of administrator errors when creating user accounts.
+
+* Time savings: With self-registration, users can quickly access the system and start using its functionality without waiting for administrator approval.
+
+== Setting up self-registration for officers
+
+Registry administrators can configure self-registration for officers through the *Control Plane* administrative panel, in the *Registries* > *Officer authentication* section.
+
+When enabled, officers can automatically register in *Keycloak* -- the system for user and access management. Upon the user's first login to the Officer portal, their account is created with the system role `unregistered-officer` assigned, and the user is automatically redirected to the self-registration business process.
+
+NOTE: It is not recommended to grant the `unregistered-officer` role access to any business processes except for self-registration in the registry authorization file _bp-auth/officer.yml_.
+
+When self-registration is disabled, authentication for officers follows the standard process, where users need to be initially created in the user management system (see
+xref:registry-admin/create-users/overview.adoc[] for more details).
+
+To enable or disable self-registration for officers, follow these steps: ::
+
+. Log in to the *Control Plane* administrative panel.
+. Go to the *Registries* > *Edit* > *Citizen authentication* section.
+. Toggle the switch to allow or disallow self-registration.
++
+NOTE: When the ability is turned off, users who have started the self-registration process will not be able to complete their tasks if they are modeled.
++
+image:registry-admin/cp-auth-setup-officers/self-registration/cp-officer-self-register-1.png[]
++
+[NOTE]
+====
+User self-registration requires that a pre-modeled self-registration business process is already created in the registry.
+
+For more details see xref:best-practices/bp-officer-self-register-manual.adoc[].
+====
+
+. Click the kbd:[Confirm] button to save the changes.
++
+This will result in a merge request to the registry configuration, which needs to be confirmed.
+
+. Go back to the *Registries* > *Update Requests* section and review the new request by clicking the "View" icon -- 👁.
++
+image::admin:registry-management/cp-cidr/cp-cidr-8.png[]
+
+. In the new window, review the changes and click kbd:[Confirm].
++
+NOTE: The proposed changes will be applied to the registry configuration in the _deploy-templates/values.yaml_ file upon confirmation.
++
+The setting is controlled by the *`keycloak.officerPortal.selfRegistration`* parameter, which can be set to either `*true*` or `*false*`.
++
+.Example 1. Setting *`selfRegistration`* to *`true`* in the _deploy-templates/values.yaml_ file
+====
+[source,yaml]
+----
+keycloak:
+    realms:
+        officerPortal:
+            browserFlow: dso-officer-auth-flow
+            selfRegistration: true
+----
+====
++
+. Wait for Jenkins to apply the configuration using the `MASTER-Build-<registry-name>` pipeline. This may take a few minutes.
+
+== Authenticating upon logging into the Officer portal
+
+Officers can automatically start the self-registration process after logging into the portal if the self-registration business process has been pre-modeled in the registry and self-registration is enabled for that registry.
+
+After completing the registration, the system redirects the user to the login page, this time with the `officer` role assigned. After the login the officer will have access to the services available in the registry.
+
+image:release-notes:wn-1-9-4/whats-new-1-9-4-11.png[]
+
+image:release-notes:wn-1-9-4/whats-new-1-9-4-12.png[]
+
+image:release-notes:wn-1-9-4/whats-new-1-9-4-13.png[]

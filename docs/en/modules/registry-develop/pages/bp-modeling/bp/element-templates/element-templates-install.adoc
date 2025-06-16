@@ -1,0 +1,154 @@
+= Installing business process extensions (_for local development_)
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+To simplify business process modeling, a set of standard integration connectors—*Element Templates*—has been developed.
+
+IMPORTANT: If you're using the functionality of the xref:registry-admin/admin-portal/overview.adoc[Admin Portal] for registry development, you do not need to install standard extensions, external applications, or plugins. The portal comes with everything required out of the box. The instructions below are intended *only for local development*.
+
+[#preconditions]
+== Prerequisites
+
+=== Installing Camunda Modeler
+
+. Download the *Camunda Modeler* archive from the following link: https://downloads.camunda.cloud/release/camunda-modeler/4.8.0/[camunda-modeler/4.8.0].
++
+[NOTE]
+====
+We recommend using version `4.8.0` for the most stable experience.
+====
+. Select the **Open Source Modeler** product and download the version compatible with your operating system (e.g., `Windows 64bit`).
+. Once the archive is downloaded, extract it to a folder on your local machine.
++
+[TIP]
+====
+The extracted folder might be named something like:
+
+`camunda-modeler-4.8.1-win-x64`
+====
+
+=== Installing BPMN Linter plugin
+
+Install the **BPMN Linter** plugin to enhance Camunda Modeler's capabilities and validate your BPMN diagrams.
+
+. Visit the official repository: `https://github.com/camunda/camunda-modeler-linter-plugin[camunda-modeler-linter-plugin]`.
+
+. Click menu:Code[Download ZIP] to download the plugin archive.
++
+image:bp-modeling/bp/element-temp/element-temp-install-bpmnlint.png[]
+
+. After downloading, extract the contents into the following directory inside your Camunda installation:
++
+`camunda-modeler-4.8.1-win-x64\resources\plugins`
+
+. Restart the Camunda Modeler application.
+. Enable the plugin: Go to menu:Plugins[BPMN Linter > Toggle Linting].
++
+[TIP]
+====
+* Alternatively, use the keyboard shortcut kbd:[Ctrl+L].
+* Use kbd:[Ctrl+L] again to toggle the plugin on or off.
+====
++
+image:bp-modeling/bp/element-temp/element-temp-turn-on-bpmnlint.png[]
+
+[#element-temp-install]
+== Installing Element Templates directory
+
+[#element-temp-install-windows]
+=== Installing Element Templates on Windows
+
+Follow these steps to install the *Element Templates* directory.
+
+. Clone the repository containing the element templates from GitHub:
+`https://github.com/epam/edp-ddm-registry-configuration/tree/main/element-templates[edp-ddm-registry-configuration]`.
+Use the following command for HTTPS cloning:
++
+[source,bash]
+----
+git clone https://github.com/epam/edp-ddm-registry-configuration.git
+----
+
+. Open the cloned repository on your local machine and locate the `/element-templates` folder.
+
+. Copy the entire folder with JSON files and paste it into the project directory used for modeling. For example, for Camunda Modeler, the path might look like this:
++
+----
+./camunda-modeler-4.8.1-win-x64/resources/element-templates
+----
++
+[TIP]
+====
+* `camunda-modeler-4.8.1-win-x64` — your local application directory.
+* `resources` — contains extensions (`element-templates`) and plugins (`plugins`).
+* `element-templates` — contains JSON files with standard business process extensions.
+====
+
+. The resulting `resources` directory structure should look like:
++
+image:registry-develop:bp-modeling/bp/element-temp/bp-element-temp-02.png[]
+
+. The resulting `element-templates` directory structure should look like:
++
+image:registry-develop:bp-modeling/bp/element-temp/bp-element-temp-03.png[]
+
+. The resulting `plugins` directory structure should look like:
++
+image:registry-develop:bp-modeling/bp/element-temp/bp-element-temp-04.png[]
+
+. Restart Camunda Modeler and verify that the templates are available during business process modeling:
+
+.. Create a task – select *Create Task*.
+.. Click the wrench icon – choose *Change Type*.
+.. Set the task type – *Service Task*, *User Task*, or *Call Activity*.
+.. Click the *Open Catalog* button. +
+The *Element Templates* catalog will open, allowing you to apply extensions during modeling.
++
+image:registry-develop:bp-modeling/bp/element-temp/bp-element-temp-01.png[]
+
+[#element-temp-install-macos]
+=== Installing Element Templates on macOS
+
+Follow these steps to install the Element Templates catalog on macOS.
+
+. Download the extension catalog for business processes as described in xref:#element-temp-install-windows[].
+. Open the Terminal.
+. Navigate to the Camunda Modeler's resources directory:
++
+[source,bash]
+----
+cd ~/Library/Application\ Support/camunda-modeler/resources
+----
+
+. If it doesn't exist, create a new directory for `element-templates`:
++
+[source,bash]
+----
+mkdir element-templates
+----
+
+. Copy all JSON files from the `business-process-modeler-extensions` directory to the new directory:
++
+[source,bash]
+----
+cp business-process-modeler-extensions/*.json ~/Library/Application\ Support/camunda-modeler/resources/element-templates
+----
+
+. The resulting directory structure should look like:
++
+----
+~/Library/Application\ Support/camunda-modeler/resources/element-templates/
+----
++
+image:registry-develop:bp-modeling/bp/element-temp/bp-element-temp-05.jpg[]
+
+. Restart Camunda Modeler and check that the templates are available during business process modeling:
+
+.. Create a task – select *Create Task*.
+.. Click the wrench icon – choose *Change Type*.
+.. Set the task type – *Service Task*, *User Task*, or *Call Activity*.
+.. Click the *Open Catalog* button. +
+The *Element Templates* catalog will open, allowing you to apply extensions during modeling.
++
+image:registry-develop:bp-modeling/bp/element-temp/bp-element-temp-01.png[]

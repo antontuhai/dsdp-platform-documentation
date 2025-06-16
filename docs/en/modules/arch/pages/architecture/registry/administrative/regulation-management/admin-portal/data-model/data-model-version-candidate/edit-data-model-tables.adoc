@@ -1,0 +1,208 @@
+= Editing registry data model table structure in the web code editor
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+Development of the registry regulations includes the development of a registry data model. The administrative portal provides functionality for viewing the registry data model. It is necessary to provide the ability to edit the data model of the registry regulations.
+
+== Problem description
+The admin portal can view the status of the registry regulations data model. The existing approach involves committing changes to Gerrit to the corresponding MR candidate version while developing the registry regulations data model.
+
+== Actors
+
+* Registry regulations developer
+
+== Glossary
+
+* LS: language server
+
+== Functional scenarios
+
+- Changing the data structure in the registry regulations data model.
+- Saving the changes made to the candidate version of the registry regulations.
+- Viewing error notifications in the edit window of the registry regulations data model table structure.
+- Auto-prompts and auto-updates when editing liquibase changelog xml.
+- Checking liquibase configuration according to liquibase and DDM xsd.
+
+== Existing solution design
+
+=== Reviewing and editing the data model
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/edit-data-model-version-candidate/data-model-edit-current-design.svg[]
+
+=== Interacting with Language Server
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/edit-data-model-version-candidate/ls-current-design.svg[]
+
+=== General principles
+
+- Changes to the data model of the registry regulations are made by making changes directly to Gerrit.
+- The source file for data model deployment is `data-model/main-liquibase.xml`.
+- The structure of files on the file system is not clearly regulated. `Liquibase changeset's` with instructions for creating data model tables can technically be found in any file in the file system.
+- ddm-language-server only supports the Groovy language.
+
+== Technical solution design
+
+image::architecture/registry/administrative/regulation-management/admin-portal/data-model/edit-data-model-version-candidate/edit-data-model-target-design.svg[]
+
+=== General principles
+
+- The data structure of the data model is only edited in the createTables.xml file.
+- registry-regulation-management receives and modifies createTables.xml using corresponding RestAPI methods.
+- Language Server supports Groovy and XML.
+- In the list of statuses of the candidate version components, the change in the database structure is displayed as a single item without a list of detailed changes for each data model table.
+
+=== Changing the registry regulations data model description contract
+
+To ensure that the structure of the data model tables of the registry regulations is edited, it is necessary to change the approach to organizing the structure of liquibase configuration files as follows:
+
+- All operations on creation or changing the structure of database tables must be stored in the `data-model/createTables.xml` file.
+- `data-model/createTables.xml` must be explicitly included in the list of files for deployment in the `data-model/main-liquibase.xml` configuration.
+
+==== Migrating existing registries
+
+To ensure the compatibility of the registry regulations file structure, it is necessary to verify the above rules, and change the file structure (*without changing the liquibase changeset content*), if necessary.
+
+[CAUTION]
+If createTables.xml is not available, the admin portal does not provide the ability to edit the liquibase configuration using the Web UI. The performance of the existing configuration of the registry regulations does not change.
+
+=== Distributing perspectives for editing and viewing the data model
+
+To edit the registry regulations data model, you have to create a new editing perspective.
+All operations associated with viewing the state of the data model (present and future) are allocated in the view perspective.
+
+=== Sequence diagram
+
+[plantuml, edit-data-model edit-data-model-tables-sequence, svg]
+----
+include::partial$architecture/registry/administrative/regulation-management/admin-portal/data-model-version-candidates/edit-data-model-tables-sequence.puml[]
+----
+
+=== Deployment of XML LS
+
+- To deploy XML Language Server, use the https://github.com/eclipse/lemminx[lemminx language server].
++
+This LS is published in the `https://mvnrepository.com/artifact/org.eclipse.lemminx/org.eclipse.lemminx/0.23.2[maven central repository]` (there is no need to place the code of this component in your gerrit).
+
+- It is necessary to connect the above artifact and use the `org.eclipse.lemminx.XMLLanguageServer` LS implementation in the ddm-language-server module.
+
+- In accordance with the https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentItem[LS specification], the URL for creating websocket must be `/xml`.
+
+=== Working with DDM XSD
+
+To provide hints in full scope when editing XML documents (displaying field descriptions from xsd schemas as hoover messages, auto-completion, etc.), it is necessary to provide access to the `ddm-language-server` to load the corresponding xsd schemas using the specified URL in the XSD document.
+
+All required XSD for editing XML Liquibase documents must be placed in platform nexus.
+
+XSD required to edit liquibase scripts:
+
+- liquibase xsd: http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+- ddm liquibase extension: https://nexus-public-mdtu-ddm-edp-cicd.apps.cicd2.mdtu-ddm.projects.epam.com/repository/extensions/com/epam/digital/data/platform/liquibase-ext-schema/latest/liquibase-ext-schema-latest.xsd
+
+[CAUTION]
+To ensure compatibility of the liquibase configurations with `ddm-language-server`, it is necessary to migrate the URI for the `http://www.liquibase.org/xml/ns/dbchangelog` namespace. The URI must point to the corresponding xsd published in platform nexus.
+
+=== RestAPI for liquibase configurations
+
+It is necessary to extend the existing registry-regulation-management RestAPI by adding the methods for:
+
+- Getting the liquibase configuration of the data model table structure for the candidate version.
+- Getting the liquibase configuration of the data model table structure for master versions.
+- Changing the liquibase configuration of the data model table structure for the candidate version.
+
+==== Getting the liquibase configuration of the data model tables
+
+Request:
+
+[source,http,options="nowrap"]
+----
+GET /versions/candidates/{versionCandidateId}/data-model/tables
+GET /versions/master/data-model/tables
+----
+
+Response structure:
+
+[CAUTION]
+Content-type=text/xml
+
+[source,xml,options="nowrap"]
+----
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext https://nexus-public-mdtu-ddm-edp-cicd.apps.cicd2.mdtu-ddm.projects.epam.com/repository/extensions/com/epam/digital/data/platform/liquibase-ext-schema/latest/liquibase-ext-schema-latest.xsd">
+
+    ...
+</databaseChangeLog>
+----
+
+==== Changing the liquibase configuration of the data model tables
+
+Request:
+
+[source,http,options="nowrap"]
+----
+PUT /versions/candidates/{versionCandidateId}/data-model/tables
+----
+
+[CAUTION]
+Content-type=text/xml
+
+Body:
+[source,xml,options="nowrap"]
+----
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext https://nexus-public-mdtu-ddm-edp-cicd.apps.cicd2.mdtu-ddm.projects.epam.com/repository/extensions/com/epam/digital/data/platform/liquibase-ext-schema/latest/liquibase-ext-schema-latest.xsd">
+    ...
+</databaseChangeLog>
+----
+
+=== Receiving and displaying changes in the status view of the registry regulations components
+
+The work with the registry database structure is performed by editing only one resource in terms of RestAPI `/versions/candidates/{versionCandidateId}/data-model/tables`.
+
+Therefore, it is necessary to operate with one single item called "Database table structure" in the list of the registry regulations component states.
+
+This item can have the only `Modified` state if any changes were made to the `data-model/createTables.xml` file through the admin portal or directly by adding of a patchset in Gerrit to the corresponding MR to the candidate version.
+
+== High-level development plan
+
+=== Required expertise
+
+- DevOps
+- BE
+- FE
+- QA/AQA
+- One TeamLead or One QALead
+
+=== DevOps
+
+- Configure Kong for working with XML LS.
+
+=== Backend
+
+- Extend RestAPI for getting and saving liquibase configurations (for the candidate versions and master versions). Add RestAPI Optimistic locking headers to the `/versions/candidates/{versionCandidateId}/data-model/tables` endpoints.
+- Connect XML lemminx LS. Extend ddm-language-server to work with the /xml websocket endpoint.
+- Add the information about changes in the database structure of the data model to the `/versions/candidates/{versionCandidateId}/changes` RestAPI endpoint.
+- Publish http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd[dbchangelog-4.5.xsd] on platform nexus.
+
+=== Frontend
+- Create a perspective view of the data model state and a perspective view for editing data model tables.
+- Integrate monaco editor into the perspective for editing data model tables. Configure interaction with XML LS.
+- Provide for displaying and storage of liquibase configuration of data model tables (integration with the `/versions/candidates/{versionCandidateId}/data-model/tables` endpoints). Provide for working with the RestAPI Optimistic Locking mechanism.
+- Add the display of information about changes in the data model table structure to the candidate version overview.
+
+=== One TeamLead or One QALead
+- Develop migration instructions for existing registries. Publish instructions, organize knowledge transfer with the DevOps command.

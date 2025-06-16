@@ -1,0 +1,330 @@
+= SOAP integration connectors with other registries
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+SOAP integration with external registries primarily occurs via the "Trembita" Secure Exchange Gateway (SEG) and corresponding SOAP connectors.
+
+SOAP connectors ::
+These are specialized connectors employed within business processes. They're designed to retrieve data from registries outside the Platform using the SOAP protocol, which uses XML format for data representation.
+
+Purpose of the "Trembita" SEG ::
+SEG's primary function is to offer a secure interface for electronic interactions across various state systems. When integrated within the Platform, SEG harnesses its inherent resources to access data from external systems.
+
+Platform's standard integration ::
+For interacting with external services, the Platform boasts standard integration connectors. These are tailored for communication with external entities using the SOAP protocol, all transpiring over the SEG interface.
+
+Region-specific application ::
+It's crucial to note that using the "Trembita" SEG is particularly tuned for the Ukrainian setting. Hence, it and _may not apply or function as described in other contexts or regions_.
+
+Universal SOAP HTTP connector ::
+We've implemented a universal SOAP HTTP connector to augment the Platform's SOAP interoperability and amplify its integration potential.
+
+WARNING: Always use SOAP connectors in conjunction with mock servers that replicate the behavior of live connections for development purposes.
+
+== Installing standard integration connectors
+
+Connectors are configured in the *Camunda Modeler* application. Before you start, ensure all prerequisites described in the xref:bp-modeling/bp/element-templates/element-templates-install.adoc[] section are fulfilled.
+
+== General integration SOAP HTTP connector
+
+You can use the *SOAP http connector* extension to call any external SOAP service. This connector is configured using the *SOAP http connector* template (_soapHttpConnector.json_).
+
+[WARNING]
+====
+Prerequisites ::
+When configuring the template in Camunda Modeler, ensure the _resources/element-templates_ folder of the application contains the _soapHttpConnector.json_ file.
+====
+
+[#configure-soap-http-delegate]
+=== Configuring the connector
+
+The connector is configured via an extension template for the service task of the business process.
+
+. Open the business process modeling interface.
+. Create a *Service Task*.
+. In the panel on the right, click *`Select`*, then select the *SOAP http connector* from the list. Configure the template:
+
+* *Name*: Specify the task name -- for example, `Search by registry subject`.
+
+* *Url*: Specify the resource address -- for example, `https://trembita-edr-registry-mock.apps.envone.dev.registry.eua.gov.ua/mockEDRService`.
+
+* *Headers*: Specify the request headers -- for example, `${requestHeaders}`.
+
+
+* `*Payload*: Provide the request body -- for example, `${requestPayload}`.
++
+* *Result variable*: Specify the variable to store the service response -- for example, `edrResponseBody`.
++
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-1.png[]
+
+.API response from EDR service
+====
+[source,xml]
+----
+<soap11env:Envelope xmlns:soap11env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tns="http://nais.gov.ua/api/sevdeir/EDR" xmlns:xroad="http://x-road.eu/xsd/xroad.xsd" xmlns:id="http://x-road.eu/xsd/identifiers">
+   <soap11env:Header>
+        ...
+   </soap11env:Header>
+   <soap11env:Body>
+      <tns:SearchSubjectsResponse>
+         <tns:SubjectList>
+            <tns:SubjectInfo>
+               <tns:state>1</tns:state>
+               <tns:state_text>registered</tns:state_text>
+               <tns:name>Sydorenko Vasyl Leonidovych</tns:name>
+               <tns:url>http://zqedr-api.nais.gov.ua/1.0/subjects/2222</tns:url>
+               <tns:code>2222</tns:code>
+               <tns:id>2222</tns:id>
+            </tns:SubjectInfo>
+         </tns:SubjectList>
+      </tns:SearchSubjectsResponse>
+   </soap11env:Body>
+</soap11env:Envelope>
+
+----
+
+[NOTE]
+The response from a service returns in the form of a string -- that is, a *String* type object in XML format.
+
+You can further use the response in the xref:#soap-http-script-form-output[script for outputting data to the UI form].
+====
+
+=== An example of querying the SOAP service as part of the business process
+
+[NOTE,caption=UA-specific]
+This example presents the universal SOAP connector with the Ukrainian-specific system -- Unified State Register or EDR (as it sounds in Ukraine).
+
+Let's consider an example of using the integration connector in a business process that interacts with the EDR SOAP service. In our case, it searches for information about officers by their EDRPOU code (the `edrpou` attribute).
+
+[TIP]
+====
+Download the following business process and UI form examples for reference:
+
+* [*] Business process: _link:{attachmentsdir}/bp-modeling/soap-connectors/soap-http-connector-edr.bpmn[soap-http-connector-edr.bpmn]_
+* [*] Data entry form: _link:{attachmentsdir}/bp-modeling/soap-connectors/soap-http-connector-edrpou-search-in-edr.json[soap-http-connector-edrpou-search-in-edr.json]_
+* [*] Result view form: _link:{attachmentsdir}/bp-modeling/soap-connectors/soap-http-connector-edrpou-edr-result-view.json[soap-http-connector-edrpou-edr-result-view.json]_
+====
+
+. Create a business process and add a pool to the modeling canvas.
++
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-2.png[]
+
+. Create a start task to initiate the process.
++
+[WARNING]
+====
+To use the `*initiator*` variable in the business process, you need to define it in the *Start initiator* field of the start event.
+
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-2-1.png[]
+====
+
+==== A user task for entering data to search another registry
+
+Next, model the *User Task*, select the *User Form* template, and configure it.
+
+. Specify the task name -- for example, `Enter EDRPOU to search by`.
+. In the *ID* field, enter the task ID (`activity_id`). You can use it in the business process according to your business logic -- for example, `*searchEdrpouCodeOfficer*`.
+. In the *Form key* field, enter the service name of the data entry UI form -- for example, `*soap-http-connector-edrpou-search-in-edr*`.
+. In the *Assignee* field, specify the process initiator token -- for example, `${initiator}`.
+
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-3.png[]
+
+Here is an example of a UI form as it appears to the users: ::
++
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-5.png[]
+
+[#request-soap-http-connector]
+==== A script for making requests through the SOAP connector
+
+Next, create a Groovy script defining the parameters to be used by the SOAP connector to get data from another registry -- namely, the request _headers_ and _body_.
+
+. Create a *Script Task*.
+. Specify the task name -- for example, `Preparing request data`.
+. Open the script visual editor and create your script.
++
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-4.png[]
+
+Here is an example of a script: ::
++
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-4-1.png[]
+
+.. Get the EDRPOU code from the first form:
++
+[source,groovy]
+----
+def edrpou = submission('searchEdrpouCodeOfficer').formData.prop('edrpou').value()
+----
+
+.. Prepare the request headers:
++
+[source,groovy]
+----
+def requestHeaders = [:]
+requestHeaders['SOAPAction'] = 'SearchSubjects'
+requestHeaders['Content-Type'] = 'text/xml;charset=UTF-8;'
+----
++
+NOTE: Replace `'SearchSubjects'` with your own request.
+
+.. Save headers to the `*requestHeaders*` transient variable. We will use the value of this variable as an input parameter of the request in the SOAP connector settings.
++
+[source,groovy]
+----
+set_transient_variable('requestHeaders', requestHeaders)
+----
+
+.. Form the body of the SOAP request to the EDR API according to the API contract:
++
+._SOAP request body_
+[%collapsible]
+====
+[source,groovy]
+----
+def requestPayload = """
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Header>
+    <ns3:id xmlns:ns2="http://nais.gov.ua/api/sevdeir/EDR"
+      xmlns:ns3="http://x-road.eu/xsd/xroad.xsd" xmlns:ns4="http://x-road.eu/xsd/identifiers">
+      a90606bb-242b-4937-a707-c860e2e2f8db
+    </ns3:id>
+    <ns3:userId xmlns:ns2="http://nais.gov.ua/api/sevdeir/EDR"
+      xmlns:ns3="http://x-road.eu/xsd/xroad.xsd" xmlns:ns4="http://x-road.eu/xsd/identifiers">
+      MDTUDDM
+    </ns3:userId>
+    <ns3:protocolVersion xmlns:ns2="http://nais.gov.ua/api/sevdeir/EDR"
+      xmlns:ns3="http://x-road.eu/xsd/xroad.xsd" xmlns:ns4="http://x-road.eu/xsd/identifiers">4.0
+    </ns3:protocolVersion>
+    <ns2:AuthorizationToken xmlns:ns2="http://nais.gov.ua/api/sevdeir/EDR"
+      xmlns:ns3="http://x-road.eu/xsd/xroad.xsd" xmlns:ns4="http://x-road.eu/xsd/identifiers">
+      1dc9f1f9b1e5be4d37c2b68993af243923ea7620
+    </ns2:AuthorizationToken>
+    <ns3:client xmlns:ns2="http://nais.gov.ua/api/sevdeir/EDR"
+      xmlns:ns3="http://x-road.eu/xsd/xroad.xsd" xmlns:ns4="http://x-road.eu/xsd/identifiers"
+      ns4:objectType="SUBSYSTEM">
+      <ns4:xRoadInstance>SEVDEIR-TEST</ns4:xRoadInstance>
+      <ns4:memberClass>GOV</ns4:memberClass>
+      <ns4:memberCode>43395033</ns4:memberCode>
+      <ns4:subsystemCode>IDGOV_TEST_01</ns4:subsystemCode>
+    </ns3:client>
+    <ns3:service xmlns:ns2="http://nais.gov.ua/api/sevdeir/EDR"
+      xmlns:ns3="http://x-road.eu/xsd/xroad.xsd" xmlns:ns4="http://x-road.eu/xsd/identifiers"
+      ns4:objectType="SERVICE">
+      <ns4:xRoadInstance>SEVDEIR-TEST</ns4:xRoadInstance>
+      <ns4:memberClass>GOV</ns4:memberClass>
+      <ns4:memberCode>00015622</ns4:memberCode>
+      <ns4:subsystemCode>2_MJU_EDR_prod</ns4:subsystemCode>
+      <ns4:serviceCode>SearchSubjects</ns4:serviceCode>
+    </ns3:service>
+  </SOAP-ENV:Header>
+  <SOAP-ENV:Body>
+    <ns2:SearchSubjects xmlns:ns2="http://nais.gov.ua/api/sevdeir/EDR"
+      xmlns:ns3="http://x-road.eu/xsd/xroad.xsd" xmlns:ns4="http://x-road.eu/xsd/identifiers">
+      <ns2:code>${edrpou}</ns2:code>
+    </ns2:SearchSubjects>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+"""
+----
+====
++
+[TIP]
+====
+Put the *`${edrpou}`* variable into the request body:
+
+[source,xml]
+----
+<SOAP-ENV:Body>
+    <ns2:SearchSubjects xmlns:ns2="http://nais.gov.ua/api/sevdeir/EDR"
+      xmlns:ns3="http://x-road.eu/xsd/xroad.xsd" xmlns:ns4="http://x-road.eu/xsd/identifiers">
+      <ns2:code>${edrpou}</ns2:code>
+    </ns2:SearchSubjects>
+</SOAP-ENV:Body>
+
+----
+====
+
+.. Save the request body to the `*requestPayload*` transient variable. We will use the value of this variable as an input parameter of the request in the SOAP connector settings.
++
+[source,groovy]
+----
+set_transient_variable('requestPayload', requestPayload as String)
+----
++
+NOTE: The `*requestPayload*` variable must be passed as a string.
+
+Use the parameters from the script's variables for the service task and to configure the SOAP connector.
+
+==== A service task for sending a search query to another registry
+
+Next, you need to create a service task and apply and configure the *SOAP-http-connector* template.
+
+TIP: For details, jump to xref:#configure-soap-http-delegate[].
+
+[#soap-http-script-form-output]
+==== A script for outputting data to the user's UI form
+
+Next, you need to pass the data obtained from another registry using the SOAP HTTP connector to the UI form. For this, you need to create a corresponding script.
+
+. Create a *Script Task*.
+. Specify the task name—for example, `Preparing the obtained data for the form`.
+. Open the script visual editor and create your script.
++
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-6.png[]
+
+Here is an example of a script: ::
++
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-6-1.png[]
+
+.. Form a JSON object with the *`state`*, `*name*`, `*code*`, and `*id*` parameters to pass to the form.
+
+.. Save the object to the *`payload`* variable, which we will use as an input parameter for passing data to the form.
++
+._A script for outputting data to the user's UI form_
+[%collapsible]
+====
+[source,groovy]
+----
+def payload = [:]
+payload['state'] = getValueByPropertyName("state_text")
+payload['name'] = getValueByPropertyName("name")
+payload['code'] = getValueByPropertyName("code")
+payload['id'] = getValueByPropertyName("id")
+set_transient_variable('payload', S(payload, 'application/json'))
+
+def getValueByPropertyName(String propName) {
+    return S(edrResponseBody, 'application/xml').childElement("Body")
+            .childElement("http://nais.gov.ua/api/sevdeir/EDR", "SearchSubjectsResponse")
+            .childElement("SubjectList")
+            .childElement("SubjectInfo")
+            .childElement(propName)
+            .textContent()
+}
+----
+====
++
+NOTE: The *`S(edrResponseBody, 'application/xml')`* function returns the object using the https://javadoc.io/static/org.camunda.spin/camunda-spin-core/1.6.3/org/camunda/spin/xml/SpinXmlElement.html[SpinXmlElement] specification.
+
+==== A user task for passing data to the UI form
+
+Finally, you need to output the data obtained from another registry and processed by the script to the user's UI form.
+
+Model the *User Task*, select the *User Form* template, and configure it.
+
+. Specify the task name -- for example, `View EDR data`.
+. In the *ID* field, enter the task ID (`activity_id`) -- for example, `*writeResultForm*`.
+. In the *Form key* field, enter the service name of the result view UI form -- for example, `*soap-http-connector-edrpou-edr-result-view*`.
+. In the *Assignee* field, specify the process initiator token -- for example, `${initiator}`.
+. In the *Form data pre-population* field, specify the variable for the object with parameters to pass to the form: `*${payload}*`.
++
+TIP: The variable is formed in the following task: xref:#soap-http-script-form-output[].
+
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-7.png[]
+
+Here is an example of a UI form as it appears to the users: ::
++
+image:registry-develop:bp-modeling/ext-integration/connectors/soap-http/soap-http-8.png[]
+
+Model the process end task and save your changes.

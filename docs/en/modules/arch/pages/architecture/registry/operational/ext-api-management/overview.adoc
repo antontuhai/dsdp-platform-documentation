@@ -1,0 +1,86 @@
+= External traffic management subsystem: Registry operational zone
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+The subsystem is designed to manage external traffic and control access to API services of the registry operational zone.
+
+== Subsystem functions
+
+* Authentication and authorization of requests
+* Traffic routing to API services of the registry operational zone subsystems
+* Configuration and control of rate limits
+* Transformation of requests and responses
+* Logging of incoming requests
+
+== Subsystem technical design
+
+image::architecture/registry/operational/ext-api-management/registry-ext-traffic-subsystem.drawio.svg[width=600,float="center",align="center"]
+
+[#subsystem-components]
+== Subsystem components
+
+|===
+|Component name|Presentation in the registry|Origin|Repository|Purpose
+
+|_Registry operational zone external API gateway_
+|`kong-kong`
+|3rd-party
+|https://github.com/epam/edp-ddm-kong[github:/epam/edp-ddm-kong]
+|Provides traffic management, authorization, API access control, load balancing, request/response transformation, and analytics/monitoring.
+
+|_ServiceMesh gateway_
+|`istio-ingressgateway`
+|3rd-party
+|https://github.com/istio/proxy[github:/istio/proxy]
+|Network gateway operating on the edge of the Istio service-mesh, receiving incoming HTTP/TCP connections.
+
+|xref:arch:architecture/registry/operational/ext-api-management/redis-storage.adoc#_sessions[__Operational user sessions storage__]
+|`redis:sessions`
+|3rd-party
+|-
+|Storage of user JWT tokens
+|===
+
+== Technology stack
+
+The following technologies were used in the design and development of the subsystem:
+
+* xref:arch:architecture/platform-technologies.adoc#kong[Kong]
+* xref:arch:architecture/platform-technologies.adoc#kong-ingress-controller[Kong Ingress Controller]
+* xref:arch:architecture/platform-technologies.adoc#redis[Redis]
+* xref:arch:architecture/platform-technologies.adoc#istio[Istio ServiceMesh]
+
+== Subsystem quality attributes
+=== _Scalability_
+
+The external traffic management subsystem of the registry operational zone supports both horizontal and vertical scalability.
+[TIP]
+--
+For more details on subsystem scalability, please refer to
+xref:architecture/container-platform/container-platform.adoc[]
+--
+
+=== _Observability_
+
+The external traffic management subsystem of the registry operational zone supports logging of incoming requests and collects performance metrics for further analysis through web interfaces of the corresponding Platform subsystems.
+
+[TIP]
+--
+For more details on subsystem design, please refer to the relevant sections:
+
+* xref:arch:architecture/platform/operational/logging/overview.adoc[]
+* xref:arch:architecture/platform/operational/monitoring/overview.adoc[]
+--
+
+=== _Portability_
+
+The external traffic management subsystem of the registry operational zone can be easily transported, deployed, and reliably managed across different container orchestration platforms in various cloud environments or in proprietary infrastructure within data centers.
+
+[TIP]
+--
+For more details, please refer to the
+xref:arch:architecture/container-platform/container-platform.adoc[Container orchestration platform].
+--

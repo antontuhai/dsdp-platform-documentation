@@ -1,0 +1,90 @@
+= Creating business processes
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+The *Administrative portal* allows for easy and straightforward modeling of business processes using the built-in https://bpmn.io/[BPMN.io] web editor in your browser. The functionality provides viewing, creation, and editing of diagrams in BPMN 2.0 notation based on XML.
+
+Create a new business process in a few simple steps:
+
+. In the *Administrative portal*, open the *Process models* section.
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-1.png[]
+
+. Click the *`Create new process`* button.
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-2.png[]
++
+[#tab-general]
+. On the *General* tab, fill in the business and technical names of the business process:
+
+* Enter a convenient and understandable name in the *Business process name* field.
++
+[NOTE]
+====
+
+The business name serves an informative function and can be used, for example, for display in the interfaces of the Officer and Citizen portals, for legal purposes, in document circulation, and so on.
+
+It can have 3 to 100 characters. Allowed characters: "A-Z", "a-z", cyrillic "А-Я", "а-я", "0-9", "-", "_", ",", ".", apostrophe ('), space.
+====
+
+* Enter the technical name of the process in the *Business process technical name* field.
++
+[NOTE]
+====
+The technical name is the process identifier (`process ID`) in the system. It is used for technical purposes, such as in code, BPMN notation, configuration files, and so on.
+
+It must be unique within the registry instance. Length: 3-50 characters.
+Allowed characters: "A-Z," "a-z," "0-9," "-", "_." However, digits and "-" cannot be at the beginning or end of the technical name.
+====
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-3.png[]
+
++
+NOTE: All changes on the xref:registry-admin/admin-portal/registry-modeling/process-models/create-process.adoc#tab-general[General], xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-code.adoc[Code], and xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-bpmn-editor.adoc[Builder] tabs are synchronized. This means that if you modify an element in the Builder, it will be reflected in the code and vice versa.
+
+. Switch to the *Builder* tab and model the business process in the web editor.
++
+TIP: The capabilities of the *Builder* tab are more detailed at
+xref:registry-admin/admin-portal/registry-modeling/process-models/components/tab-bpmn-editor.adoc[].
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-4.png[]
+
+. Press the *`Save changes`* button to save the entered information.
++
+[TIP]
+====
+The user receives a notification of successful process creation:
+
+* &#9989; `Business process` `<process-name>` `successfully created`.
+====
++
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-5.png[]
+
+You can see the created business process in the general list of processes. It can be edited later (_see more details at xref:registry-admin/admin-portal/registry-modeling/process-models/edit-process.adoc[]_).
+
+[IMPORTANT]
+====
+When a user tries to save changes during creation or editing of a business process or UI forms and is on any tab of the *Process models* and *UI forms* sections, validation is triggered if:
+
+* A business process with the same technical name already exists—then the user sees the following validation message in the top right corner:
+
+** `A business process with this technical name already exists`.
+
+* Validation rules are violated—then the user sees a validation message in the top right corner:
++
+
+** `Check the format of mandatory fields`.
+
+* For the business process name:
+
+** Validation rules are violated—then the user sees a validation message in the top right corner:
+
+** `Check the format of mandatory fields`.
+
+image:registry-develop:registry-admin/admin-portal/process-models/process-models-5-1.png[]
+
+When the checks are triggered, the user stays on the current page/tab.
+====
+
+include::partial$snippets/admin-portal-master-candidate-edit-en.adoc[]

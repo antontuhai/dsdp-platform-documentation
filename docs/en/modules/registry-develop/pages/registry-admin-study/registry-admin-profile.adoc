@@ -1,0 +1,83 @@
+= Registry administrator: duties and responsibilities
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Job description and requirements for the registry administrator position
+
+The responsibilities and requirements for the registry administrator include servicing, supporting, and monitoring the registry and its components. The responsibilities encompass the following activities:
+
+Understanding the specifics of the registry's regulations: ::
+* The administrator must have a clear understanding of the regulations governing the specific registry in question.
+
+Managing registry: ::
+* Utilizing the centralized Control Plane administrative interface to manage registries.
+
+Appointing registry administrators: ::
+* Creating registry administrators with appropriate access rights.
+
+Managing users and access: ::
+* Utilizing Keycloak for managing user identification and access to the registry.
+* Setting up and configuring authentication processes for end users.
+
+Configuring backup and recovery: ::
+* Configuring backup and emergency recovery of registry resources and databases through automated processes in Jenkins.
+
+Updating registry components: ::
+* Performing updates to registry components.
+
+Managing registry component resources: ::
+* Configuring and managing resource allocation for registry services, such as CPU, RAM, and environment variables.
+
+Configuring integration interactions: ::
+* Configuring access to registries for other registries on the platform and external systems.
+* Configuring interactions with registries and external systems through REST API.
+* Configuring interactions with registries through the Trembita middleware via the SOAP protocol.
+
+Working with digital signature keys: ::
+* Configuring and updating keys and digital signature certificates for the registry (digital signature/Qualified Electronic Signature).
+
+Configuring domain name (DNS): ::
+* Configuring domain names for registry portals.
+
+Configuring access restrictions to registry components: ::
+* Restricting access to registry components using CIDR.
+
+Confirming change requests: ::
+* Approving or rejecting change requests to the registry.
+
+Working with the OpenShift console: ::
+* Utilizing the centralized OpenShift interface to monitor registry resources.
+
+Monitoring and logging: ::
+* Monitoring and analyzing system metrics using Grafana and Prometheus.
+* Monitoring logs using Kibana or the OpenShift console.
+* Understanding the principles of service monitoring and tracing, using Kiali and Jaeger.
+
+Administering business processes: ::
+* Utilizing Camunda BPM to monitor and debug instances of business processes described in BPMN notation.
+
+Automating processes: ::
+* Experience working with Jenkins for organizing continuous integration and deployment (CI/CD) processes.
+* Skills in configuring and using Git and Gerrit VCS for integration, versioning, and code review.
+* Proficiency with Nexus for artifact storage and management.
+
+Managing internal resources configuration and access limits: ::
+* Configuring the Kong API gateway, including setting limits on the number of client requests (_Rate limiting_).
+
+Monitoring registry API resources: ::
+
+* Understanding REST API concepts.
+* Knowledge of OpenAPI Specification (OAS).
+* Using Swagger to view generated registry API endpoints.
+
+Working with registry data: ::
+* Knowledge of PostgreSQL.
+* Working with operational and analytical registry data using pgAdmin and similar tools.
+
+Configuring mail server: ::
+* Configuring connection to the external mail servers to facilitate Email messaging within the registry.
+
+== Related pages
+
+For detailed information on the technologies that the administrator should utilize when working with the registry, please refer to the xref:arch:architecture/platform-technologies.adoc[] page.

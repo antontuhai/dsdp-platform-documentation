@@ -1,0 +1,135 @@
+= Configuring internal SMTP server
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+[#overview]
+== Overview
+
+An internal SMTP server is a Platform component that sends notifications to users.
+
+During Platform installation it is deployed as the `smtp-server` project in the OpenShift.
+
+CAUTION: Since only the web interface is accessible externally and all other ports are isolated within the cluster, which significantly enhances security, only sending emails is enabled. Receiving emails using this mail service is disabled.
+
+NOTE: In this topic, `DNS_WILDCARD` refers to the cluster's domain name.
+
+User web interface is available via the following URL: `https://mail.<DNS_WILDCARD>/`
+
+Administrator web interface is available via the following URL: `https://mail.<DNS_WILDCARD>/admin`
+
+[#manage-dns]
+== Managing DNS records
+
+[#generate-dns]
+=== Generating DNS records
+
+. Sign in to the administrator web interface.
++
+NOTE: You can find the credentials in the `mailu-admin-credentials` secret in the `smtp-server` project. Add `@<DNS_WILDCARD>` to `username`.
+
+. In the side menu, under *Administration*, select *Mail domains*.
+. On the page that opens, click the *Details* icon in the *Actions* column next to your domain name.
++
+.Opening domain name details
+image::smtp-server/smtp-server-1.png[Opening domain name details]
+
+. On the page that opens, click *Regenerate keys* in the upper-right corner. This gives you a list of DNS records that you need to add to your *public* DNS zone (1 – `MX`, 3 – `TXT`).
++
+.Generated DNS records
+image::smtp-server/smtp-server-2.png[Generated DNS records]
+
+. Add the public IP address of the gateway that handles outbound traffic and passes to the generated `DNS SPF` record.
+In the case of AWS deployment, this will be the Elastic IP of the Platform's NAT gateway.
++
+For example, if your gateway IP is `12.34.56.78`, then the record will look like this:
++
+----
+"v=spf1 mx a:mail.<DNS_WILDCARD> ip4:12.34.56.78 -all"
+----
+
+. Add records to the DNS zone.
+
+[CAUTION]
+====
+Route53 in AWS has a limit on the length of a TXT record. This may cause the following error when adding a `DNS DKIM` record:
+
+``
+Bad request. (InvalidChangeBatch 400: CharacterStringTooLong (Value is too long))
+``
+
+In this case, divide the text part of the record with the public key roughly in half using three characters: double quotes, space, double quotes.
+
+For example, the following TXT part:
+
+``
+"v=DKIM1; k=rsa; p=abcdefghijklmnopqrstuvwxyz"
+``
+
+will look like this:
+
+`"v=DKIM1; k=rsa; p=abcdefghijkl" "mnopqrstuvwxyz"`
+====
+
+[#check-dns-records]
+=== Checking the DNS records
+
+After the records are updated on the provider's DNS servers, we recommend checking the settings using the https://mxtoolbox.com/emailhealth/[mxtoolbox] service.
+
+Enter your `<DNS_WILDCARD>` into the *Email Address or Domain Name* field and click the *Check Email Health* button.
+Wait for the test results.
+
+If you get only these three errors, it means the settings are correct:
+
+.mxtoolbox check
+image::smtp-server/smtp-server-3.png[mxtoolbox check]
+
+[#obtain-permission-email-aws]
+== Obtaining permission to send emails in AWS
+
+When deploying the Platform on AWS, all traffic from port 25 (SMTP) is blocked by defaultfootnote:[https://aws.amazon.com/premiumsupport/knowledge-center/ec2-port-25-throttle/[AWS Support - How do I remove the restriction on port 25 from my Amazon EC2 instance or AWS Lambda function?]].
+
+You need to create an AWS support request: https://aws-portal.amazon.com/gp/aws/html-forms-controller/contactus/ec2-email-limit-rdns-request[Request to remove email sending limitations]. Request processing time is up to 48 hours.
+
+[options="header"]
+|================================================
+|Request field|Value
+|Email address|Your email where the reply should be sent.
+|Use case description|Explain why you need to remove the restrictions. Provide relevant details of your notification setup.
+
+For example:
+
+``
+We're going to deploy own SMTP server (https://mailu.io/) in containers inside Openshift Cluster to send notifications
+for our clients and employees. It's customer requirement to use own standalone cloud-agnostic SMTP server. This server
+has an authentication and is not accessible from Internet to connect and send emails.
+
+All openshift cluster nodes have one common NAT gateway (<NAT gateway resource ID or ARN>) with EIP <your Elastic IP address>.
+So could you please remove email sending limitation from EIP <your Elastic IP address> assigned to NAT gateway?
+``
+
+|Elastic IP address - optional|The IP address of the Platform's NAT Gateway
+|Reverse DNS record - optional|Leave this field empty
+|================================================
+
+[#check-email-apptoolbox]
+== Checking emails using apptoolbox
+
+. Open the https://www.appmaildev.com/en/dkim[apptoolbox] website and click *Next step*.
++
+The service will generate an email address where you need to send an email from the Platform's SMTP server.
++
+.A test email address
+image::smtp-server/smtp-server-4.png[A test email address]
+
+. To send an email, go to the user web interface at `https://mail.<DNS_WILDCARD>/` and sign in.
+
+. In the side menu on the left, click *Compose* to create an email. Enter the test email address generated by apptoolbox into the *To* field. The subject and body of the email do not matter.
++
+.Creating a test email
+image::smtp-server/smtp-server-5.png[Creating a test email]
+
+. Send the email and return to the apptoolbox website. In a few seconds, the letter should be delivered, and you will receive a reply from the service. If configured correctly, the response should look like this:
++
+.Test result
+image::smtp-server/smtp-server-6.png[Test result]

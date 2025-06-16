@@ -1,0 +1,14 @@
+//= Моделювання UI-форм бізнес-процесів
+= Modeling UI forms for business processes
+:sectanchors:
+:sectlinks:
+
+UI forms in the *_Administrative portal_* facilitate data input, retrieval, and search within registries. They bridge user interfaces with API layers of business process execution and the Data factory.
+
+[#section-overview]
+== Section overview
+
+* [*] xref:bp-modeling/forms/registry-admin-modelling-forms.adoc[]
+* [*] xref:bp-modeling/forms/components/index.adoc[]
+* [*] xref:registry-admin/admin-portal/overview.adoc[]
+* [*] https://help.form.io/intro/welcome/[Official Form.io documentation].

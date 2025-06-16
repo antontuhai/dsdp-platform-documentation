@@ -1,0 +1,631 @@
+= Task 6. Developing analytical reports
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Goal
+
+The goal of this task is to learn to develop reports in the Redash environment.
+
+In this task, you will learn to: ::
++
+[%interactive]
+
+* [ ] Model an analytics view.
+* [ ] Provide access to the analytics view.
+* [ ] Create three queries in Redash.
+* [ ] Create a dashboard in Redash.
+* [ ] Download the archive with the dashboard.
+* [ ] Unpack the archive in the regulations.
+* [ ] Apply the changes to the remote Gerrit repository.
+* [ ] Verify the report.
+
+== Task steps
+
+[#create-analytical-views]
+
+=== Creating an analytical layer at the database level
+
+The *Redash* analytical reporting system has access only to the replica of the database and exclusively to analytics views. To create these views, use the `*<ext:createAnalyticsView>*` tag, similar to creating search conditions.
+
+[TIP]
+====
+
+For details on creating analytics views and search conditions at the data model level, see:
+
+* xref:data-modeling/data/physical-model/liquibase-ddm-ext.adoc#create-search-conditions[Managing search conditions]
+* xref:data-modeling/data/physical-model/liquibase-ddm-ext.adoc#create-analytical-views[Managing analytics views]
+====
+
+NOTE: Create a separate *_createAnalyticsViews.xml_* file for analytics views using the _link:{attachmentsdir}/study-project/task-6/xml-temp/createAnalyticsViews.xml[createAnalyticsViews.xml]_ template.
+
+IMPORTANT: The name of the analytics view must start with the *`report_`* prefix.
+
+==== Creating an analytics view for laboratory details
+
+* Analytics view name: `*report_laboratory*`.
+* Information is taken from the following tables: `*laboratory*`, `*koatuu*` (region, town), `*ownership*`.
+
+.XML template for creating an analytics view
+[source,xml]
+----
+    <changeSet author="registry owner" id="create report_laboratory view">
+        <ext:createAnalyticsView name="report_laboratory">
+            <ext:table name="laboratory" alias="l">
+                <ext:column name="laboratory_id"/>
+                <ext:column name="name"/>
+                <ext:column name="address"/>
+                <ext:column name="edrpou"/>
+                <ext:column name="koatuu_id"/>
+                <ext:column name="ownership_id"/>
+            </ext:table>
+            <ext:table name="koatuu" alias="k">
+                <ext:column name="name" alias="town"/>
+                <ext:column name="level1" alias="obl_code"/>
+            </ext:table>
+            <ext:table name="koatuu" alias="ko">
+                <ext:column name="koatuu_id" alias="region_id"/>
+                <ext:column name="name" alias="region"/>
+            </ext:table>
+            <ext:table name="ownership" alias="o">
+                <ext:column name="name" alias="ownership"/>
+            </ext:table>
+            <ext:join type="inner">
+                <ext:left alias="l">
+                    <ext:column name="koatuu_id"/>
+                </ext:left>
+                <ext:right alias="k">
+                    <ext:column name="koatuu_id"/>
+                </ext:right>
+            </ext:join>
+            <ext:join type="left">
+                <ext:left alias="ko">
+                    <ext:column name="code"/>
+                </ext:left>
+                <ext:right alias="k">
+                    <ext:column name="level1"/>
+                </ext:right>
+            </ext:join>
+            <ext:join type="inner">
+                <ext:left alias="l">
+                    <ext:column name="ownership_id"/>
+                </ext:left>
+                <ext:right alias="o">
+                    <ext:column name="ownership_id"/>
+                </ext:right>
+            </ext:join>
+            <ext:where>
+                <ext:condition tableAlias="ko" columnName="type" operator="eq" value="'О'"/>
+            </ext:where>
+        </ext:createAnalyticsView>
+    </changeSet>
+----
+
+.SQL query based on XML template
+[source,sql]
+----
+SELECT l.laboratory_id,
+       l.name,
+       l.address,
+       l.edrpou,
+       l.koatuu_id,
+       l.ownership_id,
+       k.name   AS town,
+       k.level1 AS obl_code,
+       ko.koatuu_id AS region_id,
+       ko.name  AS region,
+       o.name   AS ownership
+  FROM laboratory l
+         JOIN koatuu k ON l.koatuu_id = k.koatuu_id
+         LEFT JOIN koatuu ko ON ko.code = k.level1
+         JOIN ownership o ON l.ownership_id = o.ownership_id
+ WHERE ko.type = 'О';
+----
+
+==== Creating an analytics view for the territorial codes directory (KOATUU)
+
+* Analytics view name: `*report_koatuu*`.
+* Information is taken from the following table: `*koatuu*`.
+
+.An XML template for creating an analytics view
+[source,xml]
+----
+    <changeSet author="registry owner" id="create report_koatuu view">
+        <ext:createAnalyticsView name="report_koatuu">
+            <ext:table name="koatuu">
+                <ext:column name="koatuu_id"/>
+                <ext:column name="code"/>
+                <ext:column name="name"/>
+                <ext:column name="type"/>
+            </ext:table>
+        </ext:createAnalyticsView>
+    </changeSet>
+----
+
+.SQL query based on XML template
+[source,sql]
+----
+SELECT koatuu.koatuu_id,
+       koatuu.code,
+       koatuu.name,
+       koatuu.type
+  FROM koatuu;
+----
+
+==== Creating an analytics view for the ownership types directory
+
+* Analytics view name: `*report_ownership*`.
+* Information is taken from the following table: `*ownership*`.
+
+.XML template for creating an analytics view
+[source,xml]
+----
+    <changeSet author="registry owner" id="create report_ownership view">
+        <ext:createAnalyticsView name="report_ownership">
+            <ext:table name="ownership">
+                <ext:column name="ownership_id"/>
+                <ext:column name="name"/>
+            </ext:table>
+        </ext:createAnalyticsView>
+    </changeSet>
+----
+
+.SQL query based on XML template
+[source,sql]
+----
+SELECT ownership.ownership_id,
+       ownership.name
+FROM ownership;
+----
+
+=== Providing access to analytics views
+
+Each role specified in the _roles/officer.yml_ file in the registry Gerrit repository has a database user in the replica prefixed with `*analytics_*` -- for example, `analytics_officer`.
+
+For the reports to work correctly, you must grant access to the analytics views for the corresponding role. Check the _officer.yml_ file and add the `officer` role if it is not specified.
+
+.Specifying the registry regulations' officer role in the _officer.yml_ file
+====
+[source,yaml]
+----
+roles:
+  - name: officer
+    description: Officer role
+----
+====
+
+[grant-access-analytical-views-1-5-plus]
+
+==== Providing access rights on the Platform version 1.5 or later
+
+In the _createAnalyticsViews.xml_ file, add the `*<ext:grantAll>*` tag. Inside this tag, put the `*<ext:role>*` tag with the `name="analytics_officer"` attribute.
+
+.XML template for granting access rights
+[source,xml]
+----
+ <changeSet author="registry owner" id="grants to all analytics users">
+    <ext:grantAll>
+        <ext:role name="analytics_officer"/>
+    </ext:grantAll>
+</changeSet>
+----
+
+Copy the *_createAnalyticsViews.xml_* file to the *_data-model_* folder of the Gerrit repository.
+
+=== Applying changes to the database model
+
+To apply changes, perform the following steps: ::
++
+. In the _main-liquibase.xml_ file, add the `*<include>*` tag with the `file="data-model/createAnalyticsViews.xml"` attribute at the end of the `<databaseChangeLog>` tag:
++
+[source,xml]
+----
+<databaseChangeLog...>
+    <include file="data-model/createAnalyticsViews.xml"/>
+</databaseChangeLog>
+----
+
+. Update the registry regulations' version in the _settings.yaml_ file in the root directory of the Gerrit repository.
++
+image:registry-develop:study-project/task-6/task-6-13-redash.png[]
+
+. Apply changes to Gerrit (`git commit`, `git push`).
+
+. Perform a code review of your commit. If you don't have the reviewer permissions, contact another reviewer.
+
+. Wait until the *MASTER-Build-registry-regulations* Jenkins pipeline completes successfully.
+
+=== Creating a report in Redash
+
+Analytical reporting is developed in the admin instance of *Redash*. To access it, you need to have the `redash-admin` role in the `-admin` realm of the registry. The role is assigned by the security administrator in the *Keycloak* service interface. For details on role management, see xref:registry-admin/create-users/overview.adoc[].
+
+[TIP]
+====
+
+* Use the `*redash-viewer*` instance to view analytical reports and monitor events in the audit logs.
++
+
+Officer portal users have the `officer` role assigned by default. This role provides access to the user portal and standard reports of the corresponding registry.
++
+
+The system provides an additional `auditor` role. This extended role is meant for viewing audit logs in the Redash service.
++
+
+* Use the `*redash-admin*` instance for creating and viewing analytical reports by the registry administrators.
++
+
+A reports administrator gets the `redash-admin` role in the `-admin` realm of the registry. This role provides full access to reporting in the Redash service.
++
+
+
+* You can find links to Redash instances in the OpenShift admin console.
++
+image:registry-develop:study-project/task-6/task-6-12-redash.png[]
+====
+
+==== Creating a query for the ownership type parameter
+
+In this step, you need to create a query for the parameter that will only show laboratories with a specific ownership type.
+
+First, create a *Snippet* (a default query): ::
++
+. In *Redash*, go to *Settings*.
++
+image:registry-develop:study-project/task-6/task-6-1-redash.png[]
+
+. Open the *Query Snippets* tab, click the *`New Snippet`* button, and fill out the required fields:
++
+
+* *Trigger*: Enter `select_query_based_dropdown_list`.
+
+* *Snippet*: Enter the following SQL code:
++
+.SQL request template
+[source,sql]
+----
+WITH cte AS (
+    SELECT
+        -1 AS rn,
+        uuid_nil() AS value,
+        '( All values )' AS name
+    UNION ALL
+    SELECT 
+        2 AS rn,
+        <OBJ_PK_UUID> AS value,
+        name AS name
+    FROM <OBJ_NAME>
+)
+SELECT value, name
+FROM cte
+ORDER BY rn, name;
+---- 
++
+image:registry-develop:study-project/task-6/task-6-2-redash.png[]
+
+Next, create a new query: ::
+
+. Go to the `redash-admin` instance of *Redash*.
+. Open the *Queries* section and click *`New Query`*.
++
+image:registry-develop:study-project/task-6/task-6-2-1-redash.png[]
+
+. In the query box, type `select_`, then select a request template for creating parameters in reports from the dropdown list: *`select_query_based_dropdown_list`*.
++
+image:registry-develop:study-project/task-6/task-6-3-redash.png[]
+
+. Change `<OBJ_PK_UUID>` to `ownership_id`, and `<OBJ_NAME>` to `report_ownership_v`. The names must correspond to the ones defined during the xref:#create-analytical-views[] step of this task.
++
+[TIP]
+====
+
+The `report_ownership` is the analytics view created in the _createAnalyticsViews.xml_ file during the xref:#create-analytical-views[] step.
+
+The system adds the `_v` postfix during the deployment. Always refer to all analytics views in Redash using the following pattern:
+
+----
+analytics_view_name + _v.
+----
+
+.The name specified when creating the analytics view
+=====
+[source,xml]
+----
+<ext:createAnalyticsView name="report_ownership">
+----
+=====
+
+.The name generated during the deployment
+=====
+image:registry-develop:study-project/task-6/task-6-2-2-redash.png[]
+=====
+
+====
+
+. Click the *`Execute`* button to send the query to the database.
++
+
+The table with data is displayed below the query box.
++
+image:registry-develop:study-project/task-6/task-6-4-redash.png[]
++
+
+. Select the query name at the top (by default, it's `New Query`) and provide a new name -- for example, `Select ownership type`. Press kbd:[Enter].
++
+image:registry-develop:study-project/task-6/task-6-4-1-redash.png[]
+
+. Click *`Save`* to save your query.
+
+. Click *`Publish`* to publish your query.
+
+==== Creating a query for the region parameter
+
+In this step, you need to create a query for the parameter that will only show laboratories from a specific region.
+
+Create a new query: ::
+
+. Go to the `redash-admin` instance of *Redash*.
+. Open the *Queries* section and click *`New Query`*.
++
+image:registry-develop:study-project/task-6/task-6-2-1-redash.png[]
++
+
+. In the query box, type `select_`, then select a request template for creating parameters in reports from the dropdown list: *`select_query_based_dropdown_list`*.
++
+image:registry-develop:study-project/task-6/task-6-3-redash.png[]
++
+
+. Change `<OBJ_PK_UUID>` to `koatuu_id`, and `<OBJ_NAME>` to `report_koatuu_v`. Add a `WHERE type = 'R'` condition to limit the values to regions.
+
+. Click the *`Execute`* button to send the query to the database.
++
+The table with data is displayed below the query box.
+
+. Select the query name at the top (by default, it's `New Query`) and provide a new name—for example, `Select region`. Press kbd:[Enter].
++
+image:registry-develop:study-project/task-6/task-6-5-1-redash.png[]
+
+. Click *`Save`* to save your query.
+
+. Click *`Publish`* to publish your query.
+
+==== Creating the main report query
+
+[NOTE]
+
+The main query uses previous queries as filtering parameters.
+
+I.Create a new query: ::
+
+. Go to the `redash-admin` instance of *Redash*.
+. Open the *Queries* section and click *`New Query`*.
+
+. In the query box, enter the following SQL script:
++
+.SQL query template
+[source,sql]
+----
+SELECT name AS "Laboratory name",
+       edrpou AS "EDRPOU",
+       address AS "Address",
+       ownership AS "Ownership type",
+       town AS "Town",
+       region AS "Region"
+  FROM report_laboratory_v
+ WHERE region_id = ''
+----
+
+II. Set the filtering by region option: ::
++
+. Put the cursor between the single quotes and click the `*Add New Parameter*` button.
++
+image:registry-develop:study-project/task-6/task-6-6-redash.png[]
++
+
+. Fill out the form using the following values:
++
+* *Keyword*: `region`
+* *Title*: `Region`
+* *Type*: `Query Based Dropdown List`
+* *Query*: `Select region`
+
+. Click the *`Add Parameter`* button.
++
+You will get an expression like this: `… WHERE region_id = '{{ region }}'`.
++
+.Region selection dropdown (final view)
++
+image::registry-develop:study-project/task-6/task-6-7-redash.png[]
++
+
+. To this filtering expression, add the *`OR`* logical operator and the following expression: `'{{ region }}'= uuid_nil()`. This handles the _All values_ condition.
++
+
+. Enclose the expressions to the left and right of the `OR` operator in parentheses.
+
+III. Set the filtering by ownership option: ::
+
+. In a new line, add the condition for filtering by the laboratory owner: `AND ownership_id = ''`.
+
+. Put the cursor between the single quotes and click the `*Add New Parameter*` button.
+
+. Fill out the form using the following values:
++
+* *Keyword*: `ownership`
+* *Title*: `Ownership`
+* *Type*: `Query Based Dropdown List`
+* *Query*: `Select ownership type`
+
+. Click the *`Add Parameter`* button.
++
+You will get an expression like this: `… AND ownership_id = '{{ ownership }}'`.
++
+.Ownership selection dropdown (final view)
++
+image::registry-develop:study-project/task-6/task-6-8-redash.png[]
+
+. To this filtering expression, add the *`OR`* logical operator and the following expression: `'{{ ownership }}'= uuid_nil()`. This handles the "All values" condition.
+
+. Enclose the expressions to the left and right of the `OR` operator in parentheses.
++
+.The `WHERE` expression you should get as a result
+[source,sql]
+----
+WHERE (region_id = '{{ region }}' OR '{{ region }}' = uuid_nil() )
+  AND (ownership_id = '{{ ownership }}' OR '{{ ownership }}' = uuid_nil())
+----
+
+. Click the *`Execute`* button.
++
+
+The result table will contain the laboratories that were created earlier.
++
+image:registry-develop:study-project/task-6/task-6-9-redash.png[]
+
+. Select the query name at the top (by default, it's `New Query`) and provide a new name—for example, `List of laboratories`. Press kbd:[Enter].
++
+image:registry-develop:study-project/task-6/task-6-10-redash.png[]
++
+
+. Click *`Save`* to save your query.
+
+. Click *`Publish`* to publish your query.
+
+==== Creating a dashboard
+
+Create a dashboard: ::
+
+. Go to the `redash-admin` instance of *Redash*.
+. Open the *Dashboards* section and click *`New dashboard`*.
++
+image:registry-develop:study-project/task-6/task-6-11-redash.png[]
+
+. Specify the dashboard name: `Laboratories`.
+
+. Click the `*Add Widget*` button, select the `List of laboratories` query from the list and click the `*Add to Dashboard*` button.
+
+. Resize the widget to fit the screen.
+
+. Click the `*Done Editing*` button.
+
+. Click the *`Publish`* button to publish your dashboard.
+
+[WARNING]
+====
+
+Notes on dashboard names ::
++
+
+* We recommend using Latin characters for dashboard names in Redash.
++
+image:registry-develop:study-project/task-6/dashboard-naming/dashboard-naming-1-en.png[]
++
+
+* Starting with Redash version 10, new dashboards are named according to the following pattern: `<sequence_number>-<slug>`.
++
+[TIP]
+=====
+
+The `*slug*` parameter is an alias appended to the dashboard ID in the URL with a hyphen. In our example, it's *`"slug": "laboratories"`* (see the following image).
+=====
++
+image:registry-develop:study-project/task-6/dashboard-naming/dashboard-naming-2-en.png[]
+
+* To obtain a JSON representation of a dashboard by its ID, pass the _environment's root path_ where *`redash-admin`* is deployed + `*/api/dashboards/<resource-id>*` to the Redash API.
++
+.Link template to the redash-admin service
+----
+https://admin-tools-<registry-name>-main.<dns-wildcard>/reports
+----
+
+** `<registry-name>` -- the name of the registry;
+** `-main` -- a system constant;
+** `<dns-wildcard>` -- defines the domain and subdomains of the environment.
+** `/reports` -- the endpoint for accessing the service.
++
+*Example:*
+https://admin-tools-platform-demo-main.example.com/reports
++
+TIP: See more about forming links: xref:admin:registry-management/control-plane-quick-links.adoc[].
++
+.Example. Request to obtain dashboard #8 from the `platform-demo` registry, deployed in the environment `apps.envone.dev.registry.eua.gov.ua`
+[source,http]
+----
+https://redash-admin-platform-demo.apps.envone.dev.registry.eua.gov.ua/api/dashboards/8
+----
++
+image:registry-develop:study-project/task-6/dashboard-naming/dashboard-naming-3-ua.png[]
+
+* If you rename the dashboard using Cyrillic characters, you will get the dashboard identifier and a dash in the URL.
++
+image:registry-develop:study-project/task-6/dashboard-naming/dashboard-naming-4.png[]
++
+image:registry-develop:study-project/task-6/dashboard-naming/dashboard-naming-5.png[]
++
+TIP: You can find more about the Redash API at the link: https://redash.io/help/user-guide/integrations-and-api/api[].
+====
+
+[#reports-publication]
+==== Publishing the objects to users
+
+Publish the objects you created in the regulations:
+
+. Sign in to the Administrative portal.
+
+. Open the *Report templates* section.
++
+image:registry-develop:study-project/task-6/task-6-1-reports.png[]
+
+. Click the download icon (`&#10515;`) next to the `Laboratories` record.
+
+. Unzip the archive and copy the files to the _reports/officer_ folder of the Gerrit repository.
++
+image:registry-develop:study-project/task-6/task-6-2-reports.png[]
++
+image:registry-develop:study-project/task-6/task-6-3-reports.png[]
++
+[NOTE]
+====
+Dashboard files must have unique names—for example, _dashboard_1.json_, _dashboard_2.json_, _dashboard_3.json_, and so on.
+
+The _reports/<role-name>/queries/_ folder must contain only one file named *_queries.json_*. This file must contain all the queries from the _queries.json_ files from different archives. That is, you don't overwrite one file with another but append new queries to the existing file. Here is an example of how this might look:
+
+[source,json]
+----
+{
+   "count":172,
+   "page_size":25,
+   "page":1,
+   "results":[
+      {
+         "query information": 1
+      },
+      {
+         "query information": 2
+      },
+      {
+         "query information": 3
+      }
+   ]
+}
+----
+
+.A queries.json file with queries from different archives
+image::registry-develop:study-project/task-6/task-6-14-redash.png[]
+====
++
+NOTE: Delete the _.zip_ file from the _reports/officer_ folder.
+
+. Apply changes to *Gerrit* (`git commit`, `git push`).
+
+. Perform a code review of your commit. If you don't have the reviewer's permissions, contact another reviewer.
+
+. Wait until the *MASTER-Build-registry-regulations* Jenkins pipeline completes successfully.
+
+. Check the dashboard you created in the *viewer* instance of Redash.
++
+image:registry-develop:study-project/task-6/task-6-4-reports.png[]
+
+[TIP]
+====
+For details on data access and access control, see xref:registry-develop:data-modeling/data/physical-model/liquibase-ddm-ext.adoc#create-analytical-views[Managing analytics views].
+====

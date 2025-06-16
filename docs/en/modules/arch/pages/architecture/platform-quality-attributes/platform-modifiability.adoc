@@ -1,0 +1,32 @@
+= Modifiability
+include::ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+_The quality attribute defines complexity level and speed of applying changes into the system to extend functional capabilities, and fixing defects._
+
+The _Registry Platform_ provides a _Low-code_ approach to Registry development and deployment in the form of _registry digital regulations_ that includes declarative descriptions of the data model, Business Processes of informative and administrative, external integrations organizational structure, etc.
+
+The _Registry regulations modeling subsystem_ provides _regulations developers_ with service web interfaces for Registry functionality development:
+
+* Modeling and applying changes to Registry regulations
+* Performing changes inspection before applying them to Registry regulations
+* Viewing the results of automatic checking of the changes to Registry regulations
+* Registry regulations versioning with change history
+* Registry configuration management
+
+The _Registry regulations modeling subsystem_ provides the functionality for automated Registry update deployment:
+
+* Registry regulations integrity checking
+* Applying changes and configuring Registry operational processes
+
+[TIP]
+--
+Find more details on relevant subsystems and component technical design in the following chapters:
+
+* xref:arch:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[]
+* xref:arch:architecture/registry/administrative/regulation-management/overview.adoc[]
+* xref:arch:architecture/registry/administrative/regulation-publication/overview.adoc[]
+--

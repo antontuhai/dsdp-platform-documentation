@@ -1,0 +1,43 @@
+= Administrative portal
+include::ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::ROOT:partial$admonitions/language-en.adoc[]
+
+== Functional capabilities
+
+The administrative portal is an instrument for Registry developers and modelers, which provides the users with the following functional capabilities:
+
+Regulations version management::
+* [*] Viewing regulations master-version;
+* [*] Creating requests for changes;
+* [*] Activating change requests;
+* [*] Viewing change requests;
+* [*] Viewing entity-elements statuses in version candidate;
+* [*] Applying changes to version candidate elements;
+* [*] Automatic updating and actualization of open change requests states;
+* [*] Integrating change requests to master-version;
+* [*] Viewing open change request metadata. Applying and recalling request;
+* [*] Checking and recording change request conflicts with the master-version.
+
+Regulations modeling::
+* [*] Registry global configuration management;
+* [*] Viewing and downloading report templates;
+* [*] Viewing the list of data model tables and their structures;
+* [*] Business Process management.
+
+User management::
+* [*] Importing users into the system.
+
+Contacting support service::
+* [*] Contacting support for non-critical errors.
+
+.Administrative portal functional capabilities
+image::registry-admin/admin-portal/admin-portal-new-diagram.png[]
+
+== Section overview
+
+* [*] xref:registry-admin/admin-portal/version-control/version-control-overview.adoc[]
+* [*] xref:registry-admin/admin-portal/registry-modeling/overview.adoc[]
+* [*] xref:registry-admin/admin-portal/admin-portal-user-mgmt.adoc[]
+* [*] xref:registry-admin/admin-portal/error-non-critical.adoc[]
+

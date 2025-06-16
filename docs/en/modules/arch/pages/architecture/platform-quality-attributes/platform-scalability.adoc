@@ -1,0 +1,31 @@
+= Scalability
+include::ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+_The quality attribute defines the capability of a system to process growing workloads without serious drops in general performance, or the capability to instantly adapt by increasing resource provision._
+
+The _Registry Platform_ is built on the xref:arch:architecture/container-platform/container-platform.adoc[_OpenShift_ container orchestration platform], which provides the capabilities for effective scaling of Registry subsystems and components according to the current workload.
+
+xref:arch:architecture/platform/administrative/control-plane/overview.adoc[Platform and registries management subsystem] provides administrators with a web interface for cluster and Registry resources management, with support for two scaling approaches:
+
+* _Scale-up_ -- allotment of additional CPU and memory resources to separate components, changing cluster VM characteristics, increasing disk volume, etc.
+* _Scale-out_ -- increasing cluster and Registry resources by deploying additional VMs, additional component instances for load balancing, etc.
+
+[TIP]
+--
+Find more details on _Registry Platform_ scaling procedure in the corresponding sections:
+
+* xref:admin:scaling/vertical-scaling-master-nodes.adoc[Master nodes vertical scaling for OKD in AWS and vSphere]
+* xref:admin:file-system/ceph_scaling.adoc[Scaling of Ceph file system size]
+* xref:architecture/container-platform/cluster_node_autoscaler.adoc[Automated horizontal scaling of cluster node instances]
+
+Find more details on relevant subsystems and component technical design in the following chapters:
+
+* xref:arch:architecture/container-platform/container-platform.adoc#_scalability[Container orchestration platform]
+* xref:arch:architecture/registry/operational/relational-data-storage/overview.adoc#_scalability[Relational database management subsystem]
+* xref:arch:architecture/registry/operational/nonrelational-data-storage/overview.adoc#_scalability[Non-relational database management subsystem]
+* xref:arch:architecture/platform/operational/distributed-data-storage/overview.adoc#_scalability[Distributed data storage subsystem]
+--

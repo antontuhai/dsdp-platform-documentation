@@ -1,0 +1,11 @@
+apiVersion: v2
+description: ddm-architecture
+home: ddm-architecture
+appVersion: 1.9.9
+sources:
+    - https://github.com/epam/edp-ddm-architecture
+maintainers:
+    - name: oss-ddm
+name: ddm-architecture
+type: application
+version: 1.9.9

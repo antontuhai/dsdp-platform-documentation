@@ -1,0 +1,69 @@
+= Form editing tabs
+include::ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::ROOT:partial$admonitions/language-en.adoc[]
+
+The UI-form editing page is accessed by clicking on a form name, or `edit form` icon (&#128393;). The functionality of the page is provided on the following tabs:
+
+[#general]
+== General
+
+Fields for entering UI-form business-name and service name are available on this tab. Business-name can be edited without any restrictions, while the service name is entered once on form creation, and can't be changed.
+
+image:registry-admin/admin-portal/ui-forms/main.png[]
+
+[#code]
+== Code
+
+This tab displays UI-form code, which can be copied and edited. If the form is being created in the xref:#builder[], the code will be updated automatically, and vice versa.
+
+image:registry-admin/admin-portal/ui-forms/code.png[]
+
+TIP: You can find more details on the functionality on the following page: xref:registry-admin/admin-portal/registry-modeling/ui-forms/json-code-view-edit.adoc[].
+
+[#builder]
+== Builder
+
+This tab allows UI-form developers to create forms using in-built UI-components. The components can be found in the left menu, where they can be dragged from onto the work zone to create the corresponding fields of the UI-form. The search field on top of the menu allows the user to search for the required element by name or part of the name.
+
+image:registry-admin/admin-portal/ui-forms/constructor.png[]
+
+[TIP]
+====
+
+You can find more details on the process, and UI-form modeling components on the corresponding pages:
+
+* xref:bp-modeling/forms/registry-admin-modelling-forms.adoc[]
+* xref:bp-modeling/forms/components/index.adoc[]
+====
+
+== Preview
+
+Here the developer can check the way their UI-form looks in the service provider or service recipient portals. The tab emulates part of the form's operation, so that all its elements can be previewed.
+
+image:registry-admin/admin-portal/ui-forms/view.png[]
+
+== Request
+
+This tab displays the form's _Data Factory_ API request code. This code can be copied, but it only can be edited indirectly by making certain changes in the xref:#builder[] or xref:#code[] tabs.
+
+image:registry-admin/admin-portal/ui-forms/request.png[]
+
+== Context menu (&#8942;)
+
+Near the tabs you can find a context menu that is activated by clicking the *`&#8942;`* icon. This menu includes the following items:
+
+* [*] Copy form. This item allows the user to copy the current form and start editing the copy in its xref:#general[] tab.
++
+TIP: You can find more information on form copying on the following page: xref:registry-admin/admin-portal/registry-modeling/ui-forms/copy-forms.adoc[].
+
+* [*] Export `.json`. This item allows the user to export the form in `.json` format.
++
+TIP: You can find more information on form downloading/exporting on the following page: xref:registry-admin/admin-portal/registry-modeling/ui-forms/download-forms.adoc[].
+
+* [*] Delete. This item allows the user to delete the form.
++
+TIP: You can find more information on form deleting on the following page:
+xref:registry-admin/admin-portal/registry-modeling/ui-forms/delete-forms.adoc[].
+
+image:registry-admin/admin-portal/ui-forms/menu.png[]

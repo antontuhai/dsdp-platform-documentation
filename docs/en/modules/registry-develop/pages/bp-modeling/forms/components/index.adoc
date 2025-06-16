@@ -1,0 +1,62 @@
+= UI form modeling components
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+This section provides an overview of the *_Updated components_* for UI form modeling. We recommend using these components to develop the regulations more efficiently and improve the user experience. The updated components of the standard *Form IO* set provide more flexibility and expanded functionality.
+
+image:registry-develop:bp-modeling/forms/components/components-panel.png[]
+
+You can use these features in the Administrative portal > *UI forms* (creating or editing) > *Builder* > *Updated*.
+
+.Updated UI form modeling components
+[cols="1,2",options="header"]
+|===
+|Component|Description
+
+|xref:bp-modeling/forms/components/text-field.adoc[*Text Field*]
+|A component for text input. Used for short fields such as a name, address, and so on.
+
+|xref:bp-modeling/forms/components/number.adoc[*Number*]
+|A component limited to the number of type values.
+
+|xref:bp-modeling/forms/components/content.adoc[*Content*]
+|A component for displaying static content such as a text, images, or HTML.
+
+|xref:bp-modeling/forms/components/email.adoc[*Email*]
+|A specialized text component for entering and validating email addresses.
+
+|xref:bp-modeling/forms/components/edit-grid/edit-grid.adoc[*Edit Grid*]
+|A component for creating, editing, and deleting rows in a table.
+
+|xref:bp-modeling/forms/components/columns.adoc[*Columns*]
+|A component for creating column layouts on a page or within other components.
+
+|xref:bp-modeling/forms/components/text-area.adoc[*Text Area*]
+|A component for longer text input.
+
+|xref:bp-modeling/forms/components/fieldset.adoc[*Field Set*]
+|A component that groups several fields or components for a better organization.
+
+|xref:bp-modeling/forms/components/date-time.adoc[*Date & Time*]
+|A component that enables users to select a date and/or time.
+
+|xref:bp-modeling/forms/components/table.adoc[*Table*]
+|A component for creating and displaying a table.
+
+|xref:bp-modeling/forms/components/select/select-overview.adoc[*Select*]
+|A component that enables users to select one or more options from a predefined list.
+
+|xref:bp-modeling/forms/components/checkbox.adoc[*Checkbox*]
+|A component that enables users to select one or more options from a list.
+
+|xref:bp-modeling/forms/components/map/map.adoc[*Map*]
+|A component for displaying geographic data on an interactive map.
+
+|xref:bp-modeling/forms/components/radio.adoc[*Radio*]
+|A component that allows users to select only one option from a predefined set.
+
+|xref:bp-modeling/forms/components/file/file.adoc[*File*]
+|A component that enables users to upload files to a server.
+|===
+

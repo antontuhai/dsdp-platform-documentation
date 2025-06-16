@@ -1,0 +1,9 @@
+= Tests
+
+This section covers the self-assessment tests you can take after completing the learning part of the training. Tests go from simple to complex.
+
+* xref:registry-develop:study-project/control-tasks/control-task-1.adoc[]: Gain in-depth practical knowledge of creating business processes on the Platform.
+
+* xref:registry-develop:study-project/control-tasks/control-task-2.adoc[]: Deepen your practical skills in developing business processes.
+
+* xref:registry-develop:study-project/control-tasks/control-task-3.adoc[]: Deepen your business process creation skills even further by mastering nested entities.

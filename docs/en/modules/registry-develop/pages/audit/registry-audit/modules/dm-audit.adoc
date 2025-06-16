@@ -1,0 +1,160 @@
+= Data model audit
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+|===
+|Name |Criticality
+
+|<<_dm_01>> |High
+|<<_dm_02>> |Medium
+|<<_dm_03>> |Low
+|<<_dm_04>> |High
+|<<_dm_05>> |High
+|<<_dm_06>> |High
+|<<_dm_07>> |Medium
+|<<_dm_08>> |High
+|<<_dm_09>> |High
+|===
+
+== Audit cases
+
+[#_dm_01]
+=== DM-01. Indexes for search conditions
+IMPORTANT: Criticality: High
+
+Description ::
+Create indexes to optimize the performance of search queries. Avoid duplication and redundant indexes.
+
+Impact ::
+* Lack of indexes significantly degrades query performance.
+* Duplicate or redundant indexes waste resources and complicate maintenance.
+
+Recommendations ::
+* Use the `indexing="true"` attribute in the `ext:createSearchCondition` tag to automatically create necessary indexes.
+* Use the `createIndex` tag for manually creating indexes, for example, for `join` fields.
+* Avoid creating indexes on columns with low selectivity or on small tables.
+* Remove duplicates using the `dropIndex` tag.
+
+[#_dm_02]
+=== DM-02. Redundant changesets within one release
+IMPORTANT: Criticality: Medium
+
+Description ::
+Remove redundant changesets created during the development phase before release.
+
+Impact ::
+* Complicates `changelog` management.
+* Increases the time needed to apply database migrations.
+
+Recommendations ::
+* Consolidate changes into one logical changeset when possible.
+* Use `clean-up` for resetting the development environment if necessary.
+
+[#_dm_03]
+=== DM-03. Naming convention for changeset identifiers
+IMPORTANT: Criticality: Low
+
+Description ::
+Follow a unified naming convention for changeset identifiers.
+
+Impact ::
+* Makes changes easier to understand by all team members.
+* Simplifies searching and navigation in migration files.
+
+Recommendations ::
+* Use descriptive identifiers.
+* Maintain a consistent naming format throughout the project.
+
+[#_dm_04]
+=== DM-04. Columns included in search conditions
+IMPORTANT: Criticality: High
+
+Description ::
+Include only columns that are actually used in business processes, forms, or APIs.
+
+Impact ::
+* Inefficient data processing.
+* Increased risk of leaking sensitive information.
+* Additional load on the system.
+
+Recommendations ::
+* Create separate search conditions for different needs (avoid the _"God Object"_ anti-pattern).
+
+[#_dm_05]
+=== DM-05. Limits for search conditions
+IMPORTANT: Criticality: High
+
+Description ::
+Always specify limits when designing search conditions.
+
+Impact ::
+* Without limits, there is a risk of data leakage.
+* Can lead to high database load.
+
+Recommendations ::
+* Use the `limit` attribute in the `ext:createSearchCondition` tag.
+
+[#_dm_06]
+=== DM-06. Database schema normalization
+IMPORTANT: Criticality: High
+
+Description ::
+Follow the Third Normal Form (3NF) when modeling the database schema.
+
+Impact ::
+* Improves data integrity.
+* Reduces duplication and storage requirements.
+* Simplifies maintenance and scalability.
+
+Recommendations ::
+* Use 3NF as the default modeling practice.
+* Deviate from 3NF only with a clear understanding of the trade-offs.
+
+[#_dm_07]
+=== DM-07. Partial updates
+IMPORTANT: Criticality: Medium
+
+Description ::
+Prefer partial updates (`partialUpdate`) over full entity updates.
+
+Impact ::
+* Reduces database calls.
+* Simplifies business process logic.
+
+Recommendations ::
+* Create partial update APIs using the `ext:partialUpdate` tag.
+
+[#_dm_08]
+=== DM-08. Use of Liquibase SQL tags
+IMPORTANT: Criticality: High
+
+Description ::
+Use only standard Liquibase tags supported by the platform.
+
+Impact ::
+* Custom SQL may be incompatible with future platform updates.
+* Increased risk of runtime errors.
+
+Recommendations ::
+* Prefer Liquibase tags over raw SQL wherever possible.
+* Carefully test changes if using SQL manually.
+
+[#_dm_09]
+=== DM-09. Pagination in search conditions
+IMPORTANT: Criticality: High
+
+Description ::
+Apply pagination when creating search conditions.
+
+Impact ::
+* Reduces load on the server and network.
+* Improves the user experience when working with large data volumes.
+
+Recommendations ::
+* Use the `pagination` attribute in the `ext:createSearchCondition` tag.
+* Pagination types:
+** `pagination="page"` — if the total number of pages and rows needs to be known.
+** `pagination="offset"` — if total pages and row count are not critical (this is the default pagination type).

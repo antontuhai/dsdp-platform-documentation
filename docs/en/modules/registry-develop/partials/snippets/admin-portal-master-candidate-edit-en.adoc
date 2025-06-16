@@ -1,0 +1,15 @@
+[CAUTION]
+====
+The *Master* version of registry regulations is primarily used for reading data.
+If you need to edit the regulation, changes can only be made in a candidate version (_a change request applied to the master version_).
+
+You can edit _UI forms and business processes_ *directly in the master version*.
+However, in this case, users will see a warning window with the following options:
+
+* *Continue in the master version* — this allows you to apply changes directly to the current main version of the regulation.
+* xref:registry-develop:registry-admin/admin-portal/version-control/candidate/create-new-change-request.adoc#create-mr[Create a candidate version] — this allows you to create a new change request.
+
+For more details about working with regulation versions, see:
+
+* xref:registry-admin/admin-portal/version-control/version-control-overview.adoc[Managing registry regulation versions]
+====

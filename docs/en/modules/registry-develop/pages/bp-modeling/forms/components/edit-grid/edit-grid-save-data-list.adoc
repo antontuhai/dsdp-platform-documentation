@@ -1,0 +1,62 @@
+= Saving form data to the database as an array
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+To load an array of data to the data factory, use the *Edit Grid* component when modeling the UI form.
+
+The *Edit Grid* component enables you to model records from different components as a single array and upload them to the database. The array must follow the structure defined by the data model.
+
+IMPORTANT: If the structure of an array in a form does not follow the model defined in the database, the values from the form will not be loaded, and the system will return an error.
+
+TIP: This topic demonstrates a test scenario of modeling a data array for loading documents using the *Edit Grid* component.
+
+. Sign in to the *Administrative portal*.
+. Open the *UI forms* section.
++
+image::registry-admin/admin-portal/ui-forms/ui-forms-1.png[]
+
+. Create a form or select one from the list.
+
+. Open the *Builder* tab.
+
+. In the components panel on the left, select *Updated*.
+
+. Find the *Edit Grid* component and drag it onto the modeling canvas.
++
+image:bp-modeling/forms/components/edit-grid/sort-as-number/edit-grid-sort-as-number-1.png[]
++
+
+. In the new window, click *`Save`*.
++
+image:bp-modeling/forms/components/edit-grid/sort-as-number/edit-grid-sort-as-number-2.png[]
++
+
+. Add components to the *Edit Grid* according to the business logic--for example, *Text Field* (twice) and *Date / Time*.
++
+image:bp-modeling/forms/components/edit-grid/sort-as-number/edit-grid-sort-as-number-3.png[]
++
+image:bp-modeling/forms/components/edit-grid/submit-data-as-array/edit-grid-submit-data-as-array-1.png[]
++
+
+As a result, the modeling canvas looks like this:
++
+image:bp-modeling/forms/components/edit-grid/submit-data-as-array/edit-grid-submit-data-as-array-2.png[]
++
+
+. Open the *Preview* tab to see how the form will appear in the UI.
+
+. Click *`Add`* to fill out the table.
++
+image:bp-modeling/forms/components/edit-grid/submit-data-as-array/edit-grid-submit-data-as-array-3.png[]
++
+
+. In the new window, fill out the fields and click *`Save`*.
+. Add more records to the table if necessary.
++
+image:bp-modeling/forms/components/edit-grid/submit-data-as-array/edit-grid-submit-data-as-array-4-en.png[]
+
+This is how you create a table with columns of different types (_in our example, components *Text Field* and *Date / Time_*) combined into a single array under the *Edit Grid* component. From now on, officer users can fill out the UI forms with real data as part of the business processes. After the data is digitally signed, it will be saved to corresponding tables in the database.
+
+.Request to data factory in a JSON format
+image::bp-modeling/forms/components/edit-grid/submit-data-as-array/edit-grid-submit-data-as-array-5-en.png[]

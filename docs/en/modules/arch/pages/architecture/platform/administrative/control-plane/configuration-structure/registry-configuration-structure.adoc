@@ -1,0 +1,2900 @@
+= Registry configuration structure
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+include::common/description.adoc[]
+
+.Registry configuration
+|===
+|Configuration level |Repository |Path |Description
+
+.2+|_Registry_
+.2+|`<registry name>`
+|`<<registry-yaml,/deploy-templates/values.yaml>>`
+|Contains general registry settings. Configured by the administrator through the admin console.
+
+|`<<registry-gotmpl,/deploy-templates/values.gotmpl>>`
+|Contains templates and default values for system parameters. In most cases, no adjustments are required.
+
+|===
+
+TIP: For details on configuration deployment processes, see xref:architecture/platform/administrative/config-management/overview.adoc[] та xref:architecture/platform/administrative/control-plane/overview.adoc[].
+
+=== Registry configuration structure
+
+.Registry configuration components
+image::architecture/platform/administrative/control-plane/registry-configuration-structure.drawio.svg[]
+
+== Registry yaml configuration specification (values.yaml)
+[[registry-yaml]]
+
+This section provides a list of general registry settings that administrators configure via the admin console or a commit to the repository.
+
+=== General registry settings
+
+The following table provides the registry's root parameters.
+
+TIP: Use links to the corresponding child tables for convenient navigation through the object specification hierarchy.
+
+[[root]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.General registry settings
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<administrators,administrators>>`
+|[]object
+|❌
+|✅
+|A list of registry users with the registry administrator role (`cp-registry-admin-<registry-name>`).
+
+|`<<digital-signature,digitalSignature>>`
+|object
+|❌
+|✅
+|The registry Digital signatures subsystem's _Digital signature service_ settings.
+
+|`<<digital-documents,digitalDocuments>>`
+|object
+|❌
+|✅
+|The _Digital document service_ limitation settings for the digital document files uploaded to the registry by users and business processes.
+
+|`<<dso,dso>>`
+|object
+|❌
+|✅
+|The registry Digital signatures subsystem's _Digital signature service_ replica settings.
+
+|`<<external-systems,external-systems>>`
+|[]object
+|❌
+|✅
+|Configuration of interaction with external systems.
+
+|`<<global,global>>`
+|object
+|❌
+|✅
+|Global registry settings.
+
+|`<<griada,griada>>`
+|object
+|❌
+|✅
+|Hardware and software crypto-module settings.
+
+|`<<keycloak,keycloak>>`
+|object
+|❌
+|✅
+|_User and role management service_ settings.
+
+|`<<kongPluginsConfig,kongPluginsConfig>>`
+|object
+|❌
+|✅
+|The _external API gateway of the registry operational zone_ plugin configuration.
+
+|`<<nontrembita-external-registration,nontrembita-external-registration>>`
+|[]object
+|❌
+|✅
+|The _external API gateway of the registry operational zone_ plugin configuration.
+
+|`<<portals,portals>>`
+|object
+|❌
+|✅
+|User portal settings.
+
+|`<<redash,redash>>`
+|object
+|❌
+|✅
+|_Registry analytical reporting subsystem_ settings.
+
+|`registryVaultPath`
+|string
+|registry-kv/registry/<registry_name>
+|✅
+|The path to the registry Vault Engine in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`<<signWidget,signWidget>>`
+|object
+|❌
+|✅
+|Authentication widget settings.
+
+|`<<trembita,trembita>>`
+|object
+|❌
+|❌
+
+|Secure exchange gateway settings.
+
+|===
+
+=== Digital document service settings
+
+The `digitalDocuments` group contains the _Digital document service_ settings.
+
+[[digital-documents]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.digitalDocuments | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`maxFileSize`
+|string
+|100MB
+|✅
+|The maximum size of a file for upload in MB.
+
+|`maxTotalFileSize`
+|string
+|100MB
+|✅
+|The maximum size of a group of files for upload in MB.
+
+|===
+
+[source,yaml]
+.digitalDocuments configuration example
+----
+digitalDocuments:
+    maxFileSize: 100MB
+    maxTotalFileSize: 100MB
+----
+
+=== Registry administrators configuration parameters
+
+The `administrators` group contains a list of registry administrators.
+
+[[administrators]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.administrators | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`email`
+|string
+|❌
+|✅
+|The email address that identifies the user.
+
+|`firstName`
+|string
+|❌
+|✅
+|User's first name.
+
+|`lastName`
+|string
+|❌
+|✅
+|User's last name.
+
+|`passwordVaultSecret`
+|string
+|❌
+|✅
+|The path to the temporary password in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`passwordVaultSecretKey`
+|string
+|❌
+|✅
+|The key to finding the temporary password in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`username`
+|string
+|❌
+|✅
+|User account name. Equals the `email` field.
+
+|===
+
+[source,yaml]
+.Administrators configuration example
+----
+administrators:
+    - email: user@company.com
+      firstName: user
+      lastName: user
+      passwordVaultSecret: registry-kv/cluster/user@company.com
+      passwordVaultSecretKey: password
+      username: user@company.com
+----
+
+=== User and role management service configuration parameters
+
+The `keycloak` group contains the _User and role management service_ settings.
+
+[[keycloak]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.keycloak | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<authFlows,authFlows>>`
+|object
+|❌
+|✅
+|The `AuthFlow` entity settings in Keycloak.
+
+|`<<citizenAuthFlow,citizenAuthFlow>>`
+|object
+|❌
+|✅
+|The `AuthFlow` entity settings in Keycloak for the citizen portal.
+
+|`customHost`
+|string
+|❌
+|❌
+|The Keycloak host to use for authentication from the ones previously added at the Platform level.
+
+|`<<identityProviders,identityProviders>>`
+|object
+|❌
+|✅
+|Identity provider settings in Keycloak.
+
+|`<<realms,realms>>`
+|object
+|❌
+|✅
+|The `Realm` entity settings in Keycloak.
+
+|===
+
+[[authFlows]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.keycloak.authFlows | <<keycloak,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<authFlows-spec,officerAuthFlow>>`
+|object
+|❌
+|✅
+|The `AuthFlow` entity settings in Keycloak for the officer portal.
+
+|===
+
+[[citizenAuthFlow]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.keycloak.citizenAuthFlow | <<keycloak,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`authType`
+|string
+|❌
+|✅
+|The authentication widget to use.
+
+|`edrCheck`
+|bool
+|❌
+|✅
+a|Determines whether the business users should be checked for an active record in the Unified state register.
+
+include::platform::partial$admonitions/ua-specific.adoc[]
+
+|`<<idGovUa,registryIdGovUa>>`
+|bool
+|❌
+|✅
+a|Identification provider settings.
+
+[NOTE,caption=UA-specific]
+The `idGovUa` identity provider with its respective settings is specific to the Ukrainian implementation and does not apply to other contexts or regions. Please consult the local guidelines or documentation if you are implementing this outside of Ukraine.
+
+|`<<widget,widget>>`
+|bool
+|❌
+|✅
+|Authentication widget settings.
+
+|===
+
+[[widget]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.keycloak.citizenAuthFlow.widget | <<keycloak,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`height`
+|string
+|❌
+|✅
+|The authentication widget height.
+
+|`url`
+|string
+|❌
+|✅
+|The authentication widget URL.
+
+|===
+
+[[identityProviders]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.keycloak.identityProviders | <<keycloak,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<idGovUa,idGovUa>>`
+|object
+|❌
+|✅
+a|Identification provider settings.
+
+[NOTE,caption=UA-specific]
+The `idGovUa` identity provider with its respective settings is specific to the Ukrainian implementation and does not apply to other contexts or regions. Please consult the local guidelines or documentation if you are implementing this outside of Ukraine.
+
+|===
+
+[[idGovUa]]
+[NOTE,caption=UA-specific]
+====
+The `idGovUa` identity provider with its respective settings is specific to the Ukrainian implementation and does not apply to other contexts or regions. Please consult the local guidelines or documentation if you are implementing this outside of Ukraine.
+
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.keycloak.identityProviders.idGovUa | <<identityProviders,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`clientId`
+|string
+|❌
+|✅
+|The client ID.
+
+|`secretKey`
+|string
+|❌
+|✅
+|The path to the client secret in the Hashicorp Vault _Secrets and encryption management service_ for users registered at id.gov.ua.
+
+|`url`
+|string
+|❌
+|✅
+|The identity provider URL.
+
+|===
+====
+
+[[authFlows-spec]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.keycloak.authFlows.officerAuthFlow | <<authFlows,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`widgetHeight`
+|string
+|720
+|✅
+|The authentication widget height.
+
+|===
+
+[[realms]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.keycloak.realms | <<keycloak,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<officerPortal,officerPortal>>`
+|object
+|❌
+|✅
+|Authentication realm settings for the officer portal.
+
+|===
+
+[[officerPortal]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.keycloak.realms.officerPortal | <<realms,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`browserFlow`
+|string
+|dso-officer-auth-flow
+|✅
+|The name of the AuthFlow to use.
+
+|`selfRegistration`
+|bool
+|❌
+|✅
+|Determines whether the automatic account creation is enabled during the user's first sign-in.
+
+|===
+
+[source,yaml]
+----
+keycloak:
+    authFlows:
+        officerAuthFlow:
+            widgetHeight: 720
+    citizenAuthFlow:
+        authType: widget
+        edrCheck: true
+        registryIdGovUa: {}
+        widget:
+            height: 720
+            url: https://example.com/sign-widget
+    customHost: "dns-keycloak.openshift.example.com"
+    identityProviders:
+        idGovUa:
+            clientId: ""
+            secretKey: ""
+            url: ""
+    realms:
+        officerPortal:
+            browserFlow: dso-officer-auth-flow
+            selfRegistration: false
+----
+
+=== Registry's Digital signature service configuration parameters
+
+The `digitalSignature` group contains the _Digital signature service_ settings.
+
+[[digital-signature]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.digitalSignature | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<digital-signature-data,data>>`
+|object
+|❌
+|✅
+|The registry's _Digital signature service_ key settings.
+
+|`<<digital-signature-env,env>>`
+|object
+|❌
+|✅
+|The registry's _Digital signature service_ environment settings.
+
+|===
+
+[[digital-signature-data]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.digitalSignature.data | <<digital-signature,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`Key-6-dat`
+|string
+|❌
+|✅
+|The path to the organization's private file key in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`allowed-keys-yml`
+|string
+|❌
+|✅
+|The path to the file listing the attributes of authorized or previously issued keys in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`osplm.ini`
+|string
+|❌
+|✅
+|The path to the configuration file of the hardware and software cryptomodule in the Hashicorp Vault _Secrets and encryption management service_. Only used with the hardware key type.
+
+|===
+
+[[digital-signature-env]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.digitalSignature.env | <<digital-signature,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`sign.key.device-type`
+|string
+|❌
+|✅
+|The type of the key used by the registry. Possible values are `file` or `hardware`.
+
+|`sign.key.file.issuer`
+|string
+|❌
+|✅
+|The path to information about the issuer of the organization's private key in the Hashicorp Vault _Secrets and encryption management service_. Used when `sign.key.device-type` = `file`.
+
+|`sign.key.file.password`
+|string
+|❌
+|✅
+
+|The path to the organization's private key password in the Hashicorp Vault _Secrets and encryption management service_. Used when `sign.key.device-type` = `file`.
+
+|`sign.key.hardware.device`
+|string
+|❌
+|✅
+
+|The description of the key information carrier in the Hashicorp Vault _Secrets and encryption management service_. Used when `sign.key.device-type` = `hardware`.
+
+|`sign.key.hardware.password`
+|string
+|❌
+|✅
+
+|The path to the hardware cryptomodule device password in the Hashicorp Vault _Secrets and encryption management service_. Used when `sign.key.device-type` = `hardware`.
+
+|`sign.key.hardware.type`
+|string
+|❌
+|✅
+
+|The path to the hardware cryptomodule device type in the Hashicorp Vault _Secrets and encryption management service_. Used when `sign.key.device-type` = `hardware`.
+
+|===
+
+[source,yaml]
+
+.Registry's Digital signature service configuration example
+----
+digital-signature:
+    data:
+        Key-6-dat: registry-kv/registry/<registry_name>/key-management-20231608T063220Z
+        allowed-keys-yml: registry-kv/registry/<registry_name>/key-management-20231608T063220Z
+        osplm.ini: ""
+    env:
+        sign.key.device-type: file
+        sign.key.file.issuer: registry-kv/registry/<registry_name>/key-management-20231608T063220Z
+        sign.key.file.password: registry-kv/registry/<registry_name>/key-management-20231608T063220Z
+        sign.key.hardware.device: ""
+        sign.key.hardware.password: ""
+        sign.key.hardware.type: ""
+----
+
+The `dso` group contains the settings for the number of replicas of the registry's _Digital signature service_.
+
+[[dso]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.dso | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`maxReplicas`
+|int
+|3
+|❌
+
+|The maximum number of component replicas.
+
+
+|`minReplicas`
+|int
+|1
+|❌
+
+|The minimum number of component replicas.
+
+|===
+
+[source,yaml]
+
+.Registry's Digital signature service configuration example
+----
+dso:
+  maxReplicas: 3
+  minReplicas: 1
+----
+
+=== Global registry settings
+
+The `global` group contains the registry's global parameters that are not classified into separate groups.
+
+[[global]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<computeResources,computeResources>>`
+|object
+|❌
+|✅
+
+|Registry virtual machine configuration.
+
+|`deploymentMode`
+|string
+|development
+|✅
+
+|The registry deployment mode. For details, see xref:registry-develop:registry-admin/change-dev-prod-mode.adoc[].
+
+|`disableRequestsLimits`
+|bool
+|true
+|✅
+
+|Determines whether Requests/Limits are enabled for registry components.
+
+|`<<whitelistip,whiteListIP>>`
+|object
+|❌
+|❌
+
+|Registry service access parameters.
+
+|`excludePortals`
+|[]object
+|[""]
+|❌
+
+|The list of user portals that will not be deployed in the registry. Possible values are: `officer-portal`, `citizen-portal`, or `admin-portal`.
+
+|`<<bpAdminPortal,bpAdminPortal>>`
+|object
+|❌
+|✅
+
+|User interface settings for managing and viewing the execution status of the registry's business processes.
+
+|`<<crunchyPostgres,crunchyPostgres>>`
+|object
+|❌
+|✅
+
+|_Relational database management subsystem_ settings.
+
+|`<<kafkaOperator,kafkaOperator>>`
+|object
+|❌
+|✅
+
+|_Asynchronous messaging subsystem_ settings.
+
+|`<<notifications,notifications>>`
+|object
+|❌
+|✅
+
+|Notification settings.
+
+|`<<registry,registry>>`
+|object
+|❌
+|✅
+
+|Registry settings.
+
+|`<<registryBackup,registryBackup>>`
+|object
+|❌
+|❌
+
+|Registry component backup settings.
+
+|`<<regulationManagement,regulationManagement>>`
+|object
+|❌
+|✅
+
+|_Registry regulations management service_ settings.
+
+|===
+
+=== Registry components configuration parameters
+
+The `registry` group contains the general settings of the registry components.
+
+[[registry]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.registry | <<global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<geoServer,geoServer>>`
+|object
+|❌
+|✅
+
+|Defines the general settings of the registry's `geo-server` component.
+
+|`<<component,bpms>>`
+|object
+|❌
+|❌
+
+|Defines the general settings of the registry's `bpms` component.
+
+|`<<component,digitalDocumentService>>`
+|object
+|❌
+|❌
+
+|Defines the general settings of the registry's `digital-document-service` component.
+
+|`<<component,digitalSignatureOps>>`
+|object
+|❌
+|❌
+
+|Defines the general settings of the registry's `digital-signature-ops` component.
+
+|`<<component,kong>>`
+|object
+|❌
+|❌
+
+|Defines the general settings of the registry's `kong-kong` component.
+
+|`<<component,redis>>`
+|object
+|❌
+|❌
+
+|Defines the general settings of the registry's `redis` component.
+
+|`<<component,restApi>>`
+|object
+|❌
+|❌
+
+|Defines the general settings of the registry's `registry-rest-api` component.
+
+|`<<component,sentinel>>`
+|object
+|❌
+|❌
+
+|Defines the general settings of the registry's `redis-sentinel` component.
+
+|`<<component,soapApi>>`
+|object
+|❌
+|❌
+
+|Defines the general settings of the registry's `registry-soap-api` component.
+
+|`<<component,userProcessManagement>>`
+|object
+|❌
+|❌
+
+|Defines the general settings of the registry's `user-process-management` component.
+
+|`<<component,userTaskManagement>>`
+|object
+|❌
+|❌
+
+|Defines the general settings of the registry's `user-task-management` component.
+
+|===
+
+[[geoServer]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.registry.geoServer | <<registry,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`enabled`
+|bool
+|❌
+|✅
+
+|Determines whether the _Geodata management subsystem_ is enabled.
+
+|===
+
+[[component]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.registry.component | <<registry,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`replicas`
+|int
+|❌
+|❌
+
+|The number of replicas.
+
+|<<hpa,hpa>>
+|object
+|❌
+|❌
+
+|Horizontal Pod Autoscaler settings for the registry component.
+
+|<<requestslimits,requestsLimits>>
+|object
+|❌
+|❌
+
+|Requests/Limits settings for the registry component.
+
+|<<istio,istio>>
+|object
+|❌
+|❌
+
+|Istio Sidecar settings for the registry component.
+
+|<<container,container>>
+|object
+|❌
+|❌
+
+|Container resources settings for the registry component.
+
+|===
+
+[[hpa]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.registry.component.hpa | <<registry,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`enabled`
+|bool
+|false
+|❌
+
+|Determines whether the automatic scaling is enabled.
+
+|`minReplicas`
+|integer
+|1
+|❌
+
+|The minimum number of component replicas.
+
+|`maxReplicas`
+|integer
+|3
+|❌
+
+|The maximum number of component replicas.
+
+|===
+
+=== Backup and restore subsystem configuration parameters
+
+The `registryBackup` group contains the _Backup and restore subsystem_ settings.
+
+[[registryBackup]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.registryBackup | <<global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`enabled`
+|bool
+|❌
+|❌
+
+|Determines whether the registry backup is enabled.
+
+|`expiresInDays`
+|int
+|❌
+|❌
+
+|The number of days to store the backup copy of the registry.
+
+|`schedule`
+|string
+|❌
+|❌
+
+|The registry backup schedule definition in the UNIX cron format.
+
+|`<<obc,obc>>`
+|object
+|❌
+|❌
+
+|The backup configuration of the S3 buckets.
+
+|===
+
+[[obc]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.registryBackup.obc | <<registryBackup,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`credentials`
+|string
+|❌
+|❌
+
+|The path to the S3 buckets access token in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`cronExpression`
+|string
+|❌
+|❌
+
+|The S3 buckets backup schedule definition in the UNIX cron format.
+
+|`endpoint`
+|string
+|❌
+|❌
+
+|The S3 bucket endpoint.
+
+|`backupBucket`
+|string
+|❌
+|❌
+
+|The name of the S3 bucket for the backup copy.
+
+|===
+
+=== Notification settings
+
+The `notifications` group contains the registry notification settings.
+
+[[notifications]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.notifications | <<global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<email,email>>`
+|object
+|❌
+|✅
+
+|The registry's _Email messaging service_ settings.
+
+|===
+
+[[email]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.notifications.email | <<notifications,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`type`
+|string
+|❌
+|✅
+
+|The type of the email server to use for notifications. Possible values are `external` or `internal`.
+
+|`address`
+|string
+|❌
+|✅
+
+|The email address of the `external` email server.
+
+|`host`
+|string
+|❌
+|✅
+
+|The host of the `external` email server.
+
+|`port`
+|string
+|❌
+|✅
+
+|The port of the `external` email server.
+
+|`password`
+|string
+|❌
+|✅
+
+|❌ A deprecated parameter. Will be discontinued in the future Platform versions.
+
+|`vaultKey`
+|string
+|❌
+|✅
+
+|The key to finding the `external` email server's password in the Hashicorp Vault _Secrets and encryption management service_.
+
+|`vaultPath`
+|string
+|❌
+|✅
+
+|The path to the `external` email server's password in the Hashicorp Vault _Secrets and encryption management service_.
+
+|===
+
+=== Asynchronous messaging subsystem configuration parameters
+
+The `kafkaOperator` group contains the _Registry regulations management service_ settings.
+
+[[kafkaOperator]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.kafkaOperator | <<global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<storage,storage>>`
+|object
+|❌
+|✅
+
+|The _Asynchronous messaging subsystem's_ storage settings.
+
+|===
+
+[[storage]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.kafkaOperator.storage | <<kafkaOperator,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<kafka,kafka>>`
+|object
+|❌
+|✅
+
+|The _Asynchronous messaging subsystem's_ storage settings.
+
+|===
+
+[[kafka]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.kafkaOperator.storage.kafka | <<storage,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`size`
+|string
+|20Gi
+|✅
+
+|The _Asynchronous messaging subsystem's_ storage size.
+
+|===
+
+=== Registry regulations management service configuration parameters
+
+The `regulationManagement` group contains the _Registry regulations management service_ settings.
+
+[[regulationManagement]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.regulationManagement | <<global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`maxCandidateVersions`
+|int
+|10
+|✅
+
+|The maximum number of active version candidates of the registry regulations.
+
+|===
+
+=== Relational database management subsystem configuration parameters
+
+The `crunchyPostgres` group contains the _Business processes execution service_ settings.
+
+[[crunchyPostgres]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.crunchyPostgres | <<global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<schedules,backups.pgbackrest.repos.schedules>>`
+|object
+|❌
+|✅
+
+|The backup settings of the _Relational database management subsystem_.
+
+|`<<postgresql,postgresql>>`
+|object
+|❌
+|✅
+
+|The DBMS instance settings of the _Relational database management subsystem_.
+
+|`storageSize`
+|string
+|10Gi
+|✅
+
+|The DBMS instance storage size of the _Relational database management subsystem_.
+
+|===
+
+[[schedules]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.crunchyPostgres.backups.pgbackrest.repos.schedules | <<crunchyPostgres,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`full`
+|string
+|❌
+|✅
+
+|The full backup schedule for the DBMS instances.
+
+|===
+
+[[postgresql]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.crunchyPostgres.postgresql.parameters | <<crunchyPostgres,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<parameters,parameters>>`
+|object
+|❌
+|✅
+
+|The backup settings of the _Relational database management subsystem_.
+
+|===
+
+[[parameters]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.crunchyPostgres.postgresql.parameters | <<postgresql,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`max_connections`
+|string
+|200
+|✅
+
+|The maximum number of simultaneous connections to the DBMS instance.
+
+|===
+
+=== Business processes execution service configuration parameters
+
+The `bpAdminPortal` group contains the _Business processes execution service_ settings.
+
+[[bpAdminPortal]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.bpAdminPortal | <<global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<metrics,camunda.bpm.metrics>>`
+|object
+|❌
+|✅
+
+|User interface settings for managing and viewing the execution status of the registry's business processes.
+
+|===
+
+[[metrics]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.bpAdminPortal.camunda.bpm.metrics | <<bpAdminPortal,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`enabled`
+|bool
+|true
+|✅
+
+|Determines whether the interface for collecting metrics is enabled for the _Event monitoring and notification subsystem_.
+
+|`scrapeInterval`
+|string
+|60s
+|✅
+
+|The time interval between metrics collection by the _Event monitoring and notification subsystem_.
+
+|===
+
+=== Registry services access parameters
+
+The `whiteListIP` group contains access parameters for the registry services.
+
+[[whitelistip]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.whiteListIP | <<global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`adminRoutes`
+|string
+|❌
+|✅
+
+|The registry's administrative service route access parameters.
+
+|`citizenPortal`
+|string
+|❌
+|✅
+
+|Citizen portal access parameters.
+
+|`officerPortal`
+|string
+|❌
+|✅
+
+|Officer portal access parameters.
+
+|===
+
+
+=== Authentication widget settings
+
+The `signWidget` group contains the authentication widget configuration parameters.
+
+[[signWidget]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.signWidget | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`copyFromAuthWidget`
+|bool
+|false
+|✅
+
+|
+
+|`height`
+|int
+|0
+|✅
+
+|The authentication widget height in px.
+
+|`url`
+|string
+|❌
+|✅
+
+|The authentication widget URL.
+
+|===
+
+=== Registry virtual machine configuration parameters
+
+The `computeResources` group contains the registry's virtual machine configuration parameters.
+
+[[computeResources]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.global.computeResources | <<global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`instanceCount`
+|int
+|2
+|✅
+
+|The number of virtual machines for registry deployment using the `AWS` or `vSphere` infrastructure type.
+
+|`awsInstanceType`
+|string
+|r5.2xlarge
+|✅
+
+|The type of AWS EC2 instance for registry deployment using the `AWS` infrastructure type.
+
+|`awsSpotInstance`
+|bool
+|false
+|✅
+
+|Determines whether to use the Spot type for the AWS EC2 registry instance.
+
+|`awsSpotInstanceMaxPrice`
+|string
+|❌
+|❌
+
+|The maximum price for the AWS EC2 Spot instance.
+
+|`awsInstanceVolumeType`
+|string
+|gp3
+|✅
+
+|The system disk type of the AWS EC2 instance for registry deployment using the `AWS` infrastructure type.
+
+|`instanceVolumeSize`
+|int
+|80
+|✅
+
+|The system disk size of the registry virtual machine using the `AWS` or `vSphere` infrastructure type.
+
+|`vSphereInstanceCPUCount`
+|int
+|8
+|✅
+
+|The number of vCPUs of the registry virtual machine using the `vSphere` infrastructure type.
+
+|`vSphereInstanceCoresPerCPUCount`
+|int
+|1
+|✅
+
+|The number of cores in each vCPU of the registry virtual machine using the `vSphere` infrastructure type.
+
+|`vSphereInstanceRAMSize`
+|int
+|32768
+|✅
+
+|The amount of RAM of the registry virtual machine using the `vSphere` infrastructure type.
+
+|===
+
+[source,yaml]
+
+.General registry configuration example -- bpAdminPortal
+----
+global:
+    bpAdminPortal:
+         camunda:
+            bpm:
+                metrics:
+                    enabled: true
+                    scrapeInterval: 60s
+----
+
+[source,yaml]
+
+.General registry configuration example -- crunchyPostgres
+----
+global:
+    crunchyPostgres:
+        backups:
+            pgbackrest:
+                repos:
+                    schedules:
+                        full: 0 1 * * *
+        postgresql:
+            parameters:
+                max_connections: 200
+        storageSize: 10Gi
+----
+
+[source,yaml]
+
+.General registry configuration example -- computeResources
+----
+global:
+    computeResources:
+      instanceCount: 3
+      awsInstanceType: "r5.2xlarge"
+      awsSpotInstance: false
+      awsInstanceVolumeType: "gp3"
+      awsInstanceVolumeSize: 80
+----
+
+[source,yaml]
+
+.General registry configuration example -- kafkaOperator
+----
+global:
+    kafkaOperator:
+        storage:
+            kafka:
+                size: 20Gi
+----
+
+[source,yaml]
+
+.General registry configuration example -- notifications
+----
+global:
+    notifications:
+        email:
+            type: internal
+----
+
+[source,yaml]
+
+.General registry configuration example -- registry
+----
+global:
+    registry:
+        <component_name>:
+            container:
+                envVars:
+                    JAVA_OPTS: -Xms1536m -Xmx1536m
+                resources:
+                    limits:
+                        cpu: "1"
+                        memory: 2Gi
+                    requests:
+                        cpu: "1"
+                        memory: 2Gi
+            istio:
+                sidecar:
+                    enabled: true
+                    resources:
+                        limits:
+                            cpu: 350m
+                            memory: 128Mi
+                        requests:
+                            cpu: 350m
+                            memory: 128Mi
+----
+
+[source,yaml]
+
+.General registry configuration example
+----
+global:
+    deploymentMode: production
+    excludePortals:
+        - "admin-portal"
+    regulationManagement:
+        maxCandidateVersions: 10
+    whiteListIP:
+        adminRoutes: "192.168.1.64/26 172.16.0.192/27"
+        citizenPortal: "0.0.0.0/0"
+        officerPortal: "192.168.1.64/26 172.16.0.192/27"
+----
+
+
+=== Hardware and software cryptomodule configuration parameters
+
+The `griada` group contains the hardware and software cryptomodule settings.
+
+include::platform::partial$admonitions/ua-specific.adoc[]
+
+[[griada]]
+[cols="20%,10%,5%,5%,60%",options="header",caption=]
+.griada | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`enabled`
+|bool
+|true
+|✅
+
+|Determines whether the hardware key is enabled in the registry.
+
+|`ip`
+|string
+|❌
+|✅
+
+|The IP address of the hardware and software cryptomodule.
+
+|`port`
+|int
+|❌
+|✅
+
+|The port of the hardware and software cryptomodule.
+
+|===
+
+[source,yaml]
+
+.Hardware and software cryptomodule configuration example
+----
+griada:
+  enabled: true
+  ip: "10.0.0.23"
+  port: 3080
+----
+
+=== Registry operational zone's external API gateway settings
+
+The `kongPluginsConfig` group contains the registry operational zone's external API gateway settings.
+
+[[kongPluginsConfig]]
+
+
+[cols="30%,20%,30%,20%",options="header",caption=]
+.kongPluginsConfig | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required
+
+|`pluginsPrometheusBandwidthMetrics`
+|bool
+|true
+|✅
+
+|`pluginsPrometheusLatencyMetrics`
+|bool
+|true
+|✅
+
+|`pluginsPrometheusPerConsumerMetrics`
+|bool
+|true
+|✅
+
+|`pluginsPrometheusStatusCodeMetrics`
+|bool
+|true
+|✅
+
+|`pluginsProxyCacheTtl`
+|int
+|900
+|✅
+
+|`pluginsRateLimitByHeaderFaultTolerant`
+|bool
+|true
+|✅
+
+|`pluginsRateLimitByHeaderHeaderName`
+|string
+|token-claim
+|✅
+
+|`pluginsRateLimitByHeaderHideClientHeaders`
+|bool
+|false
+|✅
+
+|`pluginsRateLimitByHeaderPolicy`
+|string
+|local
+|✅
+
+|`pluginsRateLimitByHeaderRequestsPerHour`
+|int
+|10000
+|✅
+
+|`pluginsRateLimitByHeaderRequestsPerSecond`
+|int
+|10
+|✅
+
+|`pluginsRateLimitByIpFaultTolerant`
+|bool
+|true
+|✅
+
+|`pluginsRateLimitByIpHideClientHeaders`
+|bool
+|false
+|✅
+
+|`pluginsRateLimitByIpPolicy`
+|string
+|local
+|✅
+
+|`pluginsRateLimitByIpRequestsPerHour`
+|int
+|10000
+|✅
+
+|`pluginsRateLimitByIpRequestsPerSecond`
+|int
+|10
+|✅
+
+|`rateLimitingPluginEnable`
+|bool
+|false
+|✅
+
+|===
+
+[source,yaml]
+
+.Registry operational zone's external API gateway configuration example
+----
+kongPluginsConfig:
+    pluginsPrometheusBandwidthMetrics: true
+    pluginsPrometheusLatencyMetrics: true
+    pluginsPrometheusPerConsumerMetrics: true
+    pluginsPrometheusStatusCodeMetrics: true
+    pluginsProxyCacheTtl: 900
+    pluginsRateLimitByHeaderFaultTolerant: true
+    pluginsRateLimitByHeaderHeaderName: token-claim
+    pluginsRateLimitByHeaderHideClientHeaders: false
+    pluginsRateLimitByHeaderPolicy: local
+    pluginsRateLimitByHeaderRequestsPerHour: 10000
+    pluginsRateLimitByHeaderRequestsPerSecond: 10
+    pluginsRateLimitByIpFaultTolerant: true
+    pluginsRateLimitByIpHideClientHeaders: false
+    pluginsRateLimitByIpPolicy: local
+    pluginsRateLimitByIpRequestsPerHour: 10000
+    pluginsRateLimitByIpRequestsPerSecond: 10
+    rateLimitingPluginEnable: false
+----
+
+=== Platform registries and external systems access parameters
+
+The `nontrembita-external-registration` group contains the access parameters for the Platform registries and external systems.
+
+[[nontrembita-external-registration]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.nontrembita-external-registration | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`enabled`
+|bool
+|❌
+|❌
+
+|Determines whether the external integration is enabled.
+
+|`external`
+|bool
+|❌
+|❌
+
+|Defines the type of external integration: another registry on the Platform or outside the Platform.
+
+|`name`
+|string
+|❌
+|❌
+
+|The name of the external system.
+
+|===
+
+[source,yaml]
+
+.Platform registries and external systems access configuration example
+----
+nontrembita-external-registration:
+    - enabled: true
+      external: false
+      name: example-registry
+----
+
+
+=== Secure exchange gateway configuration parameters
+
+The `trembita` group contains the secure exchange gateway (SEG) settings.
+
+include::platform::partial$admonitions/ua-specific.adoc[]
+
+[[trembita]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.trembita | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`ipList`
+|[]object
+|❌
+|❌
+
+|The list of SEG IP addresses from which access to `bp-webservice-gateway` and `registry-soap-api` is allowed. An empty field value means no access to the SOAP API.
+
+|`<<registries,registries>>`
+|object
+|❌
+|✅
+
+|Contains the registry SEG interaction settings.
+
+|===
+
+[[registries]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.trembita.registries | <<trembita,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<trembita-integration,dracs-registry>>`
+|object
+|❌
+|✅
+
+a|System integration settings for the State registry of civil status acts. Enabled by default and cannot be removed.
+
+include::platform::partial$admonitions/ua-specific.adoc[]
+
+|`<<trembita-integration,edr-registry>>`
+|object
+|❌
+|✅
+
+a|System integration settings for the Unified state register. Enabled by default and cannot be removed.
+
+include::platform::partial$admonitions/ua-specific.adoc[]
+
+|`<<trembita-integration,idp-exchange-service-registry>>`
+|object
+|❌
+|✅
+
+a|System integration settings for the Unified information database of internally displaced persons. Enabled by default and cannot be removed.
+
+include::platform::partial$admonitions/ua-specific.adoc[]
+
+|`<<trembita-integration,<system_name_placeholder> >>`
+|object
+|❌
+|❌
+
+|Another external system's integration parameters with the registry.
+
+|===
+
+[[trembita-integration]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.trembita.registries.<system_name_placeholder> | <<registries,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<trembita-auth,auth>>`
+|object
+|❌
+|✅
+
+|Header parameters that define authorization settings.
+
+|`<<trembita-client,client>>`
+|object
+|❌
+|✅
+
+|Header parameters that identify the service participant.
+
+|`<<trembita-service,service>>`
+|object
+|❌
+|✅
+
+|Header parameters that identify the service.
+
+|`mock`
+|bool
+|❌
+|✅
+
+|Determines whether the external system is real or an integration point mock.
+
+|`protocol`
+|string
+|SOAP
+|✅
+
+|The integration protocol. Possible value is `SOAP`.
+
+|`protocol-version`
+|string
+|❌
+|✅
+
+|The version of the protocol used to exchange messages with the SEG.
+
+|`type`
+|string
+|❌
+|✅
+
+|Defines the interaction type as either `platform` or `registry`.
+
+|`url`
+|string
+|❌
+|✅
+
+|The SEG URL.
+
+|`user-id`
+|string
+|❌
+|✅
+
+|The ID of the user initiating the request.
+
+|===
+
+[[trembita-auth]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.trembita.registries.<system_name_placeholder>.auth | <<trembita-integration,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`type`
+|string
+|❌
+|✅
+
+|The authorization type. Possible values are `AUTH_TOKEN` or `NO_AUTH`.
+
+|`secret`
+|string
+|❌
+|❌
+
+|The path to the authorization token in the Hashicorp Vault _Secrets and encryption management service_.
+
+|===
+
+[[trembita-client]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.trembita.registries.<system_name_placeholder>.client | <<trembita-integration,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`x-road-instance`
+|string
+|❌
+|✅
+
+|The environment code that identifies the instance of the service or member.
+
+|`member-class`
+|string
+|❌
+|✅
+
+|The service or member class identifier.
+
+|`member-code`
+|string
+|❌
+|✅
+
+|The service or member identifier.
+
+|`subsystem-code`
+|string
+|❌
+|✅
+
+|The code that identifies the subsystem of the service or member, if the service is provided by the subsystem.
+
+|===
+
+[[trembita-service]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.trembita.registries.<system_name_placeholder>.service | <<trembita-integration,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`x-road-instance`
+|string
+|❌
+|✅
+
+|The environment code that identifies the instance of the service or member.
+
+|`member-class`
+|string
+|❌
+|✅
+
+|The service or member class identifier.
+
+|`member-code`
+|string
+|❌
+|✅
+
+|The service or member identifier.
+
+|`subsystem-code`
+|string
+|❌
+|✅
+
+|The code that identifies the subsystem of the service or member, if the service is provided by the subsystem.
+
+|`service-code`
+|string
+|❌
+|❌
+
+|The code that identifies the subsystem of the service or member, if the service is provided by the subsystem.
+
+|`service-version`
+|string
+|❌
+|❌
+
+|The code that identifies the subsystem of the service or member, if the service is provided by the subsystem.
+
+|===
+
+[source,yaml]
+
+.Secure exchange gateway configuration example
+----
+trembita:
+    ipList:
+      - "192.168.1.34"
+      - "192.168.1.152"
+    registries:
+        dracs-registry:
+            auth:
+                 type: NO_AUTH
+            client:
+                member-class: GOV
+                member-code: Member_Class
+                subsystem-code: IDGOV_EXAMPLE_01
+                x-road-instance: SEVDEIR-EXAMPLE
+            service:
+            mock: false
+            protocol: SOAP
+            protocol-version: "4.1"
+            type: platform
+            url: https://trembita.example.com/trembita
+            user-id: DDM
+        edr-registry:
+           ...
+        idp-exchange-service-registry:
+           ...
+----
+
+=== Parameters of integration with external systems
+
+The `external-systems` group contains the external system integration parameters.
+
+[[external-systems]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.external-systems | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|<<external-systems-spec,diia>>
+|object
+|❌
+|✅
+
+a|System integration settings for the citizen-facing solution. Enabled by default and cannot be removed.
+
+include::platform::partial$admonitions/ua-specific.adoc[]
+
+|<<external-systems-spec,<system_name_placeholder> >>
+|object
+|❌
+|❌
+
+|Another external system's integration parameters with the registry.
+
+|===
+
+TIP: The `<system_name_placeholder>` will be replaced by the name of the external system specified through the admin console.
+
+[[external-systems-spec]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.<system_name_placeholder> | <<external-systems,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`protocol`
+|string
+|❌
+|✅
+
+|The external system integration protocol. Possible value is `REST`.
+
+|`type`
+|string
+|❌
+|✅
+
+|Defines the interaction type as either `platform` or `registry`.
+
+|`url`
+|string
+|❌
+|✅
+
+|The external system's URL.
+
+|`mock`
+|string
+|❌
+|✅
+
+|Determines whether the external system is real or an integration point mock.
+
+|`<<external-systems-auth-spec,auth>>`
+|object
+|❌
+|✅
+
+|Defines the external system's authentication settings.
+
+|===
+
+[[external-systems-auth-spec]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.external-systems.<system_name_placeholder>.auth | <<external-systems-spec,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`secret`
+|string
+|❌
+|❌
+
+|The path to the external system's token in the Hashicorp Vault _Secrets and encryption management service_.
+
+
+|`type`
+|string
+|❌
+|✅
+
+|The external system authorization type. Possible values are: `NO_AUTH`, `AUTH_TOKEN`, `BEARER`, `BASIC`, `AUTH_TOKEN+BEARER`.
+
+|===
+
+[source,yaml]
+
+.Registry Digital signature service configuration example
+----
+external-systems:
+    example-system-1:
+        auth:
+            secret: vault:registry-kv/registry/<registry_name>/external-systems
+            type: BASIC
+        protocol: REST
+        type: registry
+        url: https://example.com.ua
+    example-system-N:
+        auth:
+            secret: vault:registry-kv/registry/<registry_name>/external-systems
+            type: BASIC
+        protocol: REST
+        type: registry
+        url: https://example.com.ua
+    diia:
+        protocol: REST
+        type: platform
+----
+
+=== User portal configuration parameters
+
+The `portals` group contains the user portal settings.
+
+[[portals]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.portals | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<citizen-spec,citizen>>`
+|object
+|❌
+|✅
+
+|Citizen portal settings.
+
+|`<<officer-spec,officer>>`
+|object
+|❌
+|✅
+
+|Officer portal settings.
+
+|===
+
+[[citizen-spec]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.portals.citizen | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<customdns-spec,customDns>>`
+|object
+|❌
+|❌
+|The user portal custom DNS settings.
+
+|`<<signwidget-spec,signWidget>>`
+|object
+|❌
+|✅
+|The user portal's authentication widget settings.
+
+|`enableExternalIDP`
+|bool
+|❌
+|❌
+|Determines if external IDP integration is enabled.
+
+|`<<externalidp-spec,externalIDP>>`
+|object
+|❌
+|❌
+|Settings for external IDP integration if enabled.
+
+|===
+
+[[officer-spec]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.portals.officer | <<root,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<customdns-spec,customDns>>`
+|object
+|❌
+|❌
+//|Налаштування власних DNS-імен для кабінетів користувачів.
+|The user portal custom DNS settings.
+
+
+|`individualAccessEnabled`
+|bool
+|❌
+|❌
+//|Визначає можливість використовування кабінету надавача послуг фізичною особою
+|Determines if user can use officer portal with personal individual key
+
+|`enableExternalIDP`
+|bool
+|❌
+|❌
+|Determines if external IDP integration is enabled.
+
+|`<<externalidp-spec,externalIDP>>`
+|object
+|❌
+|❌
+|Settings for external IDP integration if enabled.
+
+|===
+
+[[customdns-spec]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.portals.<portal_name>.customDns | <<portals-spec,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`enabled`
+|bool
+|❌
+|✅
+
+|Determines whether a custom DNS name for the user portal is enabled.
+
+|`host`
+|string
+|❌
+|❌
+
+|The user portal's custom DNS hostname.
+
+|===
+
+[[signwidget-spec]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.portals.<portal_name>.signWidget | <<portals-spec,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`url`
+|string
+|❌
+|✅
+
+|The authentication widget URL.
+
+|`height`
+|object
+|❌
+|✅
+
+|The authentication widget height.
+
+|`copyFromAuthWidget`
+|bool
+|❌
+|✅
+
+|
+
+|===
+
+[[externalidp-spec]]
+[cols="20%,15%,7%,7%,60%",options="header",caption=]
+.portals.<portal_name>.externalIDP
+|===
+|Name |Type |Default value |Required |Description
+
+|`authorizationUrl`
+|string
+|❌
+|✅
+|The Authorization URL of the external ID
+
+|`backchannelSupported`
+|bool
+|false
+|✅
+|Does the external IDP support a backchannel logout
+
+|`issuer`
+|string
+|❌
+|❌
+|The issuer identifier the issuer of the response
+
+|`logoutUrl`
+|string
+|❌
+|❌
+|End session endpoint to logout user from external IDP.
+
+|`userInfoUrl`
+|bool
+|❌
+|❌
+|The userinfo URL
+
+|`vaultKey`
+|string
+|❌
+|✅
+|The path to the client id and client secret in the Hashicorp Vault _Secrets and encryption management service_.
+
+|===
+
+== Registry technical yaml configuration specification (values.gotmpl)
+[[registry-gotmpl]]
+
+This section lists the technical parameters of the registry. Their values are set using parameterization templates, which can take one of the following forms:
+
+* `{{ env "<variable_name>" }}` to get values from environment variables.
+* `{{ $cluster_version := exec ... }}` to execute a command during pipeline execution.
+
+IMPORTANT: We do not recommend making changes to this file manually.
+
+[[parent-tech-params]]
+[cols="20%,15%,10%,10%,60%",options="header",caption=]
+
+.Registry technical parameters
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<tech-global,global>>`
+|object
+|❌
+|✅
+
+|Global registry settings.
+
+|`<<vault,vault>>`
+|object
+|❌
+|✅
+
+|Contains settings for the registry's central _Secrets management service_.
+
+|`<<s3,s3>>`
+|object
+|❌
+|✅
+
+|Contains S3 client settings for interaction with S3 storage.
+
+|`<<platform,platform>>`
+|object
+|❌
+|✅
+
+|Contains registry settings.
+
+|`namespace`
+|string
+|❌
+|✅
+
+|Defines the name of the OKD namespace for deploying subsystem components and configurations from the `codebase` specification based on whether they belong to the registry.
+
+|`baseDomain`
+|string
+|❌
+|✅
+
+|Receives and sets the base domain of the OKD cluster -- for example, `openshift.example.com`. All managed DNS records in the cluster become subdomains of the base domain. After the OKD cluster is deployed, this value cannot be changed.
+
+|`dnsWildcard`
+|string
+|❌
+|✅
+
+|A subdomain of the base domain of the OKD cluster for routing traffic to Platform and registry applications -- for example, `apps.openshift.example.com`.
+
+|`cdPipelineName`
+|string
+|❌
+|✅
+
+|The name of the Platform CD pipeline. This is an xref:arch:architecture/platform-technologies.adoc#edp-codebase-operator[EDP] entity and part of the servicing pipeline of the registry deployment processes.
+
+|`dockerRegistry`
+|string
+|❌
+|✅
+
+|The URL for the `control-plane-nexus` Platform artifacts repository.
+
+|`dockerProxyRegistry`
+|string
+|❌
+|✅
+
+|The URL for the `control-plane-nexus` Platform artifacts repository.
+
+|`edpProject`
+|string
+|❌
+|✅
+
+|Defines the name of the OKD namespace for deploying subsystem components and configurations from the technical pipeline parameters based on whether they belong to the Platform or registry.
+
+|`stageName`
+|string
+|❌
+|✅
+
+|The name of the registry CD pipeline stage. This is an EDP entity and part of the servicing pipeline of the registry deployment processes.
+
+|===
+
+[[tech-global]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global | <<parent-tech-params,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`clusterVersion`
+|string
+|❌
+|✅
+
+|Automatically determines the current version of the OKD cluster.
+
+|`storageClass`
+|string
+|ocs-storagecluster-ceph-rbd
+|✅
+
+|Contains the `StorageClass` name used in the OKD cluster by default.
+
+|`imageRegistry`
+|string
+|❌
+|✅
+
+|The URL for the `control-plane-nexus` Platform artifacts repository.
+
+|`<<nexus,nexus>>`
+|object
+|❌
+|✅
+
+|❌ A deprecated parameter. Will be discontinued in the future Platform versions.
+
+|`<<jenkins,jenkins>>`
+|object
+|❌
+|✅
+
+|❌ A deprecated parameter. Will be discontinued in the future Platform versions.
+
+|`<<gerrit,gerrit>>`
+|object
+|❌
+|✅
+
+|❌ A deprecated parameter. Will be discontinued in the future Platform versions.
+
+|`<<tech-kafka,kafkaOperator>>`
+|object
+|❌
+|✅
+
+|_Asynchronous messaging subsystem_ configuration.
+
+|`<<crunchyPostgresOperator,crunchyPostgresOperator>>`
+|object
+|❌
+|✅
+
+|_Relational database management subsystem_ configuration.
+
+|`<<tech-registry,registry>>`
+|object
+|❌
+|✅
+
+|Contains registry settings.
+
+|`<<tech-notifications,notifications>>`
+|object
+|❌
+|✅
+
+|The _Email messaging subsystem's_ general settings.
+
+|===
+
+[[tech-registry]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.registry | <<tech-global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<tech-registry-redis,redis>>`
+|object
+|❌
+|✅
+
+|Redis settings.
+
+|`<<tech-registry-sentinel,sentinel>>`
+|object
+|❌
+|✅
+
+|Redis Sentinel settings.
+
+|===
+
+[[tech-registry-redis]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.registry.redis | <<tech-registry,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`replicas`
+|string
+|❌
+|✅
+
+|The number of Redis instances.
+
+|`<<tech-registry-redis-container,container>>`
+|string
+|❌
+|✅
+
+|Defines the Redis instance containers configuration.
+
+|===
+
+[[tech-registry-redis-container]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.registry.redis.container | <<tech-registry-redis,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`customConfig`
+|[]object
+|["maxmemory 500m"]
+|✅
+
+|Defines additional settings for the Redis container.
+
+|===
+
+[[tech-registry-sentinel]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.registry.sentinel | <<tech-registry,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`replicas`
+|string
+|❌
+|✅
+
+|The number of Sentinel instances.
+
+|===
+
+[[tech-notifications]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.notifications | <<tech-global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<tech-notifications-email,email>>`
+|object
+|❌
+|✅
+
+|Contains the _Email messaging subsystem_ settings.
+
+|===
+
+[[tech-notifications-email]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.notifications.email | <<tech-notifications,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`password`
+|string
+|❌
+|✅
+
+|The SMTP password for the _Email messaging subsystem_.
+
+|===
+
+[[crunchyPostgresOperator]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.crunchyPostgresOperator | <<tech-global,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<instances,instances>>`
+|object
+|❌
+|✅
+
+|The _Relational database management subsystem's_ instances configuration.
+
+
+|`<<minioConf,minioConf>>`
+|object
+|❌
+|✅
+
+|Contains the _Relational database management subsystem's_ backup storage configuration.
+
+|===
+
+[[instances]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.crunchyPostgresOperator.instances | <<crunchyPostgresOperator,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<replicas,operational>>`
+|object
+|❌
+|✅
+
+|Contains the _Relational database management subsystem's_ operational DB instance settings.
+
+|`<<replicas,analytical>>`
+|object
+|❌
+|✅
+
+|Contains the _Relational database management subsystem's_ analytical DB instance settings.
+
+|===
+
+[[replicas]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.crunchyPostgresOperator.instances.operational (analytical) | <<instances,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`replicas`
+|int
+|❌
+|✅
+
+|The number of relevant DB instances of the _Relational database management subsystem_.
+
+|===
+
+[[minioConf]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.crunchyPostgresOperator.minioConf | <<crunchyPostgresOperator,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`endpoint`
+|string
+|❌
+|✅
+
+|_Asynchronous messaging service's_ storage settings.
+
+|`bucketName`
+|string
+|❌
+|✅
+
+|_Asynchronous messaging service's_ storage settings.
+
+|===
+
+[[tech-kafka]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.global.kafkaOperator | <<parent-tech-params,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<kafka-storage,storage>>`
+|object
+|❌
+|✅
+
+|_Asynchronous messaging service's_ storage settings.
+
+|`kafkaBrokers`
+|int
+|3
+|✅
+
+|The number of Kafka broker instances.
+
+|`zookeepers`
+|int
+|3
+|✅
+
+|The number of Zookeeper instances.
+
+|`replicationFactor`
+|int
+|3
+|✅
+
+|Configures the Kafka replication factor that determines the number of data copies stored across multiple Kafka brokers.
+
+|`kafkaCentralNamespace`
+|string
+|❌
+|✅
+
+|The namespace of the Kafka component.
+
+|===
+
+[[kafka-storage]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.kafkaOperator.storage | <<tech-kafka,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<kafka-storage-zookeper,zookeeper>>`
+|object
+|❌
+|✅
+
+|Contains Kafka Zookeeper settings.
+
+|===
+
+[[kafka-storage-zookeper]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.kafkaOperator.storage.zookeeper | <<kafka-storage,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`size`
+|string
+|5Gi
+|✅
+
+|The size of the Kafka Zookeeper storage.
+
+|===
+
+[[platform]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.platform | <<parent-tech-params,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<security,security>>`
+|object
+|❌
+|✅
+
+|Contains registry security settings.
+
+|===
+
+[[security]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.platform.security | <<platform,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<csrf,csrf>>`
+|object
+|❌
+|✅
+
+|Contains Cross-Site Request Forgery (CSRF) protection settings.
+
+|===
+
+[[csrf]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.platform.security.csrf | <<security,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`enabled`
+|bool
+|true
+|✅
+
+|Determines whether the Cross-Site Request Forgery (CSRF) protection is enabled.
+
+|===
+
+[[s3]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.s3 | <<parent-tech-params,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<s3-config,config>>`
+|object
+|❌
+|✅
+
+|Contains the registry components' S3 client settings for correct interaction with the S3 storage.
+
+|===
+
+[[s3-config]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.s3.config | <<s3,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<s3-client,client>>`
+|object
+|❌
+|✅
+
+|Contains the registry components' S3 client settings for correct interaction with the S3 storage.
+
+|`<<s3-options,options>>`
+|object
+|❌
+|✅
+
+|Contains the registry components' S3 client settings for correct interaction with the S3 storage.
+
+|===
+
+[[s3-client]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.s3.config.client | <<s3-config,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`protocol`
+|object
+|http
+|✅
+
+|Defines the S3 client and server interaction protocol.
+
+|===
+
+[[s3-options]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.s3.config.options | <<s3-config,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`pathStyleAccess`
+|object
+|true
+|✅
+
+|Enables `path-style` access to S3 bucket segments.
+
+|===
+
+[[vault]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.vault | <<parent-tech-params,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`platformVaultToken`
+|string
+|❌
+|✅
+
+|Contains the access token for the Platform's central _Secrets and encryption management service_.
+
+|`openshiftApiUrl`
+|string
+|❌
+|✅
+
+|The OKD API server URL.
+
+|`centralVaultUrl`
+|string
+|❌
+|✅
+
+|The Platform's central _Secrets and encryption management service_ URL.
+
+|`<<vault-server,server>>`
+|object
+|❌
+|✅
+
+|Registry Vault deployment configuration.
+
+|===
+
+[[vault-server]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.vault.server | <<vault,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`<<vault-storage,dataStorage>>`
+|string
+|❌
+|✅
+
+|Registry Vault storage configuration.
+
+|`<<vault-storage,auditStorage>>`
+|string
+|❌
+|✅
+
+|Registry Vault audit storage configuration.
+
+|===
+
+[[vault-storage]]
+[cols="20%,15%,5%,5%,60%",options="header",caption=]
+.vault.server.dataStorage (auditStorage) | <<vault-server,Return to parent table>>
+|===
+|Name |Type |Default value |Required |Description
+
+|`storageClass`
+|string
+|ocs-storagecluster-ceph-rbd
+|✅
+
+|Contains the `StorageClass` name used in Vault deployment by default.
+
+|===

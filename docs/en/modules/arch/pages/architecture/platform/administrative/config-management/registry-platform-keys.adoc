@@ -1,0 +1,100 @@
+= Updating Platform and registry keys and digital signature service configuration
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+This document contains information regarding general provisions and technical design related to updating the platform and registry keys and the configuration of the digital signature service.
+
+== General provisions
+
+* The administrator can edit the registry or platform keys of the digital signature using the Administrative platform management interface.
+
+* The platform management web interface saves the changes made by the administrator to the HashiCorp Vault service of the secret management and
+encryption subsystem, or to the Gerrit service of the Platform and registries deployment and configuration subsystem.
+
+* The platform management web interface shows the path to values and files in corresponding values.yaml.
+
+* Pipeline fetches required data from HashiCorp Vault or Gerrit and generates required secrets in OpenShift.
+
+== High-level technical design
+
+The following diagram shows the platform components engaged in the implementation of the requirements of the platform components and interaction between them.
+
+image::architecture/platform/administrative/config-management/keys-update-subsystem.svg[registry-platform-keys]
+
+image::architecture/platform/administrative/config-management/keys-update-config.svg[registry-platform-keys]
+
+The table below shows the engaged components or those to be changed/created under implementation of the functional requirements in accordance with the technical design of the solution.
+
+
+.Components and functions
+|===
+|Component|Official name|Function
+
+
+|Platform administration interface
+
+|control-plane-console
+|Setting available communication channels for the target registry environment
+
+|Saving platform configuration and registries
+
+|control-plane-gerrit
+|The platform component for storing registry and platform configurations
+
+|Platform and registries deployment
+
+|edp-library-stages-fork
+|Platform and registries deployment pipeline
+
+|Platform and registries deployment
+
+|edp-library-pipelines-fork
+|Stages for platform and registries deployment
+
+
+|===
+
+.Content of values.yaml when using a file key
+----
+digital-signature:
+  data:
+    CACertificates: <path to gerrit>
+    CAs: <path to gerrit>
+    Key-6-dat: <path to vault>
+    allowed-keys-yml: <path to vault>
+    osplm.ini: ""
+  env:
+    sign.key.device-type: file
+    sign.key.file.issuer: <path to vault>
+    sign.key.file.password: <path to vault>
+    sign.key.hardware.device: ""
+    sign.key.hardware.password: ""
+    sign.key.hardware.type: ""
+----
+
+.Content of values.yaml when using a hardware key
+----
+digital-signature:
+  data:
+    CACertificates: <path to gerrit>
+    CAs: <path to gerrit>
+    Key-6-dat: ""
+    allowed-keys-yml: <path to vault>
+    osplm.ini: <path to gerrit>
+  env:
+    sign.key.device-type: hardware
+    sign.key.file.issuer: ""
+    sign.key.file.password: ""
+    sign.key.hardware.device: <path to vault>
+    sign.key.hardware.password: <path to vault>
+    sign.key.hardware.type: <path to vault>
+----
+
+NOTE: The name of the secret in the vault must concatenate with the current date of secrets updating in the short ISO8601 format (without colons and dashes) and get updated in values.yaml of the registry and the platform.
+
+
+The path in the Gerrit repositories:
+
+* cluster-mgmt.git: config/dso/
+* registry-template.git: config/dso/

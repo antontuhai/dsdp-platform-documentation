@@ -1,0 +1,90 @@
+= Setting up certificates for verification of digital signature platform keys
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General overview
+
+[.underline]#_Certificates for verifying digital signature keys_# are used to confirm the authenticity of the public key used in the digital signing process. They are issued by a trusted organization, known as the _Accredited Key Certification Center (AKCC)_, and they play an important role in generating trust in electronic documents and transactions.
+
+[.underline]#_System signature keys_# are designed for data signing and verification by systems or programs. In other words, they help ensure that the corresponding data package or software originates from a known source and has not been altered.
+
+[.underline]#_QES (Qualified electronic signature)_# -- is an enhanced version of DES (Digital Electronic Signature). It provides a higher level of security and trust, as more reliable cryptographic algorithms and procedures are used for its creation. QES often has legal force and allows confirming the authenticity of electronic documents in legal situations."
+
+*_CACertificates.p7b_* та *_CA.json_*: ::
+
+* *_CACertificates.p7b_*: this file contains one or more certificates in `PKCS#7` format. The `PKCS#7`format is widely used for exchanging and storing certificates or an entire chain of certificates."
+
+* *_CA.json_*: this is a JSON format file that can contain details about certificates. The JSON format presents certificate information in a format that is easy to read by both humans and machines."
+
++
+The platform provides extensive capabilities for certificate management: it ensures their secure _upload_, _storage_, _usage_, and _update_.
+
+== Adding certificates
+
+NOTE: The AKCC certificates for verifying the system signature keys, added in the *Signature Verification Data* section, will be applied to the Platform settings.
+
+To add AKCC certificates, follow these steps:
+
+. Log in to the registry management administrative panel *Control Plane* using the previously received login and password.
++
+image:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-01.png[]
+
+. Open menu *Platform management*
+
+. Click the `*Edit*` button located in the upper right corner.
++
+image:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-1.png[]
+
+. Go to the *Signature Verification Data* section.
++
+image:admin:infrastructure/cluster-mgmt/cp-platform-certificates/01-platform-certificates.png[]
+
+. Add the public AKCC certificates (*_CACertificates.p7b_*).
+
+. Add the list of compatible certificates (_.p7b_).
+
+.. Add the certificate file by clicking the button *Choose file* at the *Public AKCC certificates (.p7b extension)*. In the new window, navigate to the folder where the certificate file is stored, select it and press kbd:[Open].
++
+image:admin:infrastructure/cluster-mgmt/cp-platform-certificates/02-platform-certificates.png[]
+
+. Add the AKCC list (*_CA.json_*).
+
+.. Add interaction parameters with compatible Key Certification Center (_.json_).
+
+.. Add the certificate file by clicking the button *Choose file* at the *List of AKCC (.json extension)*. In the new window, navigate to the folder where the certificate file is stored, select it and press kbd:[Open].
++
+image:admin:infrastructure/cluster-mgmt/cp-platform-certificates/03-platform-certificates.png[]
+
+. At the end, check the information entered and press the button `*Confirm*`
++
+[NOTE]
+====
+As a result of updating the key information on the Control Plane interface, a new request to update the registry configuration is created, which needs to be confirmed.
+====
+
+. In the Control Plane admin panel interface, go back to the *Platform management* section, scroll down the page and find the *Update requests* section.
++
+image::admin:infrastructure/cluster-mgmt/change-key/change-key-41.png[]
+
+.Find the required request and click on the view icon &#128065;.
+
+. Scroll down the page and click on the *Confirm* button.
++
+image:admin:infrastructure/cluster-mgmt/cp-registry-certificates/04-registry-certificates.png[]
+
++
+NOTE: Proposed changes are made to the _deploy-templates/values.yaml_  file configuration of the *`cluster-mgmt`* component upon confirmation.
++
+Next, the *`Master-Build-cluster-mgmt`* pipeline is automatically launched, which applies the parameters of the given configuration and creates secrets for digital signature keys.
+
+. Wait for the code build to complete. This can take approximately 15 minutes.
++
+You can check the current status and execution result via the *`CI`*  link on the interface.
++
+image::admin:infrastructure/cluster-mgmt/change-key/change-key-42.png[]
++
+In the Jenkins interface, find the appropriate pipeline and track the execution status.
++
+image:registry-management/cp-platform-admins/cp-platform-admins-25.png[]
+

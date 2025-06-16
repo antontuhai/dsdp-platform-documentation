@@ -1,0 +1,145 @@
+= Registry analytical reporting subsystem
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+The *_Registry analytical reporting subsystem_* visualizes registry data through the dashboards modeled using the _Registry regulations modeling subsystem_.
+
+Dashboards can contain tables and charts with filters and other data control elements.
+
+[TIP]
+--
+
+To learn more about the processing of analytical requests to registry data, see xref:arch:architecture/registry/operational/relational-data-storage/rdbms-analytical-workload.adoc[].
+--
+
+== Subsystem functions
+
+* Viewing and configuring dashboards with registry data.
+* Viewing and analyzing dashboards with registry audit events log data.
+
+== Technical design
+
+image::architecture/registry/operational/reporting/reporting.drawio.svg[float="center",align="center"]
+
+The subsystem is built on https://redash.io/help/[Redash], an open-source data visualization and exploration tool that enables users to connect to various data sources, query and visualize data, and create interactive dashboards and reports. Redash uses microservice architecture and consists of the following components:
+
+* _Redash server_: The Redash server processes user requests, manages user authentication and authorization, and provides the Redash web interface and administrative API. Users interact with Redash through the web interface, while the regulations and registry deployment subsystems use the API. The Redash server interacts with other services asynchronously using https://python-rq.org/[RQ (Redis Queue)] to handle requests and receive data.
+
+* _Queue processors_: Redash uses worker processes to handle tasks from the queue asynchronously. Queue processors perform tasks such as querying the data sources, generating query results, and sending query execution updates to the user interface.
+
+** _Redash worker_: This queue processor handles tasks lined up from the Redash server as a result of user interactions—for example, querying a data source when a user opens a dashboard.
+
+** _Redash scheduler_: This queue processor handles requests according to a schedule—for example, performing data update tasks for saved requests with a defined schedule.
+
+* _Redash DB_: Redash uses a PostgreSQL relational database as its primary metadata store. The database stores metadata related to users, requests, dashboards, and visualizations. It also stores request results and cached data. Redash services interact with the database to obtain and store the necessary information.
+
+* _Redis queue_: The Redis queue database is an in-memory data store that Redash uses to manage shared query execution locks and distribute tasks between worker processes.
+
+The interaction between these components of the subsystem can be summarized as follows:
+
+* When users interact with the Redash web interface, their requests are processed by the Redash server. The server authenticates the user via the _Users and roles management subsystem_, verifies the request, and interacts with the appropriate services based on the user's actions.
+
+* When a user executes a request, the server receives the request and sends it to the workflow through the Redis queue. A Redash worker accepts the task and executes the request asynchronously while periodically updating the state of the request and sending updates to the UI.
+
+* Once the request is processed, the workflow saves the final result, and the server receives it to display to the user.
+
+[#subsystem-components]
+== Subsystem components
+
+[options="header",cols="a,a,a,a,a"]
+|===
+
+|Component name |Registry representation |Source |Repository |Function
+
+|_Redash server_
+|`redash-viewer`
+|3rd-party
+.7+a|* https://github.com/epam/edp-ddm-redash-chart[github:/epam/edp-ddm-redash-chart]
+* https://github.com/epam/edp-ddm-redash[github:/epam/edp-ddm-redash]
+
+|Providing the Redash web interface and administrative API.
+
+|_Redash worker_
+|`redash-viewer-adhocworker`
+|3rd-party
+
+|Processing queued tasks.
+
+|_Redash scheduler_
+|`redash-viewer-scheduler`
+|3rd-party
+
+|Processing scheduled tasks.
+
+|_Prometheus exporter_
+|`redash-exporter`
+|3rd-party
+
+|Collecting metrics for monitoring and publishing them in the Prometheus format.
+
+|_Task queue storage_
+|`redash-viewer-redis-master`
+|3rd-party
+
+|Storing the task queue.
+
+|_Metadata storage_
+|`redash-viewer-postgresql`
+|3rd-party
+
+|Redash metadata storage (requests, dashboards, settings, and so on).
+
+|===
+
+== Data sources
+
+|===
+
+|Component name |Registry representation
+
+|_Registry analytical database_
+a|
+* `analytical:registry`
+
+|_Audit events operational database_
+a|
+* `operational:audit`
+|===
+
+== Technological stack
+
+The following technologies were used when designing and developing the subsystem:
+
+* xref:arch:architecture/platform-technologies.adoc#redash[Redash]
+* xref:arch:architecture/platform-technologies.adoc#python[Python]
+* xref:arch:architecture/platform-technologies.adoc#postgresql[PostgreSQL]
+* xref:arch:architecture/platform-technologies.adoc#redis[Redis]
+* xref:arch:architecture/platform-technologies.adoc#helm[Helm]
+
+== Subsystem quality attributes
+
+=== _Observability_
+
+The _Registry analytical reporting subsystem_ supports logging and collecting performance metrics for analysis through the web interfaces of respective Platform subsystems.
+
+[TIP]
+--
+
+For details on the subsystem design, see:
+
+* xref:arch:architecture/platform/operational/logging/overview.adoc[]
+* xref:arch:architecture/platform/operational/monitoring/overview.adoc[]
+--
+
+=== _Security_
+
+The _Registry analytical reporting subsystem_ is divided into a user interface and an administrative interface with additional network protection, promoting secure management of the subsystem and reducing the attack surface.
+
+Authentication and authorization are centrally managed by the xref:architecture/platform/operational/user-management/overview.adoc[_Users and roles management subsystem_].
+
+By default, users are granted the minimal privileges necessary to perform the assigned tasks. The subsystem also restricts access to dashboards and data sources based on the role model. This way, the user can see only those dashboards and data from only those sources that their role allows.
+
+A multi-level network protection system is used between subsystem components, and the components themselves are constantly scanned for known vulnerabilities.

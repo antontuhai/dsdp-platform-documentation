@@ -1,0 +1,2 @@
+NOTE: Schedule backups during periods of lowest system load.
+We recommend running them at night to avoid failures and prevent any impact on users.

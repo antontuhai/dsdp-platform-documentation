@@ -1,0 +1,114 @@
+= Configuring the regulations to provide access to data via SOAP and REST APIs
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+If your registry is the data owner, and you wish to establish integration API points, receive requests, and provide data to other registries and systems, configure the following regulations settings:
+
+. xref:#authorization-settings[Set up authorization and grant permission to call the business process].
+. xref:#target-registry-bp-modeling[Model the business process to be called by another registry].
+. xref:#create-data-model[Create a data model and provide read access to the registry data via the API representation)].
+
+[NOTE]
+====
+For REST interactions, you must also grant access to the registry in the *Control Plane* admin console. For details, see xref:admin:registry-management/control-plane-registry-grant-access.adoc[].
+====
+
+[#authorization-settings]
+== Setting up authorization to access the registry business processes
+
+Registry administrators must set up authorization at the registry regulations level.
+
+[NOTE]
+====
+
+Configure the following files: ::
+
+* *_bp-auth/external-system.yml_* defines access to business processes
+
+* *_bp-trembita/external-system.yml_* configures the exchange of parameters for starting the business processes
+====
+
+. Set up access to the business processes in the target registry, which will provide a data exchange API.
++
+To do this, configure the _bp-auth/external-system.yml_ file in the regulations:
++
+.A configuration that grants access to the business processes in the target registry
+====
+[source,yaml]
+----
+authorization:
+  realm: 'external-system'
+  process_definitions:
+    - process_definition_id: 'my-process-id'
+      process_name: 'Your business process name'
+      process_description: 'Your business process description'
+      roles:
+        - 'trembita-invoker'
+----
+====
++
+In this example, access to the `my-process-id` business process is granted for the `*trembita-invoker*` role from the `*-external-system*` Keycloak realm. The `process_name` and `process_description` parameters are optional and do not affect authorization.
++
+IMPORTANT: The `*trembita-invoker*` client with the same role is automatically created by the Keycloak operator in the `*-external-system*` realm when the registry is deployed. All external systems that require access to the registry on the Platform must use this client's credentials.
+
+. Configure the *_bp-trembita/external-system.yml_* file in the regulations:
+
+.. Configure the start variables for the business process. To do this, specify which parameters the business process will expect in the *`start_vars`* section.
++
+IMPORTANT: If *`start_vars`* are not defined, the business process will not work.
+
+.. Configure the return variables. To do this, specify which parameters the business process will return in the *`return_vars`* section.
++
+.Configuring an API contract for a business process
+====
+[source,yaml]
+----
+trembita:
+  process_definitions:
+    - process_definition_id: 'my-process-id'
+      start_vars:
+        - eduname
+      return_vars:
+        - id
+        - name
+----
+====
++
+In this example, the `*my-process-id*` business process in a target registry requires start variables to run. Without them, the process cannot be initiated. In particular, the process expects the `eduname` parameter to contain a student's name.
++
+TIP: For an example of accepting variables in a target process, jump to xref:#target-registry-bp-modeling[].
+
+.. Configure the return variables. In this example, the business process will return the `id` and `name` parameters. They will be written to the result variable in the *Output Parameters* of the same service task with the delegate.
+
+[#create-data-model]
+== Configuring the data model
+
+Create a registry data model. Add new search conditions to provide read access to database data through the registry API representation.
+
+[TIP]
+For details on configuring the data model, see xref:registry-develop:data-modeling/data/physical-model/rest-api-view-access-to-registry.adoc[].
+
+[#target-registry-bp-modeling]
+== Modeling the business process to be called in a target registry
+
+Model a business process that other registries will call to obtain data. This can be any process within your registry's business logic.
+
+[NOTE]
+====
+To start a business process in your registry, the system needs to accept the incoming start variables it expects. This is done using a scripted task, as shown in the following example.
+
+.Accepting the process start variables in a target registry
+image::registry-admin/external-integration/rest-api-no-trembita/accept-map-params-bp.png[]
+====
+
+[TIP]
+====
+[%collapsible]
+.Where can I find an example of a reference business process?
+=====
+include::partial$snippets/demo-reg-reference-examples-en.adoc[]
+
+An example of a BPMN process diagram will be available in the demo-registry's regulations by searching for the keywords -- *_create-school-auto-sign_*. The names of the forms can be found inside the corresponding User Tasks of the business process in the *`Form key`* field.
+=====
+====

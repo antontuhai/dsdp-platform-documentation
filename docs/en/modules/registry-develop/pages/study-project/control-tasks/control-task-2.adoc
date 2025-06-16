@@ -1,0 +1,271 @@
+= Test 2
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Objectives
+
+
+This test aims to deepen your practical skills in developing business processes.
+
+== Tasks
+
+["upperroman"]
+
+. Create a data model based on the following table.
++
+.Fields and descriptions
+|====
+
+|No. |Field name on the form and in the logical data model |Field name in the physical data model |Format |Reference used |Required field
+
+6+^|*person_profile* entity
+|1|Last name|last_name|Text||+
+|2|First name|first_name|Text||+
+|3|Middle name|second_name|Text||-
+|4|Date of birth|birthday|Date||+
+
+|5|Type of document certifying child's identity (document type ID)|doc_type_id|UUID|link:{attachmentsdir}/study-project/control-task-2/dict_doc_type.csv[Document type (doc_type)]|+
+|6|Birth certificate series|birthday_doc_series|Text||-
+|7|Birth certificate number|birthday_doc_number|Text||-
+
+|8|Child's document series (if available) and number|document_series_number|Text||-
+|9|Gender|gender|Enum type="type_gender"||+
+6+^|*unit* entity
+|10|Institution of general secondary education ID|edu_organization_id|UUID||+
+|11|Class name|name|Text||+
+|12|Class type (class type ID)|unit_type_id|UUID|link:{attachmentsdir}/study-project/control-task-2/dict_unit_type.csv[Class type (unit_type)]|+
+|13|Grade|parallel|Text||+
+|14|Academic year|academic_year|Text||+
+|15|Maximum students|students_max_number|Smallint||+
+|====
+
+TIP: For details on creating *_Enum type_* fields, see xref:data-modeling/data/physical-model/liquibase-ddm-ext.adoc#ENUM[Tag for creating an enumerated data type (ENUM)].
+
+. Create the following search conditions:
++
+
+.. Create a search condition endpoint to fill the *Name of the institution I represent* and *Name of the institution for enrollment* fields with `EQUALS` *(edu_organization_edrpou_equals)* support.
++
+SEARCH BY EQUALS::
++
+* Input parameters:
++
+[source, roomsql]
+----
+SELECT edu_organization_id, full_name FROM edu_organization WHERE edrpou ='23804735 '
+Parameters:  edrpou
+Constants: none
+
+----
++
+* Output parameters:
++
+[source, roomsql]
+----
+6731fad5-8c80-4965-9fc6-c2cebd508f24, Yaroslav Osmomysl Galicia Lyceum
+----
++
+
+.. Create a search condition endpoint to check whether specific classes (name and grade) are available in the institution with `EQUALS` *(unit_name_parallel_equals)* support.
++
+SEARCH BY EQUALS::
++
+* Input parameters:
++
+[source, roomsql]
+----
+SELECT unit_id, parallel, name, edu_organization_id  FROM unit WHERE parallel =’1’ and name ='A ' and edu_organization_id=’UUID’
+Parameters:  parallel, name, edu_organization_id
+Constants: none
+----
++
+* Output parameters:
++
+[source, roomsql]
+----
+6731fad5-8c80-4965-9fc6-c2cebd508f24, 1, A, 5731fad5-8c80-4965-9fc6-c2cebd508f25
+Or
+NULL
+----
++
+
+.. Create a search condition endpoint to fill the *Class type* field with `LIKE` and `READ ALL` *(unit_type_name_contains)* support.
++
+READ ALL::
++
+* Input parameters:
++
+[source, roomsql]
+----
+SELECT unit_type_id, name, constant_code  FROM unit_type ORDER BY name ASC  ;
+Parameters: none
+Constants:  none
+----
++
+* Output parameters:
++
+[source, roomsql]
+----
+UUID, General, GENERAL_TYPE
+UUID, Inclusive, INCLUSIVE_TYPE
+UUID, Special, SPECIAL_TYPE
+----
++
+SEARCH BY LIKE::
++
+* Input parameters:
++
+[source, roomsql]
+----
+Input: SELECT unit_type_id, name, constant_code FROM unit_type WHERE name LIKE '%Спе%' ORDER BY name ASC ;
+Parameters: name
+Constants: none
+----
++
+* Output parameters:
++
+[source, roomsql]
+----
+UUID, Special, SPECIAL_TYPE
+----
++
+
+.. Create a search condition endpoint to fill the *Document type* field with `LIKE` and `READ ALL` *(doc_type_contains)* support.
++
+READ ALL::
++
+* Input parameters:
++
+[source, roomsql]
+----
+SELECT doc_type_id, name, constant_code FROM doc_type ORDER BY name;
+Parameters: none
+Constants: none
+----
++
+* Output parameters:
++
+[source, roomsql]
+----
+UUID, Birth certificate of a citizen of Ukraine, BIRTH_CERT_UKRAINE
+UUID, Birth certificate of a foreign citizen, BIRTH_CERT_FOREIGN
+UUID, Passport of a foreign citizen, PASSPORT_FOREIGN
+When displaying values from the doc_type table, the "Birth certificate of a citizen of Ukraine" (BIRTH_CERT_UKRAINE) value must be displayed at the top.
+----
++
+SEARCH BY LIKE::
++
+* Input parameters:
++
+[source, roomsql]
+----
+SELECT doc_type_id, name, constant_code FROM doc_type WHERE name LIKE '%сві%' ORDER BY name ASC ;
+Parameters: name
+Constants: none
+----
++
+* Output parameters:
++
+[source, roomsql]
+----
+UUID, Birth certificate of a citizen of Ukraine, BIRTH_CERT_UKRAINE
+UUID, Birth certificate of a foreign citizen, BIRTH_CERT_FOREIGN
+----
++
+
+.. Create a search condition endpoint to fill out the *Child's name* and *Child's date of birth* fields (for citizens of Ukraine) with `EQUALS`  *(person_profile_equal_doc_type_birthday_ua)* support.
++
+SEARCH BY EQUALS::
++
+* Input parameters:
++
+[source, roomsql]
+----
+SELECT person_profile_id , last_name , first_name, second_name (не обов'язкове), birthday FROM  person_profile  WHERE doc_type =' Birth certificate of a citizen of Ukraine ' AND  birthday_doc_series  ='I-AB'  AND  birthday_doc_number ='214722'  AND   birthday ='01.01.2012'
+Parameters:  doc_type ,  birthday_doc_series, birthday_doc_number , birthday
+Constants: none
+----
++
+* Output parameters:
++
+[source, roomsql]
+----
+UUID, Ivanov, Ivan, Ivanovych, 01.01.2012
+If the record does not exist Output:null
+----
++
+
+.. Create a search condition endpoint to fill out the *Child's name* and *Child's date of birth* fields (for foreign citizens) with `EQUALS` *(person_profile_equal_doc_type_birthday_foreigner)* support.
++
+SEARCH BY EQUALS::
++
+* Input parameters:
++
+[source, roomsql]
+----
+SELECT person_profile_id , last_name , first_name, second_name (не обов'язкове), birthday FROM  person_profile  WHERE doc_type  =' Birth certificate of a foreign citizen ' OR 'Passport of a foreign citizen' AND document_series_number  ='5577675'  AND   birthday ='18.07.2013'
+Parameters:  doc_type , document_series_number , birthday
+Constants: none
+----
++
+* Output parameters:
++
+[source, roomsql]
+----
+UUID, Magovaiev, Dmytro, Ibragymovych, 18.07.2013
+
+If the record does not exist
+Output:
+null
+----
++
+
+. Create the following forms:
++
+
+.. A form for adding information about classes (start form).
+
+.. A form for signing class data.
+
+.. A form for adding information about children (start form).
+
+.. An informational form stating that the data has been validated in the State registry of civil status acts and may differ from the data provided.
+
+.. A form for signing child data.
++
+
+. Create the following business processes:
+
+
+.. Develop a business process for adding classes, where `businessKey` is `"grade + class name"`.
++
+Add validation to check whether a class with the same name has already been added and display an error message if true.
++
+Configure a dynamic task name so that the message about the execution of the task displays the following information: _"Sign class data for `"grade + class name"` using QES"_.
++
+Before completing the business process, determine its status.
++
+
+.. Develop a business process for creating a child profile, where `businessKey` is `child's full name`.
++
+Add validation to check whether a child profile with the same document has already been created and display an error message if true.
++
+If a child has a Ukrainian birth certificate, search for the child in the State registry of civil status acts. Currently, two search options are possible:
++
+--
+
+* certificate series, certificate number, date of birth
+
+* certificate series, certificate number, full name
+--
++
+
+Before completing the business process, determine its status.
+
+== Expected result
+
+After completing this test, you should have the following:
+
+* Business processes for adding classes and child profiles in a test registry.
+* Your business processes must be available as services in the user portal.

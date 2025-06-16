@@ -1,0 +1,312 @@
+= Launching a business process by schedule
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General overview
+
+This page demonstrates an example of implementing and launching a business process that is automatically activated according to a schedule using the *Timer* BPMN element. The process initiates itself at a specified time and performs tasks according to a defined sequence.
+
+A reference business process has been created to help registry developers and modelers to better understand and effectively use timers.
+
+== Reference example
+
+[TIP]
+====
+[%collapsible]
+.Where can I find an example of a reference business process?
+=====
+include::partial$snippets/demo-reg-reference-examples-en.adoc[]
+
+An example of a BPMN process diagram will be available in the demo-registry's regulations by searching for the keywords -- *_automatic-external-system-data-saving_*. The names of the forms can be found inside the corresponding User Tasks of the business process in the *`Form key`* field.
+=====
+====
+
+=== Brief overview of process components and their purpose
+
+. *Start Event with the timer* -- initiates the business process at a set time, daily from Monday to Friday at 8:00.
+
+. *Script*—retrieves data from an external system and creates an object for further storage.
+
+. *Data signing with a system key* -- ensures that the data received from the external system is authentic and intact.
+
+. *Entity creation in the database* -- stores the received data in the database.
+
+. *Setting the business process status* -- indicates the successful completion of the business process.
+
+. *End Event* -- marks the end of the business process.
+
+=== Modeling
+
+. Log in to the *Administrative portal*.
+. Open the *Process models* section.
+
+. Create a new business process. Enter business and service name for this process. Go to the *Builder* tab.
++
+image:best-practices/bp-timer-launch/bp-timer-launch-1.png[]
+
+. Model a pool for the business process.
++
+image:best-practices/bp-timer-launch/bp-timer-launch-2.png[]
+
+. Create a *Start event* starting event and perform the following settings:
+
+.. Enter the task name, for example, `Start`.
+
+.. In the *Timer* section, set the schedule for starting and executing the business process.
+
+.. In the *Type* field (`Timer Definition Type`), specify the timer type - *Cycle*.
++
+[TIP]
+====
+The *Cycle* option allows you to configure recurring processes or events based on a specific time interval. A cyclic timer can be set at the level of a start event, intermediate event, or boundary event associated with a task performer.
+
+For more details on timer types, refer to
+xref:bp-modeling/bp/bpmn/events/timer-event.adoc[].
+====
+
+.. In the *Value* field, specify the schedule in a specific format for process execution. For example, *`0 8 * * MON-FRI`*.
++
+[TIP]
+====
+You can configure a cyclic timer using the standard *`ISO 8601`* format for repeat intervals or a `*cron*` expression.
+
+Examples of values for the ISO 8601 format: ::
+
+* `R5/PT10S` -- every 10 seconds, up to 5 times.
+* `R/P1D` -- daily, indefinitely.
+
+Examples of values for the cron format: ::
+
+* `0 8 * * MON-FRI`:
++
+----
+0: minutes (exactly at 0 minutes)
+8: hours (8:00 in the morning)
+*: day of the month (any day of the month)
+*: month (any month)
+MON-FRI: day of the week (Monday - Friday)
+----
+
+Thus, the above `cron` expression means that the process will be triggered every day from Monday to Friday at 8:00 in the morning.
+
+* `0 0 9-17 * * MON-FRI`:
+
+This `cron` expression means that the process will be triggered every hour from 9 to 17 UTC time from Monday to Friday.
+====
+
+.. Specify the process initiator as *`initiator`*.
++
+[TIP]
+====
+[%collapsible]
+.Що таке ініціатор?
+.What is an initiator?
+=====
+
+The phrase "*`Start initiator = initiator`*" indicates that the value of the initiator (i.e., the person or system that initiated the process) will be set as the initiator.
+
+In the context of business processes, the initiator is the person who starts the process or is responsible for its initiation. Typically, the initiator is a user who triggers an action or a system that automatically initiates the process.
+
+In this case, the term `initiator` can be used to identify the person or system that initiated the process in subsequent stages of the business process or for access control to resources.
+=====
+====
++
+image:best-practices/bp-timer-launch/bp-timer-launch-3.png[]
+
+. Create a script task and use the script to retrieve and process data. To do this, open the visual code editor (_for more information about the code editor, refer to
+xref:registry-admin/admin-portal/registry-modeling/process-models/components/edit-groovy-scripts.adoc[]_). +
++
+In our example, we retrieve data from another system.
++
+image:best-practices/bp-timer-launch/bp-timer-launch-4.png[]
++
+._Script for data retrieval and processing_
+[%collapsible]
+====
+[source,groovy]
+----
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+SimpleDateFormat date = new SimpleDateFormat("dd_MM_yyyy")
+String url = 'https://wallpapercave.com/wp/wp2601438.jpg'
+String fileName = 'file_'.concat(date.format(new Date())).concat('.jpeg')
+def documentMetadata = save_digital_document_from_url(url, fileName)
+
+def payload = [:]
+def listFileObj = []
+payload.name = fileName
+def fileObj = [:]
+fileObj.id = documentMetadata.id
+fileObj.checksum = documentMetadata.checksum
+listFileObj << fileObj
+
+payload.image = listFileObj
+set_variable('payload', S(payload, 'application/json'))
+----
+
+The script retrieves data from an external system, creates a *`payload`* object with the obtained data, and stores it as a process variable for further use in subsequent stages of the business process, namely:
+
+. Imports the `java.text.SimpleDateFormat` and `java.util.Date` classes for working with dates:
++
+[source,groovy]
+----
+import java.text.SimpleDateFormat;
+import java.util.Date;
+----
+
+. Creates a new `SimpleDateFormat` object with the format "`dd_MM_yyyy`" for date formatting:
++
+[source,groovy]
+----
+SimpleDateFormat date = new SimpleDateFormat("dd_MM_yyyy");
+----
+
+. Defines the image URL for downloading:
+
++
+[source,groovy]
+----
+String url = 'https://wallpapercave.com/wp/wp2601438.jpg';
+----
+
+. Generates a file name based on the current date, adding the prefix '`file_`' and the extension _.jpeg_:
++
+[source,groovy]
+----
+String fileName = 'file_'.concat(date.format(new Date())).concat('.jpeg');
+----
+
+. Calls the function *`save_digital_document_from_url(url, fileName)`* to save the digital document (image) with the specified URL and file name:
++
+[source,groovy]
+----
+def documentMetadata = save_digital_document_from_url(url, fileName);
+----
+
+. Creates an empty payload dictionary and a list `listFileObj` for constructing the JSON data structure:
++
+[source,groovy]
+----
+def payload = [:];
+def listFileObj = [];
+----
+
+. Assigns the generated file name to the name field of the *`payload`* dictionary:
++
+[source,groovy]
+----
+payload.name = fileName;
+----
+
+. Creates a new empty dictionary `fileObj`:
++
+[source,groovy]
+----
+def fileObj = [:];
+----
+
+. Assigns the *`id`* and *`checksum`* from the document metadata to the respective fields of the fileObj dictionary:
++
+[source,groovy]
+----
+fileObj.id = documentMetadata.id;
+fileObj.checksum = documentMetadata.checksum;
+----
+
+. Adds `fileObj` to the list `listFileObj`:
++
+[source,groovy]
+----
+listFileObj << fileObj;
+----
+
+. Assigns the list `listFileObj` to the image field of the `payload` dictionary:
++
+[source,groovy]
+----
+payload.image = listFileObj;
+----
+
+. Sets the variable '`payload`' with the value of the payload dictionary converted to a JSON string for use in subsequent steps of the business process.
++
+[source,groovy]
+----
+set_variable('payload', S(payload, 'application/json'));
+----
+====
+
+. Model a Service Task for data signing with a system key.
+
+.. Use the delegate *System signature by DSO service* from the template catalog for applying the system signature.
+
+.. Pass the input data as the variable `${payload}` in the corresponding field.
+
+.. Pass the user token. You can do this using the JUEL function *`system_user()`* and the *`accessToken`* method. For example, `${system_user().accessToken`}. It can be further used in integration connectors for integration on behalf of the user.
++
+You can also use the process initiator's token. For example, `${initiator().accessToken}`.
++
+TIP: For more details, refer to
+xref:bp-modeling/bp/modeling-facilitation/modelling-with-juel-functions.adoc[].
+
+. Save the response in a variable. For example, *`system_signature_key`*.
++
+image:best-practices/bp-timer-launch/bp-timer-launch-5.png[]
+
+. Save data to the database. Create a new record in the database, storing the value of the *`entityLocation`* object in the respective column.
+
+.. Use the *Create entity in data factory* delegate to create an entity in the database.
++
+[TIP]
+====
+Alternatively, you can use the general integration connector *Connect to data factory*. For more information about integration extensions for business processes, refer to
+xref:bp-modeling/bp/element-templates/service-task-templates/connect-to-data-factory.adoc[].
+====
+
+.. Specify the resource/API endpoint. For example, *`test-entity`*, which corresponds to the table name you defined when creating the data model registry -- *`test_entity`*.
+
+.. Pass the input data as the *`${payload}`* variable in the corresponding field.
+
+.. Pass the user token. You can do this using the JUEL function *`system_user()`* and the *`accessToken`* method. For example, *`${system_user().accessToken}`*.
+
+.. Specify the *`X-Digital-Signature source`* -- the source of the system signature. For example, *`${system_signature_key}`*.
+
+.. Specify the *`X-Digital-Signature-Derived source`* -- the Ceph document key that contains information about the signed data. For example, *`${system_signature_key}`*.
+
+.. Save the response to a result variable, for example, `response`.
+
++
+image:best-practices/bp-timer-launch/bp-timer-launch-6.png[]
+
+. Set the status of the business process to reflect a successful completion of the business process. To do this, create a Service Task and apply the *Define business process status* delegate.
+
+. Finish the process using the *End Event*.
+
+. Apply the made changes to the master branch to publish the process in the schedule.
++
+TIP: For more details, see
+xref:registry-admin/admin-portal/version-control/overview-new-change-request.adoc[].
+
+== Use within the user portal
+
+The business process modeled and published by the schedule becomes accessible in the *Officer Portal*.
+
+This process can be found in the *Available services* > *Reference business processes* section. It will be launched and executed according to the established schedule in a *Timer* event.
+
+[TIP]
+====
+The Officer portal is available via the pattern link:
+
+----
+https://officer-portal-<registry-name>-main.<dns-wildcard>
+----
+
+where `<registry-name>` is the name for your registry and `<dns-wildcard>` designates the domain and subdomain names for the cluster instance.
+
+For example, for the `demo-registry`, deployed on the `example.com` Platform instance, the route to the *Officer Portal* service is:
+
+https://officer-portal-demo-registry-main.example.com
+
+//https://officer-portal-{{{registry-name}}}-main.{{{dns-wildcard}}}
+====

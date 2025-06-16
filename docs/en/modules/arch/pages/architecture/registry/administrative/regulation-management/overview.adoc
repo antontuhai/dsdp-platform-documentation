@@ -1,0 +1,149 @@
+= Registry regulations modeling subsystem
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== General description
+
+The subsystem that provides capability of the registry development functionality based on the _Lowcode_ principles in the form of xref:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[_digital registry regulations_]  and provides capabilities for managing the officer accounts.
+
+== Subsystem functions
+
+* Modeling of the xref:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[registry regulations components] based on the _Lowcode_ principles:
+
+* Batch download of users.
+
+* Amendments to the declarative description of the registry regulations.
+
+* Versioning of the registry regulations with a history of changes.
+
+* Monitoring of changes before entering them into the registry regulations.
+
+* Viewing the results of monitoring of changes to the registry regulations by the xref:architecture/registry/administrative/regulation-publication/overview.adoc[Registry regulations deployment subsystem].
+
+== Subsystem technical design
+
+.Component diagram of regulations modeling subsystem. General
+image::architecture/registry/administrative/regulation-management/regulation-management-design-1.svg[]
+
+* _(1)_ -- The report archive is a zip archive that contains a list of requests and report settings in a declarative format.
+
+* _(2)_ -- Scenarios that are relevant for modeling
+
+* _(3)_ -- The internal structure of the Redash components is described in the xref:arch:architecture/registry/operational/reporting/overview.adoc[Registry analytical reporting subsystem]
+
+[#subsystem-components]
+== Subsystem components
+
+|===
+|Component name|Representation in  register|Origin|Repository|Purpose
+
+|_Regulation modeling web interface_
+
+|`admin-portal`
+|origin
+|https://gerrit-mdtu-ddm-edp-cicd.apps.cicd2.mdtu-ddm.projects.epam.com/admin/repos/mdtu-ddm/low-code-platform/platform/frontend/applications/common-web-app[gerrit:/mdtu-ddm/low-code-platform/platform/frontend/applications/common-web-app]
+|Client web application for modeling registry regulations based on _Lowcode_ principles
+
+|_Report modeling web interface_
+
+a|
+* `redash-admin`
+* `redash-admin-adhocworker`
+* `redash-admin-scheduler`
+* `redash-admin-postgresql`
+* `redash-admin-redis-master`
+|fork
+a|
+* https://github.com/epam/edp-ddm-redash-chart[github:/epam/edp-ddm-redash-chart]
+* https://github.com/epam/edp-ddm-redash[github:/epam/edp-ddm-redash]
+* https://github.com/getredash/redash[github:/getredash/redash]
+|Client web application for creating and configuring analytical reports and dashboards
+
+|_Service for monitoring and storage of changes to regulations_
+
+a|
+* `gerrit`
+* `gerrit-operator`
+|3rd-party
+a|
+* https://github.com/epam/edp-ddm-gerrit-operator[github:/epam/edp-ddm-gerrit-operator]
+* https://gerrit.googlesource.com/gerrit/[gerrit:/googlesource/gerrit]
+|Software tool allowing storage and management of registry regulations versions.
+
+|_Regulations management service_
+
+|`registry-regulation-management`
+|origin
+|https://github.com/epam/edp-ddm-registry-regulation-management[github:/epam/edp-ddm-registry-regulation-management]
+a|
+The service that provides:
+
+* REST API for working with versions of the registry regulations and their components
+* functionality of hints, autocompletion of functions and checks when editing code in the _Regulation modeling web interface_
+* REST API access to export reports from the _Report modeling web interface_
+
+|Utility for downloading officers
+
+|`publish-users-job`
+|origin
+|https://github.com/epam/edp-ddm-user-publisher[github:/epam/edp-ddm-user-publisher]
+|The service that provides REST API access to export reports from the _Report modeling web interface_
+
+|xref:architecture/registry/administrative/regulation-management/ceph-storage.adoc#_user_import[Operational storage of file with users]
+
+|`ceph:user-import`
+|origin
+|https://github.com/epam/edp-ddm-registry-configuration/blob/main/deploy-templates/templates/CephObjectBucketClaim.yaml[github:/epam/edp-ddm-registry-configuration/blob/main/deploy-templates/templates/CephObjectBucketClaim.yaml]
+|Storing a file with users for import
+
+|xref:architecture/registry/administrative/regulation-management/ceph-storage.adoc#_user_import_archive[Archive storage of files with users]
+
+|`ceph:user-import-archive`
+|origin
+|https://github.com/epam/edp-ddm-registry-configuration/blob/main/deploy-templates/templates/CephObjectBucketClaim.yaml[github:/epam/edp-ddm-registry-configuration/blob/main/deploy-templates/templates/CephObjectBucketClaim.yaml]
+|Archive of files with users for import
+
+|xref:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[Git repository of the Digital registry regulations]
+
+|`gerrit:registry-regulations`
+|origin
+|https://github.com/epam/edp-ddm-empty-template-registry-regulation[github:/epam/edp-ddm-empty-template-registry-regulation]
+|Git repository of the Digital registry regulations in the service for monitoring and storage of changes to the regulations
+
+|===
+
+== Technology stack
+
+The following technologies were used when designing and developing the subsystem:
+
+* xref:arch:architecture/platform-technologies.adoc#java[Java]
+* xref:arch:architecture/platform-technologies.adoc#spring[Spring]
+* xref:arch:architecture/platform-technologies.adoc#spring-boot[Spring Boot]
+* xref:arch:architecture/platform-technologies.adoc#javascript[JavaScript]
+* xref:arch:architecture/platform-technologies.adoc#typescript[TypeScript]
+* xref:arch:architecture/platform-technologies.adoc#reactjs[ReactJS]
+* xref:arch:architecture/platform-technologies.adoc#redux[Redux]
+* xref:arch:architecture/platform-technologies.adoc#material-ui[Material UI]
+* xref:arch:architecture/platform-technologies.adoc#bpmn[BPMN JS]
+* xref:arch:architecture/platform-technologies.adoc#leaflet[Leaflet]
+* xref:arch:architecture/platform-technologies.adoc#formio[Form.IO SDK]
+* xref:arch:architecture/platform-technologies.adoc#i18next[i18next]
+* xref:arch:architecture/platform-technologies.adoc#redash[Redash]
+* xref:arch:architecture/platform-technologies.adoc#liquibase[Liquibase]
+* xref:arch:architecture/platform-technologies.adoc#nginx[Nginx]
+* xref:arch:architecture/platform-technologies.adoc#gerrit[Gerrit]
+* xref:arch:architecture/platform-technologies.adoc#edp-gerrit-operator[EDP Gerrit Operator]
+
+== Subsystem quality attributes
+
+=== Security
+Only authorized users can access to the subsystem web interfaces. The standard system mechanisms, such as https://openid.net/developers/how-connect-works/[OpenID Connect] and https://saml.xml.org/saml-specifications[SAML] integration with the xref:architecture/platform/operational/user-management/overview.adoc[Users and roles management subsystem], are used for authorization.
+
+=== Usability
+
+Modeling of the regulations in the subsystem web interfaces is performed according to the principles of _Low-code_ with auto-prompts for users, auto-completion and validation of the entered information. This allows reducing the time for development of the regulations and enhancing training of users.
+
+=== Modifiability
+
+The structure of the subsystem's xref:architecture/registry/administrative/regulation-management/registry-regulation/registry-regulation.adoc[_digital registry regulations_] is divided onto individual elements that are loosely coupled to each other (the principle of Low coupling) and use the principles of _Low-code_ for development, which simplifies implementation of new changes to the regulations, accelerates the speed of development and reduces the required expertise of a modeler.

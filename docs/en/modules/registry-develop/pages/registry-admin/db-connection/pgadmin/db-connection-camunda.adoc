@@ -1,0 +1,110 @@
+= Connecting to the Camunda database via pgAdmin
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+This guide describes how to connect to the *`camunda`* database — the business process execution subsystem database — using *pgAdmin* for data viewing, analysis, and maintenance.
+
+The guide covers connection procedures using the `bpm_service_user` and `bp_admin_portal_service_user` roles.
+
+== Access Requirements
+
+To use this guide, make sure you have the following:
+
+* Access to the *Control Plane* admin panel.
+* Access to the relevant *OpenShift* project (for example, `camunda`).
+* Permissions to view *Secrets* in the project, including:
+** `pgadmin-secret` — required for logging into the *pgAdmin* interface.
+** `citus-roles-secrets` — required to connect using the `bpm_service_user` and `bp_admin_portal_service_user` roles.
+
+== How to Open pgAdmin
+
+. Log in to the *Control Plane* admin panel.
+. Open menu:Registries[Quick Links > Registry Admin Zone] and follow the link to the *Registry Data Viewer* — *pgAdmin*.
++
+image:registry-admin/db-connection/pgadmin/db-connection-pgadmin-1.png[]
+
+[TIP]
+====
+[%collapsible]
+.Alternative way to open pgAdmin
+=====
+. Go to menu:OpenShift[Projects] and select your project (e.g., `camunda`).
+. Open menu:Networking[Routes] and find the route to the `pgadmin` service.
++
+image:registry-develop:best-practices/review-db-changes-before-merge/review-db-changes-before-merge-17.png[]
+=====
+====
+
+[NOTE]
+====
+*pgAdmin credentials are stored here:*
+
+Go to menu:Workloads[Secrets] and open the secret named `pgadmin-secret`.
+It contains the login and password required to access pgAdmin.
+
+image:registry-develop:best-practices/review-db-changes-before-merge/review-db-changes-before-merge-18.png[]
+====
+
+== Connecting as `bpm_service_user`
+
+To connect using the `bpm_service_user` role, configure the connection settings for the *Camunda* server:
+
+In *pgAdmin*, expand the *Servers* section and click on the *Camunda* server.
+Enter the password for the `bpm_service_user` to establish the connection.
+
+image:registry-admin/db-connection/pgadmin/camunda/camunda-pgadmin-4.png[]
+
+[NOTE]
+====
+* The password for the `bpm_service_user` role is stored in the `citus-roles-secrets` secret (menu:Workloads[Secrets]).
+* Use the value from the `bpmServicePass` field.
+
+image:registry-admin/db-connection/pgadmin/camunda/camunda-pgadmin-1.png[]
+====
+
+== Connecting as `bp_admin_portal_service_user`
+
+To connect using the `bp_admin_portal_service_user` role (admin access), update the connection settings for the *Camunda* server:
+
+. In *pgAdmin*, go to menu:Servers[Camunda > Properties].
++
+image:registry-admin/db-connection/pgadmin/camunda/camunda-pgadmin-2.png[]
+
+. Open the *Connection* tab. Set the *Username* field to `bp_admin_portal_service_user` and save the changes.
++
+image:registry-admin/db-connection/pgadmin/camunda/camunda-pgadmin-5.png[]
+
+[NOTE]
+====
+* The password for the `bp_admin_portal_service_user` role is also stored in the `citus-roles-secrets` secret.
+* Use the value from the `bpAdminPortalServicePass` field.
+
+image:registry-admin/db-connection/pgadmin/camunda/camunda-pgadmin-1.png[]
+====
+
+== Roles and secrets summary
+
+Use the appropriate credentials from OpenShift secrets when connecting via *pgAdmin*:
+
+[cols="1,1,1,1", options="header"]
+|===
+|Role |Secret |Field |Description
+
+|`bpm_service_user` |`citus-roles-secrets` |`bpmServicePass` | Business process execution service
+|`bp_admin_portal_service_user` |`citus-roles-secrets` |`bpAdminPortalServicePass` | Business process admin portal
+|===
+
+TIP: For details on database users, refer to xref:arch:architecture/registry/operational/relational-data-storage/db-roles.adoc[].
+
+== Viewing the database structure
+
+Locate the `camunda` database at:
+menu:Servers[Camunda > Databases > `camunda`].
+
+To view database tables, expand:
+menu:Schemas[Tables]
+
+image:registry-admin/db-connection/pgadmin/camunda/camunda-pgadmin-3.png[width="200"]

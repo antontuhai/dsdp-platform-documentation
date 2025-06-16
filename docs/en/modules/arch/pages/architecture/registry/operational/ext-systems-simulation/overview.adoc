@@ -1,0 +1,87 @@
+= External API simulation subsystem
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+The _External API simulation subsystem_ provides a way of developing and testing your registry in isolation from external systems.
+
+
+* The xref:arch:architecture/registry/administrative/regulation-management/overview.adoc[_Registry regulations modeling subsystem_] provides a dedicated web interface for configuring simulation rules according to registry requirements.
+* The xref:arch:architecture/platform/administrative/control-plane/overview.adoc[_Platform and registries management subsystem_] provides a web interface for managing the _registry operational configuration_, where you can manage the external integration simulation and real systems' usage.
+
+== Subsystem functions
+
+* Simulating external system's API during business process execution.
+* Simulating the data signature widget in the functional scenarios of applying a signature and authenticating portal users.
+
+== Technical design
+
+The following diagram presents the _External API simulation subsystem's_ components and their interactions with other subsystems in the scope of implementing functional scenarios.
+
+image::arch:architecture/registry/operational/ext-systems-simulation/ext-systems-simulation-design.svg[float="center",align="center"]
+
+The _External API simulation subsystem_ contains two components that are responsible for mocking the main registry integration scenarios with external systems:
+
+* _Data signature simulation widget_: A static copy of the signature widget served by the _Nginx_ web server.
+
+* _External API simulation server_: An _API_ simulation server based on https://wiremock.org/[Wiremock] that supports _REST_ and _SOAP_ integration protocols.
+
+
+[#subsystem-components]
+== Subsystem components
+
+|===
+
+|Component name |Registry representation |Source |Repository |Function
+
+|_Data signature simulation widget_
+|`sign-widget-mock`
+|origin
+|https://github.com/epam/edp-ddm-sign-widget-mock[github:/epam/edp-ddm-sign-widget-mock]
+
+|A static copy of the signature widget.
+
+|_External API simulation server_
+|`wiremock`
+|3rd-party
+|https://github.com/epam/edp-ddm-wiremock[github:/epam/edp-ddm-wiremock]
+
+|External systems API mocking server with support for a declarative approach to contract description.
+|===
+
+////
+UA SPECIFIC
+|_Мок-сервіс інтеграції з ЄДР_
+|`trembita-edr-registry-mock`
+|origin [_deprecated_]
+|https://gerrit-mdtu-ddm-edp-cicd.apps.cicd2.mdtu-ddm.projects.epam.com/admin/repos/mdtu-ddm/low-code-platform/mock/trembita-edr-registry-mock[gerrit:/mdtu-ddm/low-code-platform/mock/trembita-edr-registry-mock]
+|Сервіс мокування SOAP API реєстру ЄДР
+
+|_Мок-сервіс інтеграції з ДРАЦС_
+|`trembita-dracs-registry-mock`
+|origin [_deprecated_]
+|https://gerrit-mdtu-ddm-edp-cicd.apps.cicd2.mdtu-ddm.projects.epam.com/admin/repos/mdtu-ddm/low-code-platform/mock/trembita-dracs-registry-mock[gerrit:/mdtu-ddm/low-code-platform/mock/trembita-dracs-registry-mock]
+|Сервіс мокування SOAP API реєстру ДРАЦС
+
+|_Мок-сервіс інтеграції з ЄІБДВПО_
+|`trembita-idp-mock-server`
+|origin [_deprecated_]
+|https://gerrit-mdtu-ddm-edp-cicd.apps.cicd2.mdtu-ddm.projects.epam.com/admin/repos/mdtu-ddm/low-code-platform/mock/trembita-idp-mock-server[gerrit:/mdtu-ddm/low-code-platform/mock/trembita-idp-mock-server]
+|Сервіс мокування SOAP API ЄІБДВПО
+////
+
+== Technology stack
+
+The following technologies were used when designing and developing the subsystem:
+
+* xref:arch:architecture/platform-technologies.adoc#javascript[JavaScript]
+* xref:arch:architecture/platform-technologies.adoc#java[Java]
+* xref:arch:architecture/platform-technologies.adoc#wiremock[Wiremock]
+
+== Subsystem quality attributes
+
+=== _Testability_
+
+The _External API simulation subsystem_ provides a way of testing your registry by simulating various scenarios of external systems' behavior and checking the correctness of processing results, errors, temporary unavailability of external systems, slowing down of their performance, and so on.

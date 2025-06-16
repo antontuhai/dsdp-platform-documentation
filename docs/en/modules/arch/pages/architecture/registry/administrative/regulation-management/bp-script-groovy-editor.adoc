@@ -1,0 +1,288 @@
+= Editing business process groovy scripts in admin-portal
+include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Problem statement and solution
+
+The development of the registry regulations business processes includes the development of Groovy scripts that reflect the logic of the business process steps. The admin portal allows the development of business processes for the registry regulations.
+
+Developing Groovy scripts in specialized development tools, such as IDE (Desktop or Web versions), is much more efficient.
+
+Extending the admin portal with the rich web editors for editing groovy scripts will improve the user experience to the level of using Desktop IDE tools, as well as reduce the time for continuous transfer of scripts to Desktop IDE for editing and back to BPMN.IO visual business process designer.
+
+== Glossary
+
+- LSP - Language Server Protocol
+- LS - Language Server
+- WS - WebSocket
+- WSS - WebSocket Secure
+
+== Actors
+
+- Registry regulations developer
+
+== Editor functionality
+
+[NOTE]
+The following functionality is equally used for two functional scenarios: creating a new workflow step and editing or viewing an existing one.
+
+- Auto-completion as a drop-down list of the call variants.
+- Display the results of code analysis for errors using the language server.
+- Display Hoover tooltip with javadoc information.
+- Use different colors when viewing code.
+- Auto-completion for DDM JUEL functions:
+
+** initiator
+** completer
+** system_user
+** submission
+** sign_submission
+** get_variable
+** set_variable
+** set_transient_variable
+** process_caller
+** message_payload
+
+== Basic principles
+
+- Monaco editor as a Web tool for the development of groovy scripts.
+- Using third-party Language Servers (LS) to get hints, the list for auto-completion and results of errors of semantic analysis of Groovy scripts.
+- Using Language Server Protocol for communication between Language Server and Monaco editor.
+- Using lsp4j for LS management (orchestration).
+- Transport communication protocol between Monaco editor and LS - WebSocket over HTTP (HTTPS).
+- Logical communication protocol (payload structure in the transport protocol messages) between Monaco editor and LS.
+
+== High-level design
+
+image::architecture/registry/administrative/regulation-management/bpmnio-groovy-editor/bp-groovy-script-editor.svg[]
+
+=== Description and purpose of components
+
+|===
+|Name|Programming language|Description
+
+|https://microsoft.github.io/monaco-editor/[Monaco editor] | JavaScript | Visual browser-based code editor
+
+|Remote LS's | Java, LSP4J | Instances of LS services that use the LSP protocol and perform the client code check returning the test results in Json-RPC (LSP) format.
+
+|LS Manager, Websocket Manager|Java, Spring|Spring boot web controller. Creates the required LS instances. Creates a WebSocket and uses the appropriate LS instance to analyze and validate code from the visual editor to the client.
+|===
+
+=== LSP communication
+
+- WSS protocol is used as transport protocol.
+- The https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/[LSP] protocol, version 3.17 is used as RPC interaction.
+
+==== WebSocket communication
+
+image::architecture/registry/administrative/regulation-management/bpmnio-groovy-editor/web-sockets-diagram.svg[]
+
+- WSS is used as a transport protocol.
+- To configure Web-socket communication from the UI layer side, the https://www.npmjs.com/package/monaco-languageclient[monaco-languageclient] is used.
+- spring-websocket is used to organize the websocket backend part.
+
+==== Number of LS instances
+
+image::architecture/registry/administrative/regulation-management/bpmnio-groovy-editor/web-sockets-concurrency-diagram.svg[]
+
+- Each window with monaco editor uses its own individual web-socket instance to connect to LS.
+- Each web-socket uses an individual LS instance.
+- All LS instances are in the same JVM instance. Technically, each LS instance is a new instance with the `org.eclipse.lsp4j.services.LanguageServer` interface.
+
+[plantuml,bp-script-editing ls-communication-sequence,svg]
+----
+include::partial$architecture/registry/administrative/regulation-management/bpmnio-groovy-editor/language-server-communication-sequence.puml[ls-communication-sequence]
+----
+
+== Component deployment
+
+image::architecture/registry/administrative/regulation-management/bpmnio-groovy-editor/ls-deployment.svg[]
+
+== Scaling
+
+In the current version of the service deployment, it is suggested to use only vertical scaling (RAM, CPU).
+Since the approach of placing all LSs within a single JVM is used, therefore, a significant increase in the use of computing resources is not expected during an increase in the number of the LS clients working at the same time.
+
+[TIP]
+Horizontal scaling is possible by adding Load Balancer for the LSP (WebSocket JSON-RPC) traffic.
+Out of scope.
+
+== Threat modeling
+
+|===
+|Area|Name|Description|Limit Value
+
+.5+|Kong|WSS traffic through Kong|Settings of the traffic through admin kong by using Upgrade headers. https://docs.konghq.com/enterprise/2.4.x/proxy/#proxy-websocket-traffic[WebSocket kong manual] |
+
+| Authorization during the handshake process| Current authorization in admin kong. `GET /groovy` shall be accessible only for authorized users through admin realm |
+
+| Maximum request size| Limit for payload in LSP (JSON-RPC). Use https://docs.konghq.com/hub/kong-inc/request-size-limiting/[Request Size Limiting] | 65kb (30kb after SC)
+
+| Socket timeout| Idle time for the socket through which it automatically closes. Required configuration on both BE and FE side. Kong config property `proxy_read_timeout`| 60s (should be by default)
+
+| Socket open Rate limit | Limit on the number of requests to create web-socket `/groovy`. Use existing plugin in Kong https://docs.konghq.com/hub/kong-inc/rate-limiting/[Rate limit plugin] | 10 per minute per user
+
+|Java application | CORS configuration | Configure CORS for the `/groovy` method for web-socket opening |
+
+|Chart configuration| RAM limit |Set the RAM limit by configuring resources.requests.memory in the Chart deployment| 1GB
+|===
+
+== Technology stack
+
+[cols="2,1,1,2"]
+|===
+|Name|Version|License|Description
+
+|https://microsoft.github.io/monaco-editor/[Monaco editor] |0.34.1|https://github.com/microsoft/monaco-editor/blob/main/LICENSE.txt[MIT] | Visual browser-based code editor
+
+|https://www.npmjs.com/package/monaco-languageclient[monaco-languageclient]|4.0.3|https://github.com/TypeFox/monaco-languageclient/blob/master/License.txt[MIT]|The language server client connected to the Monaco editor and used to connect to remote language servers using LSP protocol)
+
+|https://www.npmjs.com/package/vscode-languageclient[vscode-languageclient]|8.0.2|https://github.com/Microsoft/vscode-languageserver-node/blob/main/License.txt[MIT]|Transitive dependency with monaco-languageclient
+
+|https://github.com/eclipse/lsp4j/tree/main/documentation[LSP4J]|0.19| https://github.com/eclipse/lsp4j/blob/main/LICENSE[Eclipse Public License - v 2.0]| Library for managing LS instances. Used to run LS code.
+
+|https://github.com/GroovyLanguageServer/groovy-language-server[Groovy language server] |-| https://github.com/GroovyLanguageServer/groovy-language-server/blob/master/LICENSE[APACHE LICENSE, v2.0]| Implements LSP protocol and performs Groovy code check returning test results in the Json-RPC format
+
+|https://github.com/spring-projects/spring-boot[Spring Boot]|2.6.1|https://www.apache.org/licenses/LICENSE-2.0[APACHE LICENSE, v2.0]|Spring Framework extension to simplify the construction of applications based on Spring due to the automatic configuration and spring boot starters
+
+|https://spring.io/guides/gs/messaging-stomp-websocket/[spring-boot-starter-websocket]|2.6.1|https://www.apache.org/licenses/LICENSE-2.0[APACHE LICENSE, v2.0]|Spring extension for Web Socket management in the server applications (uses https://mvnrepository.com/artifact/org.springframework/spring-websocket/5.3.13[spring-websocket:5.3.13])
+|===
+
+== Control interface
+
+BPMN.io will be extended with an additional button to call the modal window editing groovy scripts.
+
+.Business process script editor call window
+
+image::architecture/registry/administrative/regulation-management/bpmnio-groovy-editor/bp-groovy-script-open-window.svg[]
+
+.Script edit window in Monaco Editor
+
+image::architecture/registry/administrative/regulation-management/bpmnio-groovy-editor/bp-groovy-script-edit-window.png[]
+
+== High-level development plan
+
+=== Required expertise
+
+- Java
+- Javascript
+- DevOps
+- QA, AQA
+
+==== Backend Java activities
+
+- Create Spring Boot-based backend service ddm-language-server.
+- Develop WebSocket proxy component.
+- Upgrade the LSP4J version to 0.19 for GroovyLanguageServer.
+
+==== Javascript activities
+
+- Integration of Monaco Editor into the BPMN.IO business process editor.
+- Monaco Editor integration with ddm-language-server using monaco-languageclient.
+
+==== DevOps activities
+
+- Onboard https://github.com/GroovyLanguageServer/groovy-language-server: add codebase into gerrit and create pipeline around
+- Create deploy-templates and Dockerfile for service ddm-language-server (openjdk based image).
+- AdminKong configuration for ddm-language-server traffic. Add websocket proxy headers to the Kong configuration.
+- Configuring Kong plugins to check the security limits.
+- Add the `languageServerUrl` variable to `environment-js` with the relative ddm-laguage-server address.
+
+== Security
+
+=== Business data
+
+|===
+|Data Category|Description|Privacy|Integrity|Accessibility
+|Interim business process data containing open information|Business form and process data that does not contain restricted information|Low|High|Average
+|Operational logs|Lists of recorded/logged calls to the service and its operation logs|Average|High|High
+|===
+
+=== Simplified threat model
+
+image::architecture/registry/administrative/regulation-management/bpmnio-groovy-editor/groovy_TM.svg[]
+
+=== Countermeasures against safety risks and compliance with safety requirements
+
+|===
+| Risk | Security controls | Implementation | Priority
+| Breach of data integrity and confidentiality during transmission | Use of HTTPS and WSS | Taken into account in the original design | High
+| Unsafe session termination on the server side | During the user initiated exit from the system or in case of the automatic session timeout, any communication with the web socket must be terminated | Not taken into account in the initial design | High
+| Denial of service due to depletion of computing resources (DoS) caused by the lack of restrictions for web sockets
+a|
+- Implement the maximum request size limit of 30 kb
+- Socket timeout: 60s
+- Limit the number of open sockets to 10 sockets per user per minute
+|Taken into account in the initial design | High
+| Denial of service due to depletion of computing resources (DoS) caused by the lack of restrictions for the service at the openshift level
+a|
+- Limit RAM usage. The limit itself must be calculated after testing.
+- Limit CPU time consumption. The limit itself must be calculated after testing.
+- Configure the mechanism for restarting the service in case of excessive use of resources.
+| Taken into account in the initial design | High
+| Denial of service due to depletion of computing resources (DoS) caused by the lack of restrictions for HTTP requests at the level of the Kong ingress controller
+a|
+- The socket limit and the number of requests must be configured separately in the /groovy endpoint. That is, the rate limit plugin for Kong must be set in /groovy
+| Not taken into account in the initial design | High
+| Risk of backdoor in the language-server component
+a|
+- Embed all the necessary resources and language dictionaries to parse AST in the ddm-language-server image to prevent any calls of this service to external sources
+- Prohibit any communications of the ddm-language-server service with external resources at the level of openshift network policies and allow communications with the logging service and services involved according to the business logics.
+| Partially taken into account in the initial design. It is required to completely isolate the ddm-language-server service from the external network | High
+| Risk of executing vulnerability of interactive information systems (XSS)
+a|
+- CORS settings
+| Taken into account in the initial design | High
+| Risk of disclosing technical information about the system
+a|
+- The service must return a general error in case of problems.
+- The service must have the "last resort" mechanism that handles any errors that have not been processed before.
+- Make sure the DEBUG mode is off at all levels in the pre-production and production environments.
+- language-server does not return its version and any technical and/or system information in the HTTP response.
+
+| Not taken into account in the initial design | Medium
+| Deserialization of unreliable data
+a|
+- Make sure that there is avoidance of or protection against deserialization of unreliable data both in the developed code and in third-party libraries.
+- Make sure that there is a check of the JSON scheme, and it is checked before accepting the entered data.
+| Not taken into account in the initial design | Medium
+
+| Risk of a group of web vulnerabilities and compliance with security requirements
+a|
+- Make sure that requests containing unexpected or missing Content Types are rejected by the corresponding headers (status of the HTTP response: 406 Unacceptable, or 415 Unsupported media type).
+- The web server accepts only approved HTTP methods.
+- Make sure that the HTTP response has the Content-Type header as well as a safe character set (for example, UTF-8, ISO-8859-1).
+- The web page with Monaco Editor must contain the customized Content Security Policy (CSP) headers.
+- Monaco Editor web page must contain the X-Content-Type-Options title: nosniff
+| Not taken into account in the initial design | Medium
+
+| The risk of fixing in the system when exploiting a vulnerability to the system level and subsequent lateral movement. Compliance with the requirements.
+a|
+- The system service must not receive the account service key from openshift (unless it is a requirement), and must be run from a non-privileged system user.
+| Not taken into account in the initial design | Medium
+
+| Insufficient logging and safety compliance
+a|
+- The target service must log all requests and send them to a centralized logging and monitoring system.
+- Make sure that all unsuccessful requests and errors arising during operations are logged.
+- The logging system must use the unified time and time zone.
+- Logs must have a unified format and contain all the necessary information for investigation of security incidents.
+- Logs must not contain sensitive information, or it must be obfuscated accordingly
+| Not taken into account in the initial design | Low
+
+| Misconfiguration of the service and/or framework
+a|
+- Make sure that the server configuration is protected in accordance with the recommendations of the application server and the frameworks used.(web server/app server/framework hardening)
+| Not taken into account in the initial design | Low
+
+|===
+
+=== Comprehensive protection measures testing system
+. The repository with the source code must be onboarded to the vulnerability management system and undergo regular testing.
+. The basic image of the service must be scanned and not contain unresolved critical vulnerabilities.
+. The basic image must be placed in a trusted repository controlled by the organization.
+. The language-server technology should be added to the list of the used 3rd party products (inventory).
+
+
+

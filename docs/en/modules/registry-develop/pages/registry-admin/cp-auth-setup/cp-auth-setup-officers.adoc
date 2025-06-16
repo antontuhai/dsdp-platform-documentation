@@ -1,0 +1,277 @@
+= Configuring authentication for officers
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+[IMPORTANT]
+====
+
+Changing the authentication type is available for the registry versions *`1.9.3`* and later.
+
+All earlier versions of the registry use the authentication with the Qualified Electronic Signature (QES) and the IIT widget, which is the default authentication type for the Officer portal.
+====
+
+== General description
+
+Registry administrators can configure the desired authentication type for the Officer portal. The platform allows using their [.underline]#own IIT widget# for authenticating with a Qualified Electronic Signature or configuring integration with an external xref:platform:ROOT:platform-glossary.adoc#digital-identification-services[digital authentication provider] (in the Ukrainian implementation it is the *`id.gov.ua`* service).
+
+[TIP]
+====
+
+Links to official resources: ::
+
+* Institute of Information Technologies (IIT) -- https://iit.com.ua/
+* Integrated System of Electronic Identification (ICEI) ID.GOV.UA -- https://id.gov.ua/
+====
+
+Registry officers will be able to use only one type of authentication at a time when logging into the Officer portal: either a Qualified Electronic Signature or a digital identification service.
+
+[NOTE]
+The `*id.gov.ua*` digital identification service is specific to the Ukrainian market and may not apply or function as described in other contexts or regions.
+Please consult the local guidelines or documentation if you are implementing this outside of Ukraine.
+
+== Authenticating with the IIT widget
+
+. Log in to the *Control Plane* console as a registry administrator.
++
+image:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-01.png[]
++
+
+. Go to the *Registries* section, open the necessary registry, and click on *`EDIT`*.
++
+[NOTE]
+====
+
+You can also configure authentication type for the officers during the registry creation.
+====
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-01.png[]
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-02.png[]
++
+
+. Select the *Officer authentication* section and perform the following configuration:
++
+
+* [.underline]#Specify the authentication type# as `Widget`. This type is intended for authenticating officers using the Qualified Electronic Signature on the login form of the Officer portal.
++
+
+TIP: `Widget` is the default authentication type.
++
+
+* [.underline]#Add a link to the resource with a widget#. The standard IIT widget is at the following URL: https://eu.iit.com.ua/sign-widget/v20200922/.
++
+[NOTE]
+====
+
+You can use a widget from any provider with a different URL, but in that case, pay attention to the height parameter, which can be configured in the next field (_see below_).
+====
++
+
+* Define the widget height in pixels (px). By default, the parameter is set to `*720*` px for the IIT widget.
++
+
+NOTE: Increase or decrease the height as needed. For example, *`1000`* px. Pay special attention to this if you use the URL of another provider to ensure the Qualified Electronic Signature widget appears correctly in the Cabinet.
+
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-1.png[]
++
+
+. Click kbd:[Confirm] to save the configuration.
++
+
+This will result in a merge request to the registry configuration.
++
+
+. Go back to the registry details and find the section *Update requests*.
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-3.png[]
++
+
+. Open the generated request by clicking on the view icon - 👁.
++
+
+NOTE: The proposed changes will be saved to the registry configuration in the _deploy-templates/values.yaml_ file upon confirmation.
++
+
+. In the new window, compare the 2 versions of the changes, make sure the data you entered is correct, and click kbd:[Confirm]. You can also reject the changes to the configuration immediately by clicking kbd:[Reject].
++
+
+TIP: The comparison window allows you to conveniently check the current (left) and new (right) versions of the changes.
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-5.png[]
++
+[NOTE]
+====
+
+Registry officers will be able to use only one type of authentication at a time when logging into the Officer portal: either a Qualified Electronic Signature or `id.gov.ua`.
+
+When switching the authentication type, the parameters for the other type remain unchanged. Thus, [.underline]#two configurations can coexist# at the same time, but [.underline]#only one can be active#. When changing the `browserFlow`, the excessive resources in the Helm chart are deleted.
+
+In our example, the standard `browserFlow` is used for authentication via Qualified Electronic Signature -- *`dso-officer-auth-flow`*.
+====
+
++
+
+As a result, the request obtains the `Confirmed` status and triggers the Jenkins pipeline *`MASTER-Build-<registry-name>`*, where [.underline]#`<registry-name>`# is name of the registry. It applies the parameters of the specified configuration.
++
+
+. Wait while the code is being built. This may take up to 15 minutes.
++
+
+You can check the current status and execution result by following the *`CI`* link in the interface.
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-6.png[]
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-7.png[]
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-8.png[]
+
++
+
+Upon successful completion of the build, the specified configuration will be applied to the registry.
+
+== Authenticating via the id.gov.ua system
+
+include::ROOT:partial$admonitions/ua-specific.adoc[]
+
+=== Prerequisites
+
+. Register in the ICEI `id.gov.ua` system.
+To do this, go to https://id.gov.ua/connect and conclude an electronic agreement on access to the integrated system of electronic identification.
++
+[NOTE]
+====
+
+The conclusion of the agreement and other related legal and technical procedures are performed on the `id.gov.ua` side between the data owner (_registry technical administrator_) and ICEI.
+====
+
+. After registering as a client (of the registry), obtain the client identifier in the `id.gov.ua` system (`client_id`) and the password (`secret`) from ICEI.
+
+. Use the obtained data to configure authentication with `id.gov.ua` in the *Control Plane* interface.
+
+=== Configuring
+
+. Log in to the *Control Plane* console as the registry administrator.
++
+image:admin:infrastructure/cluster-mgmt/update-cluster-mgmt-01.png[]
++
+
+. Go to the *Registries* section, open the necessary registry, and click *`EDIT`*.
++
+[NOTE]
+====
+
+You can also configure authentication type for the officers during the registry creation.
+====
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-01.png[]
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-02.png[]
++
+
+. Select the *Officer authentication* section and perform the following settings:
++
+
+* [.underline]#Specify the authentication type# as *`id.gov.ua`*. This type is intended for authenticating officers using an external provider on the Officer portal login form.
++
+
+* [.underline]#Add a link to the resource#. For example, the URL may look like this: https://test.id.gov.ua?auth_type=dig_sign.
++
+[IMPORTANT]
+====
+
+In the request's query parameters (in the URL after *`?`*), specify the authentication types available for the official through `id.gov.ua`.
+
+Possible values for the `auth_type` parameter:
+
+
+
+
+* *`dig_sign`* - authentication with a Qualified Electronic Signature (_digital signature_);
+* *`bank_id`* - authentication via `BankID`;
+* *`diia_id`* - authentication via `Diia.Sign`.
+
+
+
+❗ Specify only *`auth_type=dig_sign`*, as shown in the example.
+This is due to the fact that the `BankID` and `Diia.Sign` methods do not pass the `edrpou` parameter, which is necessary for successful authentication of the official in the system. Other parameters required for successful official authentication - `drfo` and `fullName` (see xref:user:citizen-officer-portal-auth.adoc[] for more details).
+
+====
++
+
+* [.underline]#Specify the client identifier (`client_id`)# obtained in the `id.gov.ua` system. For example, *`17f33242543e4340b690391d6f1d1513`*.
++
+[TIP]
+====
+
+The client identifier in the `id.gov.ua` system is similar to the https://www.uuidgenerator.net/[UUID] format but without the hyphens (`-`) between characters.
+====
++
+
+* [.underline]#Specify the client secret (`secret`)# obtained from the `id.gov.ua` system.
++
+
+TIP: This can be any randomly generated password in the `id.gov.ua` system.
+
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-2.png[]
++
+
+. Click kbd:[Confirm] to save the settings.
++
+
+This will result in a merge request to the registry configuration.
++
+
+. Go back to the registry details and find the *Update requests* section.
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-3.png[]
++
+
+. Open the generated request by clicking the view icon—👁.
++
+
+NOTE: The proposed changes are saved to the registry configuration in the _deploy-templates/values.yaml_ file upon confirmation.
++
+
+. In the new window, compare the two versions of the changes, make sure the data you entered is correct, and click kbd:[Confirm]. You can also reject the changes to the configuration immediately by clicking kbd:[Reject].
++
+
+TIP: The comparison window allows you to conveniently check the current (left) and new (right) versions of the changes.
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-4.png[]
++
+[NOTE]
+====
+
+Registry officers will be able to use only one type of authentication at a time when logging into the Officer portal: either a Qualified Electronic Signature or `id.gov.ua`.
+
+When switching the authentication type, the parameters for the other type remain unchanged. Thus, [.underline]#two configurations can coexist# at the same time, but [.underline]#only one can be active#. When changing the `browserFlow`, the excessive resources in the Helm chart are deleted.
+
+In our example, `browserFlow` is used for authentication with redirection to an external provider -- the *`id-gov-ua-officer-redirector`*.
+====
+
++
+
+As a result, the request obtains the `Confirmed` status and triggers the Jenkins pipeline *`MASTER-Build-<registry-name>`*, where [.underline]#`<registry-name>`# is name of the registry. It applies the parameters of the specified configuration.
++
+
+. Wait while the code is being built. This may take up to 15 minutes.
++
+
+You can check the current status and execution result by following the *`CI`* link in the interface.
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-6.png[]
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-7.png[]
++
+image:registry-admin/cp-auth-setup-officers/cp-id-gov-ua-iit-setup-8.png[]
+
++
+
+Upon successful completion of the build, the specified configuration will be applied to the registry.
+
+== Related pages
+
+* xref:user:citizen-officer-portal-auth.adoc[]

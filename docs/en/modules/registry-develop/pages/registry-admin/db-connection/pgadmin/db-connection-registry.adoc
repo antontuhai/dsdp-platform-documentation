@@ -1,0 +1,137 @@
+= Connecting to the Registry database via pgAdmin
+include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+
+include::platform:ROOT:partial$admonitions/language-en.adoc[]
+
+== Overview
+
+This guide explains how to connect to the registry database using *pgAdmin* for data browsing, analysis, and maintenance.
+It covers connection instructions for different user roles, such as `application_role` and `registry_owner_role`.
+
+== Access requirements
+
+Before proceeding, ensure you have the following:
+
+* Access to the *Control Plane* admin panel.
+* Access to the appropriate *OpenShift* project.
+* Permissions to view *Secrets* in that project, specifically:
+** `pgadmin-secret` — for accessing the *pgAdmin* interface.
+** `citus-roles-secrets` — for connecting with `application_role` and `registry_owner_role`.
+
+== How to open pgAdmin
+
+. Sign in to the *Control Plane* admin panel.
+. Navigate to menu:Registries[Quick links > Registry Admin Zone] and follow the link to the *Registry Data Viewer* — *pgAdmin*.
++
+image:registry-admin/db-connection/pgadmin/db-connection-pgadmin-1.png[]
+
+[TIP]
+====
+[%collapsible]
+.Alternative way to open pgAdmin
+=====
+. Open menu:Openshift[Projects] and select your registry.
+. Go to menu:Networking[Routes] and locate the route to the `pgadmin` service.
++
+image:registry-develop:best-practices/review-db-changes-before-merge/review-db-changes-before-merge-17.png[]
+=====
+====
+
+[NOTE]
+====
+*To find your pgAdmin login credentials:*
+
+Go to menu:Workloads[Secrets] and open the secret named `pgadmin-secret`.
+It contains the login and password for accessing the interface.
+
+image:registry-develop:best-practices/review-db-changes-before-merge/review-db-changes-before-merge-18.png[]
+====
+
+== Connecting as `application_role`
+
+To log in using the `application_role` system user, configure the connection settings for the *Registry* server:
+
+In *pgAdmin*, expand the *Servers* section and select the *Registry* server.
+Enter the password for `application_role` to establish the connection.
+
+image:registry-develop:best-practices/review-db-changes-before-merge/review-db-changes-before-merge-19.png[]
+
+[NOTE]
+====
+* The password for `application_role` is stored in the `citus-roles-secrets` (menu:Workloads[Secrets]).
+* Use the value from the `appRolePass` field.
+
+image:registry-develop:best-practices/review-db-changes-before-merge/review-db-changes-before-merge-20.png[]
+
+image:registry-develop:best-practices/review-db-changes-before-merge/review-db-changes-before-merge-21.png[]
+====
+
+== Connecting as `registry_owner_role`
+
+To log in as `registry_owner_role` (registry owner), update the connection settings for the *Registry* server:
+
+. In *pgAdmin*, go to menu:Servers[Registry > Properties].
++
+image:registry-admin/db-connection/pgadmin/db-connection-pgadmin-5.png[]
+
+. Switch to the *Connection* tab. In the *Username* field, enter `registry_owner_role` and save the changes.
++
+image:registry-admin/db-connection/pgadmin/db-connection-pgadmin-6.png[]
+
+[NOTE]
+====
+* The password for `registry_owner_role` is also stored in the `citus-roles-secrets` secret.
+* Use the value from the `regOwnerPass` field.
+
+image:registry-develop:best-practices/review-db-changes-before-merge/review-db-changes-before-merge-20.png[]
+====
+
+== Role and secret summary
+
+Use the appropriate credentials from OpenShift secrets when connecting via *pgAdmin*:
+
+[cols="1,1,1,1", options="header"]
+|===
+|Role |Secret |Field |Description
+
+|`application_role` |`citus-roles-secrets` |`appRolePass` | System user
+|`registry_owner_role` |`citus-roles-secrets` |`regOwnerPass` | Registry owner
+|===
+
+TIP: For more details on database users, see xref:arch:architecture/registry/operational/relational-data-storage/db-roles.adoc[].
+
+== Viewing the database structure
+
+Locate the operational database named `registry`.
+It can be found under:
+menu:Servers[Registry > Databases > `registry`]
+
+image:registry-admin/db-connection/pgadmin/db-connection-pgadmin-2.png[]
+
+[NOTE]
+====
+To learn more about working with temporary databases, see xref:registry-develop:best-practices/review-db-changes-before-merge.adoc[].
+====
+
+=== Viewing tables
+
+To view database tables, navigate to:
+menu:Schemas[`registry` > Tables]
+
+image:registry-admin/db-connection/pgadmin/db-connection-pgadmin-3.png[]
+
+=== Viewing search conditions
+
+To view search conditions, navigate to:
+menu:Schemas[`registry` > Views]
+
+image:registry-admin/db-connection/pgadmin/db-connection-pgadmin-4.png[]
+
+[NOTE]
+====
+*Search conditions* are read-only database views used in the registry's data model.
+
+The names of these views correspond to the names in the data model, with the `_v` suffix added.
+
+*Example:* `get_parent_by_name` → `get_parent_by_name_v`
+====
