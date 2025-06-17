@@ -15,7 +15,7 @@ content:
 
 output:
   clean: true
-  dir: ./github-pages/en
+  dir: ./github-pages
 
 ui:
   bundle:
