@@ -1,7 +1,7 @@
 = Uploading business processes
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 You can upload a business process to the regulation by copying and pasting the XML schema of the ready process in the *Code* tab. The direct option of `Drag & Drop` (dragging a file with the schema) is not available.
 

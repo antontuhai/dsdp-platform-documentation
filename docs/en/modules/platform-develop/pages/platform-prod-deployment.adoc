@@ -1,5 +1,5 @@
 = Launching the Platform and registries into production
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
 == Preparing the Platform environment
 
@@ -467,7 +467,7 @@ TIP: For more information, see xref:admin:update/special-steps-for-update/specia
 
 === Common issues with registry user authentication and business process signing
 
-include::platform:ROOT:partial$admonitions/ua-specific.adoc[]
+include::DSDP:ROOT:partial$admonitions/ua-specific.adoc[]
 
 You can address these issues as follows:
 
@@ -498,7 +498,7 @@ Changing the deployment mode will not be possible after the registry is created.
 
 The *deployment mode* is a parameter that specifies the environment in which the registry regulations are deployed.
 It distinguishes the production environment from the development environment and allows configuring settings according to their needs.
-The Registry Platform supports two deployment modes: `*development*` and `*production*`.
+The Digital Services Development Platform supports two deployment modes: `*development*` and `*production*`.
 
 TIP: For more information, see xref:registry-develop:registry-admin/change-dev-prod-mode.adoc[].
 ////
@@ -679,7 +679,7 @@ This can be done through the Control Plane interface by following the instructio
 === Configuring the registry for load handling
 
 // VERTICAL AND HORIZONTAL RESOURCES SCALING
-include::platform:ROOT:partial$templates/snippets/scale-resources-en.adoc[]
+include::DSDP:ROOT:partial$templates/snippets/scale-resources-en.adoc[]
 
 === Planning storage space for the registry
 
@@ -1020,7 +1020,7 @@ TIP: For more information about the testing results, see xref:testing:performanc
 
 === Security testing
 
-The Registry Platform is built based on the *DevSecOps* secure software development methodology.
+The Digital Services Development Platform is built based on the *DevSecOps* secure software development methodology.
 Automated security checks for known vulnerabilities are performed continuously.
 Regular security testing is conducted, including penetration testing, threat modeling, and automated scanning.
 

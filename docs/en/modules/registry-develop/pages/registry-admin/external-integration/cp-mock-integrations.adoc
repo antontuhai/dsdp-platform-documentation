@@ -1,7 +1,7 @@
 = Emulating external integrations
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General overview
 
@@ -48,7 +48,7 @@ You can enable the use of emulators when configuring external integrations in th
 
 * Configuring interaction with registries via secure exchange gateway "Trembita" within SOAP protocol
 
-include::platform:ROOT:partial$admonitions/ua-specific.adoc[]
+include::DSDP:ROOT:partial$admonitions/ua-specific.adoc[]
 
 * xref:registry-admin/external-integration/cp-integrate-ext-system.adoc[Configuring interaction with other systems]
 
@@ -153,7 +153,7 @@ It is essential to prepare the correct XML payload for the SOAP response body an
 .Imitation of SOAP service behavior for requests to SearchSubjects endpoint.
 ====
 
-include::platform:ROOT:partial$admonitions/ua-specific.adoc[]
+include::DSDP:ROOT:partial$admonitions/ua-specific.adoc[]
 
 [source,json]
 ----

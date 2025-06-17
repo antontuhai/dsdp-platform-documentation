@@ -1,7 +1,7 @@
 = Managing registry backup schedule and retention
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //== Загальний опис
 == General description
@@ -10,7 +10,7 @@ include::platform:ROOT:partial$admonitions/language-en.adoc[]
 Для впровадження такої функціональності пропонується поліпшення інтерфейсу адмін-консолі, використовуючи яку адміністратор
 реєстру може налаштовувати розклад та час зберігання резервних копій реєстру.
 ////
-In the current version of the Registry Platform, there is no process for managing the settings of the registry backup subsystem.
+In the current version of the Digital Services Development Platform, there is no process for managing the settings of the registry backup subsystem.
 To implement such functionality, it is proposed to improve the admin console interface, which the administrator uses
 the registry can configure the schedule and time to store registry backups.
 

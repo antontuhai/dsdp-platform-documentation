@@ -1,7 +1,7 @@
 = Digital registry regulations
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 
@@ -11,7 +11,7 @@ The **_Registry regulations**_ is a digital representation of important aspects 
 The _registry regulation_ together with the _operational registry configuration_ constitute a necessary and sufficient description of the functionalities implemented in the registry and settings to ensure that the appropriate level of quality of their provision to end users.
 //_Регламент реєстру_ разом з _операційною конфігурацією реєстру_ складають необхідний та достатній опис функціональних можливостей, які реалізує реєстр та налаштувань для забезпечення відповідного рівня якості їх надання кінцевим користувачам.
 
-_The Platform for state registries_ implements a _Low-code_ approach to development of digital regulations using service web interfaces -- xref:arch:architecture/registry/administrative/regulation-management/overview.adoc[Registry Regulation Modeling Subsystems]. Registry regulations, along with change history, are stored in the appropriate version control repository _Git_ (_Gerrit_) of the registry instance on the _Platform_ to ensure auditability and rollback.
+_The Digital Services Development Platform_ implements a _Low-code_ approach to development of digital regulations using service web interfaces -- xref:arch:architecture/registry/administrative/regulation-management/overview.adoc[Registry Regulation Modeling Subsystems]. Registry regulations, along with change history, are stored in the appropriate version control repository _Git_ (_Gerrit_) of the registry instance on the _Platform_ to ensure auditability and rollback.
 //_Платформа Реєстрів_ реалізує _Low-code_ підхід до розробки цифрового регламенту за допомогою службових веб-інтерфейсів xref:arch:architecture/registry/administrative/regulation-management/overview.adoc[Підсистеми моделювання регламенту реєстру]. Регламент реєстру разом з історією змін зберігається у відповідному репозиторії системи контролю версій _Git_ (_Gerrit_) екземпляра реєстру на _Платформі_ задля забезпечення вимог аудиту та можливості відновлення до попередніх версій.
 
 The xref:arch:architecture/registry/administrative/regulation-publication/overview.adoc[registry regulations deployment subsystem] handles validation, automated testing, and applying changes to the regulations of the registry operational zone services.
@@ -351,7 +351,7 @@ You can find out more about the design of the subsystems responsible for modelin
 === Templates of excerpts from the registry
 //=== Шаблони витягів з реєстру
 
-This component of the regulations is responsible for setting templates for generating excerpts from the registry. It is represented as three directories, taking into account the types of excerpts supported by the _Platform for state registries_:
+This component of the regulations is responsible for setting templates for generating excerpts from the registry. It is represented as three directories, taking into account the types of excerpts supported by the _Digital Services Development Platform_:
 //Дана складова частина регламенту відповідає за налаштування шаблонів для генерації витягів з реєстру. Представлена трьома директоріями з урахуванням типів витягів, які підтримуються _Платформою Реєстрів_:
 
 - `./excerpts`: Contains template files in _FTLH_ format for generating _PDF_ excerpts.
@@ -379,7 +379,7 @@ You can learn more about the design of the subsystems responsible for modeling a
 === Templates for registry information notifications
 //=== Шаблони інформаційних повідомлень реєстру
 
-This component of the regulations is responsible for setting up templates for sending informational messages to registry users. It is represented as two directories, taking into account the communication channels supported by the _Platform for state registries_:
+This component of the regulations is responsible for setting up templates for sending informational messages to registry users. It is represented as two directories, taking into account the communication channels supported by the _Digital Services Development Platform_:
 //Дана складова частина регламенту відповідає за налаштування шаблонів для відправки інформаційних повідомлень користувачам реєстру. Представлена двома директоріями з урахуванням каналів зв'язку, які підтримуються _Платформою Реєстрів_:
 
 - `./notifications/inbox`: Contains template files in _FTL_ format for generating _in-app_ notifications.

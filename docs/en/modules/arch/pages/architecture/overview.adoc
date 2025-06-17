@@ -1,19 +1,19 @@
 = Architecture documentation
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General overview
 
-*_The Platform for state registries_* is an information system designed to _deliver government services in a digital format efficiently_. It enables the rapid creation, modeling, deployment, and maintenance of electronic state registries.
+*_The Digital Services Development Platform_* is an information system designed to _deliver government services in a digital format efficiently_. It enables the rapid creation, modeling, deployment, and maintenance of electronic state registries.
 
 The main objective of this solution is to implement a _decentralized_ and _regulated_ approach to managing state registries. This product aims to balance _data security requirements_, _interoperability_, _deployment speed_, and the _cost_ of registry ownership.
 
-include::platform:ROOT:partial$admonitions/os-apache-license-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/os-apache-license-en.adoc[]
 
 == Main purpose
 
-*_The Registries Platform_* aims to address several problems with the current state of government information registries, which complicate the process of digitizing government services:
+*_Digital Services Development Platform_* aims to address several problems with the current state of government information registries, which complicate the process of digitizing government services:
 
 * Many registries, owned by multiple entities, are maintained in _Excel_ with poor data quality.
 * Registry information systems are outdated and require updates.
@@ -41,9 +41,9 @@ include::platform:ROOT:partial$admonitions/os-apache-license-en.adoc[]
 
 == Non-functional capabilities
 
-* Deploying _The Platform for state registries_ in a public or private cloud environment
+* Deploying _The Digital Services Development Platform_ in a public or private cloud environment
 * Creating one or multiple registries based on a single instance of the Platform, supporting the "_Registry as a Service_" SaaS model
-* Centralized distribution of updates to instances of _the Platform for state registries_
+* Centralized distribution of updates to instances of _the Digital Services Development Platform_
 * Ensuring registry compliance of the platform registries with security, scalability, and fault-tolerance requirements
 * Auditing user actions and system-critical events
 * Supporting data versioning in registries
@@ -65,14 +65,14 @@ include::platform:ROOT:partial$admonitions/os-apache-license-en.adoc[]
 
 == Architectural documentation sections
 
-The _Registries Platform_ technical documentation package includes:
+The _Digital Services Development Platform_ technical documentation package includes:
 
-* xref:arch:architecture/platform-conceptual.adoc[] — description of the conceptual design of the solution, end-users of the _Registries Platform_, and external systems with which interaction is built.
+* xref:arch:architecture/platform-conceptual.adoc[] — description of the conceptual design of the solution, end-users of the _Digital Services Development Platform_, and external systems with which interaction is built.
 * xref:arch:architecture/platform-logical.adoc[] — the high-level structure of the solution with a description of its decomposition into components (zones, subsystems, and so on) and the interaction between them.
-* xref:arch:architecture/platform-deployment.adoc[] — deployment architecture of the _Registries Platform_.
-* xref:arch:architecture/platform-system-requirements/overview.adoc[] — description of system requirements for deploying the _Registries Platform_ on the target infrastructure.
-* xref:arch:architecture/security/overview.adoc[] — technical documentation describing the security architecture of the _Registries Platform_.
-* xref:arch:architecture/platform-technologies.adoc[] — description of the list and categories of key technologies applied in building the _Registries Platform_ solution.
+* xref:arch:architecture/platform-deployment.adoc[] — deployment architecture of the _Digital Services Development Platform_.
+* xref:arch:architecture/platform-system-requirements/overview.adoc[] — description of system requirements for deploying the _Digital Services Development Platform_ on the target infrastructure.
+* xref:arch:architecture/security/overview.adoc[] — technical documentation describing the security architecture of the _Digital Services Development Platform_.
+* xref:arch:architecture/platform-technologies.adoc[] — description of the list and categories of key technologies applied in building the _Digital Services Development Platform_ solution.
 * xref:arch:architecture/platform-quality-attributes/overview.adoc[] — key quality attributes with descriptions of approaches and techniques for addressing them.
 * _High-level design of zones and subsystems of the Platform_ — a set of sections with a high-level architecture, descriptions of components and their interactions, key aspects of the solution, and so on.
-* xref:arch:architecture/platform-api/overview.adoc[] — documentation of the _API_ services of the _Registries Platform_.
+* xref:arch:architecture/platform-api/overview.adoc[] — documentation of the _API_ services of the _Digital Services Development Platform_.

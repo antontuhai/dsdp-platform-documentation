@@ -1,8 +1,8 @@
 = Uploading and editing a file
 //= Завантаження файлу та його редагування
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 The Platform team developed the reference examples of regulations modeling that can help developers to understand better the specifics of interaction with the system when working with digital documents.
 //Команда Платформи розробила референтні приклади моделювання регламенту, які допоможуть розробникам краще розуміти специфіку взаємодії із системою при роботі із цифровими документами.

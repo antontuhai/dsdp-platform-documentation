@@ -14,7 +14,7 @@
 == Overview
 
 //Платформа реєстрів надає можливість побудувати ієрархічну модель доступу до об'єктів даних відповідно до рівнів ієрархічної структури та ролей користувачів. Це дозволяє забезпечити контроль над доступом до об'єктів на основі їх ієрархічного положення та ролі користувача.
-The Platform for state registries enables you to build a hierarchical model where access to data objects corresponds to the hierarchy structure levels and user roles. This way, you can control access to objects based on their hierarchical position and the user's role.
+The Digital Services Development Platform enables you to build a hierarchical model where access to data objects corresponds to the hierarchy structure levels and user roles. This way, you can control access to objects based on their hierarchical position and the user's role.
 
 //У цій ієрархічній моделі кожен підрозділ має унікальний код -- `structure_code`, який ідентифікує його в рамках системи. Крім того, використовується сурогатний ключ -- `hierarchy_code`, який формується шляхом конкатенації коду підрозділу та коду кожного батьківського рівня в ієрархії. Наприклад, `101.202.303` -- сурогатний ключ для доступу до об'єктів підрозділу третього рівня в ієрархії.
 In the hierarchical model, each unit has a unique code (`structure_code`) that identifies it within the system. In addition, the system uses a surrogate key (`hierarchy_code`), which is formed by concatenating the unit code and the code of each parent level in the hierarchy. For example, `101.202.303` is a surrogate key for accessing the objects of the third-level subdivision in the hierarchy.

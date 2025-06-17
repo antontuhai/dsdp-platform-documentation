@@ -1,11 +1,11 @@
 = Changing registry deployment mode
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
-Deployment mode is a parameter that indicates the environment in which the registry regulations are deployed. It allows distinguishing between the production environment and the development environment, as well as configuring the settings according to the needs of each. The registry Platform supports two deployment modes: *`development`* and *`production`*.
+Deployment mode is a parameter that indicates the environment in which the registry regulations are deployed. It allows distinguishing between the production environment and the development environment, as well as configuring the settings according to the needs of each. The Digital Services Development Platform supports two deployment modes: *`development`* and *`production`*.
 The development mode
 
 The *`development`* mode involves deployment with settings for convenience in development and debugging.
@@ -22,7 +22,7 @@ In the production mode, the following components involved in the registry develo
 ====
 
 // Table listing the components
-include::platform:ROOT:partial$templates/snippets/dev-prod-mode-en.adoc[]
+include::DSDP:ROOT:partial$templates/snippets/dev-prod-mode-en.adoc[]
 
 // Note about the table from include::
 [IMPORTANT]

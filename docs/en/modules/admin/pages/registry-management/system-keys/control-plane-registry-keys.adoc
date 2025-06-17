@@ -1,7 +1,7 @@
 = Updating registry digital signature keys and certificates
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 When you deploy xref:admin:registry-management/control-plane-create-registry.adoc[a registry instance], you must configure the digital signature key. After that, you can update key information as part of the registry editing. The configuration mechanism on the part of the administrator is the same both when initially adding and updating the key data.
 

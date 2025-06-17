@@ -1,7 +1,7 @@
 = Manually back up and restore a registry instance
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 After successfully deploying a registry and its regulations, the Platform administrator can manually create a backup.
 The system stores this backup in a secure S3-compatible *MinIO* storage outside the OpenShift cluster to improve safety.

@@ -1,7 +1,7 @@
 = Cross-service communication management subsystem
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 
@@ -13,7 +13,7 @@ _Підсистема управління міжсервісною взаємо
 ////
 
 The *_Cross-service communication management subsystem_* implementing the *_Service Mesh_* network pattern helps developers and
-registry administrators securely connect external systems to the Registry Platform and vice versa, protects and monitors
+registry administrators securely connect external systems to the Digital Services Development Platform and vice versa, protects and monitors
 components of the Platform and registries, provides a set of components for managing external/internal traffic, network
 policies, telemetry and security, provides load balancing, traffic routing and encryption.
 

@@ -1,11 +1,11 @@
 = Auditability
 include::ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 _The quality attribute defines the capability of a system to record and provide information on important technical and business events, connected with system operation by end users. The provided information may be used to detect and solve problems in system functionality._
 
-The _Registries Platform_ solution architecture includes a transactional model of Registry data changes. The changes to database are only performed within regulated Business Processes with mandatory versioning and confirmation of changes with the user's e-signature, or Registry digital stamp.
+The _Digital Services Development Platform_ solution architecture includes a transactional model of Registry data changes. The changes to database are only performed within regulated Business Processes with mandatory versioning and confirmation of changes with the user's e-signature, or Registry digital stamp.
 
 All important system and business events connected with system operation by end users are recorded in the audit log for long-term storage and analysis.
 

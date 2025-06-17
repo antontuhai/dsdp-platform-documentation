@@ -1,9 +1,9 @@
 = User registration in the registry
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
 This guide will help you set up user registration in the
-include::platform:ROOT:partial$templates/links/platform/operational/keycloak.adoc[]
-service of your registry. The Registries Platform supports operation in various regions and countries, providing authentication through login and password in user portals.
+include::DSDP:ROOT:partial$templates/links/platform/operational/keycloak.adoc[]
+service of your registry. Digital Services Development Platform supports operation in various regions and countries, providing authentication through login and password in user portals.
 
 [CAUTION]
 This page is being edited.
@@ -11,7 +11,7 @@ This page is being edited.
 
 == Setting up user registration
 
-The registry platform offers global region settings for registries. The specific configuration of each registry is stored in the *_deploy-templates/values.yml_* file. If the `region` parameter is set to `global`, it means that the registry administrator can configure user registration for two realms -- `officer` and `citizen`.
+The Digital Services Development Platform offers global region settings for registries. The specific configuration of each registry is stored in the *_deploy-templates/values.yml_* file. If the `region` parameter is set to `global`, it means that the registry administrator can configure user registration for two realms -- `officer` and `citizen`.
 
 === Realm officer-portal
 

@@ -1,7 +1,7 @@
 = Interim storage of data entered through business process UI forms
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //== Функціональні сценарії
 == Functional scenarios

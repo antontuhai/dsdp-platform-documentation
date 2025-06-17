@@ -1,7 +1,7 @@
 = Updating Platform and registry keys and digital signature service configuration
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 This document contains information regarding general provisions and technical design related to updating the platform and registry keys and the configuration of the digital signature service.
 

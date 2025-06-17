@@ -1,8 +1,8 @@
 = Data integrity
 //= Цілісність даних
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 //== Загальний опис
@@ -296,7 +296,7 @@ a|
 == Logging and auditing
 //== Журналювання та аудит
 
-In the Registry Platform, there are corresponding subsystems: event logging and audit event logging. It has to be noted that the platform provides only basic functionality for collecting and displaying system and audit logs. To build a full-fledged system for monitoring security events in real-time modes, the organization (platform owner) must integrate the platform with the corresponding SIEM system.
+In the Digital Services Development Platform, there are corresponding subsystems: event logging and audit event logging. It has to be noted that the platform provides only basic functionality for collecting and displaying system and audit logs. To build a full-fledged system for monitoring security events in real-time modes, the organization (platform owner) must integrate the platform with the corresponding SIEM system.
 //На Платформі Реєстрів існують відповідні підсистеми - журналювання подій та журналювання подій аудиту. Потрібно зауважити що платформа надає лише базовий функціонал по збору та відображенню журналів системи та аудиту. Для побудови повноцінної системи моніторингу подій безпеки у режими реальноого часу організація (власник платформи) має інтегрувати платформу з відповідною SIEM системою.
 
 The audit event logging subsystem is a subsystem that collects, stores, and analyzes information about the actions of users who have access to data. The subsystem collects complete information about all user actions, including access, modification and deletion of data. More information about the coverage of platform components by the audit subsystem can be found at the xref:arch:architecture/registry/operational/audit/overview.adoc[link].

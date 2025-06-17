@@ -1,7 +1,7 @@
 = Event monitoring and notification subsystem
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
@@ -105,7 +105,7 @@ The _Event monitoring and notification subsystem_ can be expanded with custom al
 
 == Grafana dashboards
 
-The dashboards listed below are installed immediately upon installation of the Registries Platform.
+The dashboards listed below are installed immediately upon installation of Digital Services Development Platform.
 
 This set allows Platform and registry administrators to track component performance over time and identify potential problems before they become critical.
 

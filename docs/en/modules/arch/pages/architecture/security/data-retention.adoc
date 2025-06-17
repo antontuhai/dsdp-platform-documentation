@@ -1,12 +1,12 @@
 = Data retention
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 
 //Опис збереження даних на платформі є важливою складовою інформаційної безпеки та прозорої роботи з даними. У цьому документі описуються ключові аспекти політики та стратегії збору, зберігання та видалення даних з платформи реєстрів.
-Description of the data retention on the Platform is a crucial component of information security and transparent data handling. This document outlines key aspects of the policy and strategy for data collection, storage, and deletion from the Platform for state registries.
+Description of the data retention on the Platform is a crucial component of information security and transparent data handling. This document outlines key aspects of the policy and strategy for data collection, storage, and deletion from the Digital Services Development Platform.
 
 //== Збір та Завантаження Даних
 == Collecting and uploading data
@@ -122,7 +122,7 @@ Data retention duration on the Platform can only be configured for backups. For 
 === Data transfer and exchange
 
 //Підтримка міжреєстрової передачі даних відключена за замовченням на платформі реєстрів. Права на підключення зазначеної функціональності надаються тільки адміністратору платформи. Права ж на використання взаємодії з зовнішніми системами доступні розробнику регламенту який в свою чергу відповідає за обгрунтовання обміну даними.
-Cross-registry data transfer support is disabled by default on the Platform for state registries. Rights to enable this functionality are granted only to the Platform administrator. Rights to use data exchange are available to the regulation developer responsible for justifying data exchange.
+Cross-registry data transfer support is disabled by default on the Digital Services Development Platform. Rights to enable this functionality are granted only to the Platform administrator. Rights to use data exchange are available to the regulation developer responsible for justifying data exchange.
 
 //Більше інформації доступно у статті
 More information is available at

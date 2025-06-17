@@ -9,7 +9,7 @@ include::ROOT:partial$admonitions/language-en.adoc[]
 _The Platform operational zone_ is a collection of subsystems that provide functions of general purpose for the collaborative use of registries, such as inter-service interaction management, monitoring, logging, backup and recovery, user and role management, secrets management, and more.
 
 //_Операційна зона Платформи_ надає службові веб-інтерфейси для адміністраторів, за допомогою яких можна відслідковувати стан екземпляра _Платформи Реєстрів_ в експлуатації, ідентифікувати проблеми та вносити корегуючі дії.
-_The Platform operational zone_ offers service web interfaces for administrators, through which it is possible to track the state of the The Platform for state registries instance in operation, identify issues, and take corrective actions.
+_The Platform operational zone_ offers service web interfaces for administrators, through which it is possible to track the state of the The Digital Services Development Platform instance in operation, identify issues, and take corrective actions.
 
 [TIP]
 --

@@ -1,5 +1,5 @@
 = Working with digital documents in the user portal
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
 include::ROOT:partial$admonitions/language-en.adoc[]
 

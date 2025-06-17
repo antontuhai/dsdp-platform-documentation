@@ -1,8 +1,8 @@
 //= Використання функції "Refresh Options on" в оновленому компоненті Select
 = Using the "Refresh Options On" function in the updated Select component
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Адміністратор регламенту має змогу одночасно підключати декілька стилізованих компонентів до функції `Refresh Options on` в рамках компонента Select.
 The regulations administrator can simultaneously connect several stylized components to the `Refresh Options On` function within the Select component.

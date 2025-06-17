@@ -1,7 +1,7 @@
 = Subsystem for deploying and configuring the Platform and registries
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
@@ -124,12 +124,12 @@ In the course of the subsystem designing and development, the following technolo
 
 === Portability
 
-Containers with subsystem components can be deployed or transferred to different cloud environments, to an own local infrastructure, or between other instances of the Platform for state registries.
+Containers with subsystem components can be deployed or transferred to different cloud environments, to an own local infrastructure, or between other instances of the Digital Services Development Platform.
 //Контейнери з компонентами підсистеми можуть бути розгорнуті або перенесені на різні хмарні середовища, на власну локальну інфраструктуру або між іншими екземплярами Платформи реєстрів.
 
 === Observability
 
-The management subsystem of the Platform for state registries supports logging of incoming requests, event logging and collection of performance metrics for further analysis through the web interfaces of the corresponding Platform subsystems.
+The management subsystem of the Digital Services Development Platform supports logging of incoming requests, event logging and collection of performance metrics for further analysis through the web interfaces of the corresponding Platform subsystems.
 //Підсистема управління Платформою та Реєстрами підтримує журналювання вхідних запитів, логування подій та збір метрик продуктивності для подальшого аналізу через веб-інтерфейси відповідних підсистем Платформи.
 
 [TIP]

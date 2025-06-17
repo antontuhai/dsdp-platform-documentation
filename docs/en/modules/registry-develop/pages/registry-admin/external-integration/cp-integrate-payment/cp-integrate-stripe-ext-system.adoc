@@ -1,7 +1,7 @@
 = Setting up integration with the Stripe payment system
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
@@ -10,7 +10,7 @@ include::platform:ROOT:partial$admonitions/language-en.adoc[]
 == Prerequisites
 
 Before you begin, ensure you have administrative access to the
-include::platform:ROOT:partial$templates/links/platform/administrative/control-plane.adoc[]
+include::DSDP:ROOT:partial$templates/links/platform/administrative/control-plane.adoc[]
 and the necessary permissions to manage registries and deploy services. It would help to have an active Stripe account ready to link with your system.
 
 == General description
@@ -50,7 +50,7 @@ image:registry-admin/external-integration/cp-integrate-payment/stripe-api-keys-p
 This section provides an example of integrating with the *Stripe* external payment system.
 
 . Sign in to the
-include::platform:ROOT:partial$templates/links/platform/administrative/control-plane.adoc[]
+include::DSDP:ROOT:partial$templates/links/platform/administrative/control-plane.adoc[]
 console as a registry administrator.
 +
 image:registry-admin/external-integration/cp-integrate-payment/cp-login-page.png[]

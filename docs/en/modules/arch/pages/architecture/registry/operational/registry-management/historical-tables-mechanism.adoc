@@ -1,5 +1,5 @@
 = Historical table mechanism and managing historical data
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
 == Overview
 

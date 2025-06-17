@@ -1,7 +1,7 @@
 = Configuring authentication for officers
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 [IMPORTANT]
 ====
@@ -13,7 +13,7 @@ All earlier versions of the registry use the authentication with the Qualified E
 
 == General description
 
-Registry administrators can configure the desired authentication type for the Officer portal. The platform allows using their [.underline]#own IIT widget# for authenticating with a Qualified Electronic Signature or configuring integration with an external xref:platform:ROOT:platform-glossary.adoc#digital-identification-services[digital authentication provider] (in the Ukrainian implementation it is the *`id.gov.ua`* service).
+Registry administrators can configure the desired authentication type for the Officer portal. The platform allows using their [.underline]#own IIT widget# for authenticating with a Qualified Electronic Signature or configuring integration with an external xref:DSDP:ROOT:platform-glossary.adoc#digital-identification-services[digital authentication provider] (in the Ukrainian implementation it is the *`id.gov.ua`* service).
 
 [TIP]
 ====

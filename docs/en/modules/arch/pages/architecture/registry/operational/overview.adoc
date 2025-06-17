@@ -1,8 +1,8 @@
 //= Операційна зона реєстру
 = Registry operational zone
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //== Загальний опис
 == General overview
@@ -16,7 +16,7 @@ The _Registry operational zone_ is a collection of subsystems that ensure the se
 For a more detailed overview of the registry's functional capabilities, please refer to the relevant sections:
 
 //* xref:arch:architecture/overview.adoc#_функціональні_можливості[Функціональні можливості Платформи Реєстрів]
-* xref:arch:architecture/overview.adoc#_функціональні_можливості[Functional capabilities of the Platform for state registries]
+* xref:arch:architecture/overview.adoc#_функціональні_можливості[Functional capabilities of the Digital Services Development Platform]
 --
 
 //== Технічний дизайн операційної зони реєстру

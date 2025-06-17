@@ -1,7 +1,7 @@
 = Registry data model tables and their structures
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 The development of regulations involves the creation of a registry data model. The Regulations administrator portal allows working with registry database tables in a read-only mode.
 

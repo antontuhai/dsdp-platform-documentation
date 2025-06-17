@@ -1,7 +1,7 @@
 = Paginating and sorting services in the Citizen portal
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //З метою розширення можливостей інтерфейсу Кабінету отримувача послуг, а також сприянню використовності, розроблено підтримку функціональності сортування та пагінаціїfootnote:[Пагінація -- це розбивка величезного масиву даних (зазвичай однотипного) на невеликі за обсягом сторінки, із відображенням нумерованої навігації.] послуг.
 To expand the interface capabilities of the Citizen portal and enhance its usability, support for paginationfootnote:[Pagination is the breakdown of a vast amount of data (usually of the same type) into small page-sized portions, accompanied by displaying numbered navigation.] and sorting functionality for services has been developed.

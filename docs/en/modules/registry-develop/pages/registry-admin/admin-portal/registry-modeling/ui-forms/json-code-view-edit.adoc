@@ -1,7 +1,7 @@
 = Viewing and editing a UI form JSON representation
-include::platform:ROOT:partial$templates/document-attributes/default-set-ua.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-ua.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-ua.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-ua.adoc[]
 
 The platform provides the ability to view and edit the JSON representation of a form on the *Code* tab.
 

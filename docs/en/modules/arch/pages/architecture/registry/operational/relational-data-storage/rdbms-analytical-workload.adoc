@@ -1,7 +1,7 @@
 = Processing analytical requests
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Для обробки аналітичних запитів до БД реєстру архітектура передбачає окремий, аналітичний, екземпляр СКРБД.
 Platform architecture provides a separate analytical DBMS instance for processing analytical requests to the registry database.

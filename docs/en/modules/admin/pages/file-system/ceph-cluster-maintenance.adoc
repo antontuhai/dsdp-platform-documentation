@@ -1,7 +1,7 @@
 = Ceph cluster maintenance and related operations
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 The Platform uses the *`rook-operator`* to deploy and manage the *`openshift-storage`* Ceph cluster. This document provides best-practice recommendations for maintaining the Ceph cluster and related operations to ensure system stability and data integrity.
 

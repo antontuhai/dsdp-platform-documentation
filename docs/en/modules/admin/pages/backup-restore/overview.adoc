@@ -2,7 +2,7 @@
 :sectlinks:
 = Backing up and restoring
 //= Резервне копіювання та відновлення
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 This section contains essential information about manual and scheduled backing up and restoration of the following components:
 

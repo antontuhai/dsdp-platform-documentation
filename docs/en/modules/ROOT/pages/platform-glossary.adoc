@@ -1,14 +1,9 @@
-:note-caption: UA-specific
-
 = Glossary
-
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
 
 Accredited key certification centers (AKCC)::
 State-accredited organizations that provide digital signature services and secure key information carriers or use the applicant's carriers like USB flash drives.
 They play a vital role in maintaining the security and integrity of digital transactions and communications, ensuring the authenticity of digital signatures, and thus enabling secure and trustworthy electronic interactions.
 
-//Інтерфейс адмін-консолі:: xref:#control-plane[]
 Admin console interface:: xref:#control-plane[Control Plane]
 
 Admin portal:: xref:#administrative-portal[Administrative portal]
@@ -16,9 +11,6 @@ Admin portal:: xref:#administrative-portal[Administrative portal]
 [#administrative-portal]
 Administrative portal:: A client web application for administering registry regulations. The interface makes it easy to perform necessary configurations without advanced programming skills.
 
-//Адміністративна послуга:: Послуга що передбачає зміну певного статусу чи інших даних в реєстрі. На Платформі це бізнес-процес, реалізований на рівні окремого реєстру, результатом якого є внесення змін до даних реєстру.
-//TODO: Come up with a way to differentiate the term "service" meaning business processes and "service" meaning actual apps deployed in the Platform and within registries
-//TODO: The closest meaning is "offering" or "business process".
 Administrative service:: A service that involves changing some status or other data in a registry. The Platform implements this as a business process that makes changes to the registry data.
 
 Analytical database::
@@ -26,7 +18,7 @@ A read-only database used by analytical tools, particularly Redash. It receives 
 
 [#analytical-report]
 Analytical reports:: Preconfigured registry statistics built using the Redash, analytical reporting service.
-It may include graphs, tables, visualizations, metrics, or key performance indicators -- KPIs.
+It may include graphs, tables, visualizations, metrics, or key performance indicators—KPIs.
 
 Authentication::
 Verification of the user's provided identifier.
@@ -67,7 +59,6 @@ xref:#citizen-onboarding[Citizen onboarding]
 Citizen-facing solutions::
 Citizen-facing solutions refer to digital applications, platforms, or services specifically designed to facilitate direct interactions between governmental bodies and citizens.
 These solutions aim to provide easy access to public services, enhance the efficiency of public service delivery, and improve overall citizen satisfaction.
-An example of such a solution is the Ukrainian "Diia" platform, which allows Ukrainian citizens to access various governmental services online, such as obtaining digital copies of documents, registering vehicles, etc. These solutions bring the government closer to the people by leveraging digital technology to break down barriers and streamline processes.
 
 [#citizen-initial-authentication]
 Citizen initial authentication::
@@ -75,13 +66,11 @@ xref:#citizen-onboarding[Citizen onboarding]
 
 [#citizen-onboarding]
 Citizen onboarding::
-The process of creating an account for a registry services recipient (citizen) using data obtained from the xref:#qes[QES] key and xref:unified-state-register[Unified State Register].
+The process of creating an account for a digital services recipient (citizen).
 This includes creating all the database records necessary for user's interaction with the registry (such as user profile, settings, and roles).
 
 Citizen portal::
 A web interface used by service recipients (citizens) to interact with the registry in the form of a client web application.
-
-
 
 Cluster (Platform) management::
 An abstraction within the xref:#control-plane[Control Plane] that enables you to manage the central components of the platform.
@@ -89,11 +78,7 @@ An abstraction within the xref:#control-plane[Control Plane] that enables you to
 Competence Center (CC)::
 A team responsible for delivering consulting services to registry development teams, with a key focus on gathering feature requests and tracking bug reports.
 
-//TODO: Approve This is ua-specific:
-//КСЗІ (Комплексна система захисту інформації):: Сукупність організаційних та інженерних заходів та програмно-апаратних засобів, що забезпечують захист інформації в системі.
 Comprehensive information protection system::
-+
-[NOTE,caption=UA-specific]
 A set of organizational and engineering measures and hardware and software tools that ensure the system's information protection.
 
 Confidential data::
@@ -101,7 +86,8 @@ Any data that requires authorization to access it.
 
 [#control-plane]
 Control Plane::
-A set of platform components that simplifies managing the central components of the platform, enables registry management, and aggregates links to all web APIs of the central components.
+A set of components that simplify managing the central components of the platform, enables registry management,
+and aggregates links to all web APIs of the central components.
 
 Custom Resource (CR)::
 A resource that extends the OpenShift API by defining the configuration of a specific OpenShift instance. Not necessarily available out of the box when installing OpenShift.
@@ -136,37 +122,21 @@ A standard notation for modeling business rules using decision tables.
 Digital identification services::
 Platforms that facilitate the electronic identification and authentication of users conveniently and securely.
 They allow users to perform electronic identification through various means.
-An example of such a service can be the xref:#id-gov-ua[id.gov.ua].
 
 Digital documents:: Files that users can upload, download, and view through business process task interfaces (xref:#ui-form[UI forms]). Documents are stored in the registry's object storage. The content of digital documents is _not_ the object of operations at the level of business processes.
 
-//Електронний підпис:: В рамках цього документу це КЕП, УЕП, ЕЦП фізичної чи юридичної особи або електронна печатка юридичної особи. Використання КЕП, УЕП в залежності від ситуації залежить від чинних вимог законів та законодавства.
-//TODO: Discuss this point
 Digital signature::
 In the scope of this document, a digital signature can refer to individual's or legal entity's QES, AdES, or EDS, as well as legal entity's electronic seal. The use of QES or AdES depends on the current legislation requirements.
 
-//TODO: Approve
 Digital signature (EDS)::
 Electronic data obtained from cryptographic transformation and added to other data or documents to ensure the latter's integrity and origin.
 
 Domain Name System (DNS):: A distributed naming system that converts network resource names into IP addresses.
 
-DRFO::
-+
-NOTE: State Register of Individuals – Taxpayers. Refers to the *`drfo`* code assigned to the taxpayers. See also xref:#rnokpp[Registration number of the taxpayer's account card].
-
-//TODO: Approve
-//ЄДРПОУ:: Код ЄДРПОУ (Єдиного державного реєстру підприємств та організацій України) — унікальний ідентифікаційний номер юридичної особи в Єдиному державному реєстрі підприємств та організацій України
-EDRPOU::
-+
-NOTE: EDRPOU code is a unique ID code of a legal entity in the USREOU (Unified state register of enterprises and organizations of Ukraine).
-
 [#endpoint]
 Endpoint::
 A point of integration that allows two programs or systems to exchange data. It serves as a bridge for receiving, sending, and updating information between various components of a system or different systems.
 
-//Витяг:: Документ згенерований в рамках надання інформаційних послуг через бізнес-процеси, який може бути завантажений користувачем, який замовив інформаційну послугу. Представлений окремим шаблоном на рівні регламенту реєстру.
-//TODO: Come up with a way to differentiate the term "service" meaning business processes and "service" meaning actual apps deployed in the Platform and within registries
 Excerpt:: A document generated as part of providing the information services through business processes, which can be downloaded by the user who ordered the information service. Excerpts are presented by separate templates at the registry regulations level.
 
 Form::
@@ -180,21 +150,9 @@ and Platform components are made by modifying the configuration of these compone
 Group of registries::
 Registries that belong to the same owner and are related.
 
-[#id-gov-ua]
-id.gov.ua::
-+
-[NOTE]
-====
-The Ukrainian-specific example of xref:#digital-identification-services[Digital identification services].
-This service facilitates the electronic identification and authentication of users conveniently and securely.
-It allows users to identify electronically through various means, such as electronic signatures (on file-based, cloud-based, or other secure carriers), state-provided digital signatures like "Diia.Signature," and BankID by the National Bank.
-====
-
 Information panel::
 xref:analytical-report[Analytical reports]
 
-//Інформаційна послуга::  Бізнес-процес, реалізований на рівні окремого реєстру, результатом якого є отримання даних реєстру у визначеній формі. Передбачає підтвердження того чи іншого статусу в реєстрі. Результатом "Послуги" буде витяг, або підтвердження прав.
-//TODO: Come up with a way to differentiate the term "service" meaning business processes and "service" meaning actual apps deployed in the Platform and within registries
 Informational service:: A business process implemented on the level of an individual registry that fetches registry data in a specified form. It usually involves confirming a certain status in the registry. The result of the service is either an excerpt or confirmation of rights.
 
 Installer::
@@ -214,7 +172,6 @@ In the context of the Platform, these are the components that enable this approa
 Master version of the regulations::
 The current version of the regulations deployed to the registry instance.
 
-//Запит на внесення змін:: Логічне представлення сукупності змін відносно поточної _майстер-версії_ регламенту, до якого застосовуються перевірки цілісності, якості та інспекції перед безпосереднім застосуванням до _майстер-версії_.
 Merge request:: A logical representation of changes relative to the current `master` version of the registry regulations.
 Merge requests must pass integrity and quality tests before actually being applied to the `master` version.
 
@@ -246,28 +203,20 @@ Any information that relates to an identified or identifiable living individual.
 Data is classified as _personal_ at the level of creating a registry data model, where appropriate processing and access mechanisms are applied.
 
 Platform (IS "Platform")::
-xref:#registries-platform[Platform for state registries]
-
-//Платформа ведення реєстрів:: OpenShift кластер зі встановленими компонентами необхідні для створення та ведення реєстрів.
-//TODO: Consider setting the "OKD" term here
-//Registries Platform:: An OpenShift cluster with installed components necessary for creating and maintaining registries.
+xref:#registries-platform[Digital Services Development Platform]
 
 Platform components::
 xref:#central-components[Central components]
 
-//TODO: Approve
-//Платформні ключі цифрового підпису:: Ключі що використовуються для інтеграції з id.gov.ua.
 Platform digital signature keys:: Keys used for integration with external xref:#digital-identification-services[digital identification providers].
 
 [#registries-platform]
-Platform for state registries::
+Digital Services Development Platform::
 An information system that allows authorized government officers to create and maintain registries using the "Registry as a Service" SaaS model. The system can be deployed either in the cloud or on-premises xref:#data-center[data center], either for a single registry or a group of registries.
 
 Public data::
 Any data that does not require authorization to access it.
 
-//TODO: Approve
-//КЕП (Кваліфікований електронний підпис):: Електронний підпис користувача, що використовується для аутентифікації та підпису внесених ним даних.
 [#qes]
 Qualified Electronic Signature (QES):: The e-signature used to authenticate users and sign the data they provide.
 
@@ -276,10 +225,9 @@ A limit on the number of requests from a single user.
 
 Realm:: A core concept of the Keycloak service. A realm manages a set of users, credentials, roles, and groups.
 
-Registries Platform API::
+Digital Services Development Platform's API::
 xref:#data-factory-api[Data factory API]
 
-//TODO: Come up with an extended term like "specialized IT-system..."
 Registry:: A specialized information resource designed to store and process legally important information about people, their rights and obligations, as well as property and resources.
 
 Registry components::
@@ -291,8 +239,6 @@ A configuration of registry components available in the Control Plane and regist
 Registry data::
 Information stored in the registry database.
 
-//Реєстрові ключі цифрового підпису:: Ключі що використовуються для підписання трансформованих даних бізнес форм і підписування витягів.
-//TODO: Approve
 Registry digital signature keys:: Keys used to sign the transformed data of business forms and excerpts.
 
 Registry pipeline::
@@ -311,32 +257,13 @@ Roles created during registry regulations deployment and configured in the regis
 Resource ::
 xref:#endpoint[Endpoint]
 
-Role Based Access Control (RBAC)::
+Role-Based Access Control (RBAC)::
 A method of access control where privileges are assigned to users not directly but via roles. The management of individual user privileges essentially involves assigning them roles.
 
-//TODO:Approve
-[#rnokpp]
-RNOKPP (Registration number of the taxpayer's account card)::
-+
-NOTE: An element of the State Register of Individuals – Taxpayers (DRFO) is a numeric code required for every taxpayer to be registered with fiscal authorities.
-It consists of 10 digits and remains unchanged throughout one's lifetime.
-
-//TODO: Approve ua-specific:
 [#secure-exchange-gateway]
-Secure Exchange Gateway (SEG "Trembita")::
-+
-[NOTE]
-====
-A secure software interface for electronic interaction between state systems enables obtaining information from external systems. To use it, the organization must be a xref:#sei-seir-trembita[SEI SEIR "Trembita"] member.
-====
+Secure Exchange Gateway::
+A secure software interface for electronic interaction between state systems enables collecting information from external systems.
 
-[#sei-seir-trembita]
-SEI SEIR "Trembita"::
-+
-NOTE: The system of electronic interaction of state electronic information resources. Based on the X-Road® solution. To interact within this system, you must install the xref:#secure-exchange-gateway[Secure Exchange Gateway (SEG "Trembita")].
-
-//Послуга:: Один або декілька бізнес-процесів в реєстрі спрямовані на опрацювання запиту особи.
-//TODO: Come up with a way to differentiate the term "service" meaning business processes and "service" meaning actual apps deployed in the Platform and within registries
 Service:: One or more business processes in the registry aimed at processing a user's request.
 
 Service provider (officer)::
@@ -354,19 +281,10 @@ The UI form, available in officer and citizen portals, enables users to submit a
 
 UI form scheme:: A formal description of a UI form's structure, fields, and validation rules. Presented as a file at the registry regulations level.
 
-//ЄДР:: Єдиний державний реєстр юридичних осіб, фізичних осіб-підприємців та громадських формувань.
-//TODO: Approve
-[#unified-state-register]
-Unified State Register (USR)::
-+
-NOTE: A unified state register of legal entities, individual entrepreneurs, and public organizations.
-
 Uniform Resource Identifier (URI):: A compact sequence of characters that uniquely identifies a resource on the Internet.
 
 User portal::
 A common name for the web interface
 used by service recipients (citizens) and service providers (officers) to interact with the system.
 
-//Роль користувача:: Системні ролі та ролі регламенту, які призначені користувачу.
 User roles:: System roles and regulations roles that are assigned to a user.
-//СЕВДЕІР / Трембіта:: Система електронної взаємодії державних електронних інформаційних ресурсів.

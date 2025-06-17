@@ -1,7 +1,7 @@
 = Backup and recovery
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //_Postgres Operator_ від _Crunchy Data (PGO)_, який використовується для управління БД реєстру,включає в себе _pgBackRest_ - рішення для резервного копіювання та відновлення з відкритим кодом. PGO та pgBackRest роблять зручним виконання багатьох поширених дій, необхідних протягом життєвого циклу бази даних, зокрема:
 _Postgres Operator_ from _Crunchy Data (PGO)_, which is used to manage the registry database, includes _pgBackRest_, an open-source backup and recovery solution. PGO and pgBackRest simplify performing various common tasks required during the database lifecycle, including:

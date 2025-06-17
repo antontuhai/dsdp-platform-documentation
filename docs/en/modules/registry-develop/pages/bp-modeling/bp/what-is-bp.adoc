@@ -1,8 +1,8 @@
 = What are business processes: analysis, structure and operation types
 
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //== Вступ
 == Intro
@@ -63,7 +63,7 @@ To optimize Business Processes, it is important to view possible errors that may
 === Introduction into Business Processes
 
 //На _Платформі реєстрів_ бізнес-процеси моделюються моделювальниками та розробниками бізнес-процесів за допомогою інструментів візуального моделювання та управління low-code-підсистеми через функціональність створення бізнес-процесів, форм, взаємодій з іншими реєстрами/системами, та компонентами.
-Business Processes on the _Registry Platform_ are modelled by BP modellers and developers using visual modelling and managing instruments of a low-code-subsystem via the functionality for the creation of Business Processes, forms, and interactions with other Registries/systems and components.
+Business Processes on the _Digital Services Development Platform_ are modelled by BP modellers and developers using visual modelling and managing instruments of a low-code-subsystem via the functionality for the creation of Business Processes, forms, and interactions with other Registries/systems and components.
 
 //Бізнес-процеси складаються з _послідовності операцій_. Операція являє собою одну одиницю роботи, яку неможливо або не можна розбити на глибший рівень деталізації бізнес-процесів. Операції відповідають сутності **Activity** із BPMN.
 Business Processes consist of _operation sequences_. An operation is one unit of work, which can't be broken into a lower level of BP detail. Operations correspond with the **Activity** entity in BPMN.

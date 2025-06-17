@@ -1,18 +1,18 @@
 = Interoperability
 include::ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
 _The quality attribute defines the capability of a system to effectively interact with other systems for data exchange._
 
-To achieve Registry interoperability, the _Registries Platform_ supports two main information exchange configuration options:
+To achieve Registry interoperability, the _Digital Services Development Platform_ supports two main information exchange configuration options:
 
 * Using Secure Exchange Gateway as protected transport.
 * Configuring direct integrations based on _REST_ and _SOAP_ protocols for systems that don't participate in Secure Exchange Gateway connections.
 
-Existing information systems, and Registries deployed on separate _Registry Platform_ instances can act as external systems for integration.
+Existing information systems, and Registries deployed on separate _Digital Services Development Platform_ instances can act as external systems for integration.
 
 [TIP]
 --

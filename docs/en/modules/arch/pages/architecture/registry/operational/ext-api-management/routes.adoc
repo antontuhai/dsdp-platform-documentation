@@ -1,7 +1,7 @@
 = External Kong API Gateway routes structure
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Клієнтські додатки, які використовуються в системі, взаємодіють з сервісами, що надають доступ до функционалу платформи за допомогою REST API. Даний документ містить інформацію про загальні положення при формуванні зовнішніх точок доступ та перелік доступних для використання методів.
 The client applications used in the system interact with the services that provide access to the platform's functionality through REST API. This document contains information about the general principles of forming external access points and a list of available methods for use.

@@ -1,7 +1,7 @@
 = Geographic objects and geolocation queries
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Підтримка географічних об'єктів та геолокаційних запитів реалізована за допомогою розширення _PostGIS_
 Support for geographic objects and geolocation queries is implemented via the _PostGIS_ extension.

@@ -1,13 +1,13 @@
 = Security
 include::ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
 _The quality attribute defines the capability of a system to protect data and information from unauthorized access, providing access to authorized users and systems at the same time._
 
-The _Registry Platform_ security architecture is responsible for three general characteristics:
+The _Digital Services Development Platform_ security architecture is responsible for three general characteristics:
 
 * _Confidentiality_ -- protection of data and resources from unauthorized access.
 * _Integrity_ - avoidance of unauthorized tampering with data or services.

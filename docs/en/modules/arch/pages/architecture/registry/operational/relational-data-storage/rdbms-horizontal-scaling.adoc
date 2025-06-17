@@ -1,7 +1,7 @@
 = Horizontal scaling
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Реалізована горизонтально масштабована архітектура для бази даних _PostgreSQL_, призначена для динамічного додавання та видалення вузлів та дозволяє збільшувати продуктивність системи за потребою та економити ресурси, коли навантаження зменшується.
 A horizontally scalable architecture implemented for the _PostgreSQL_ database supports dynamically adding and removing nodes, which enables you to increase system performance if needed and save resources when the load decreases.

@@ -1,7 +1,7 @@
 = Library _liquibase-ddm-ext_
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Problem statement
 
@@ -11,7 +11,7 @@ By default, Liquibase supports objects deployment and versioning in DB, meaning 
 
 For this purpose Liquibase has a number of constructions -- https://docs.liquibase.com/change-types/home.html[**change types**], each one defining a certain version of changes to the DB, and is formed with XML-tags. For example, `<createTable>`, `<dropTable>`, etc.
 
-Within the Registry Platform, Liquibase is used as the sole instrument for operations with physical data model in PostgreSQL, and its standard functionality is insufficient to cover all the possible scenarios of work with registry regulations.
+Within the Digital Services Development Platform, Liquibase is used as the sole instrument for operations with physical data model in PostgreSQL, and its standard functionality is insufficient to cover all the possible scenarios of work with registry regulations.
 
 For this reason, the following solutions have been developed:
 

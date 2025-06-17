@@ -1,7 +1,7 @@
 = Platform security architecture
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 
@@ -9,7 +9,7 @@ include::platform:ROOT:partial$admonitions/language-en.adoc[]
 _Security_ is a measure of a system's ability to protect data and information from unauthorized access while ensuring authorized users and systems have access.
 
 //Архітектура безпеки платформи реєстрів відповідає за три загальноприйняті характеристики:
-The security architecture of the Platform for state registries is responsible for three commonly accepted characteristics:
+The security architecture of the Digital Services Development Platform is responsible for three commonly accepted characteristics:
 
 //* _Конфіденційність_ – властивість захисту даних або сервісів від несанкціонованого доступу.
 * *_Confidentiality_* -- the property of protecting data or services from unauthorized access.
@@ -38,7 +38,7 @@ The security architecture covers the following components: ::
 
 == Sections of technical documentation
 
-* xref:arch:architecture/security/standards-and-compliance.adoc[] page underscores the fundamental role that data privacy and regulatory compliance play in safeguarding the integrity, confidentiality, and accessibility of the information entrusted to the Registries Platform.
+* xref:arch:architecture/security/standards-and-compliance.adoc[] page underscores the fundamental role that data privacy and regulatory compliance play in safeguarding the integrity, confidentiality, and accessibility of the information entrusted to Digital Services Development Platform.
 
 //* xref:arch:architecture/security/data-classification.adoc[] - визначення та встановлення рівня конфіденційності, цілісності та доступності даних залежно від їх важливості, чутливості та потенційного впливу на організацію або платформу.
 * xref:arch:architecture/security/data-classification.adoc[Data classification] -- defining and establishing the level of confidentiality, integrity, and availability of data based on their importance, sensitivity, and potential impact on the organization or platform.

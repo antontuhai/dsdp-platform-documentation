@@ -1,7 +1,7 @@
 = Creating business processes
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 The *Administrative portal* allows for easy and straightforward modeling of business processes using the built-in https://bpmn.io/[BPMN.io] web editor in your browser. The functionality provides viewing, creation, and editing of diagrams in BPMN 2.0 notation based on XML.
 

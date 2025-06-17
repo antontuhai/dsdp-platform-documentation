@@ -1,7 +1,7 @@
 = Generating excerpts in user portals
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Для забезпечення вимог надання інформаційних послуг на базі платформи, реалізована підтримка двох підходів до моделювання бізнес-процесів в залежності від способу відображення даних через кабінет користувача:
 To fulfill the requirements of providing information services on the Platform, support for two approaches to modeling business processes has been implemented, depending on how data is displayed in the User portal:

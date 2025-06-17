@@ -1,7 +1,7 @@
 = Secure resource publishing in OpenShift 4.x cluster
 include::ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Функціонал для безпечного публікування роутів в OpenShift 4.x кластері та механізму контролю доступу до ресурсів.
 The functionality for secure route publishing in OpenShift 4.x cluster, and resource access control mechanism.

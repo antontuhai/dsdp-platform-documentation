@@ -1,6 +1,6 @@
 = Quality attributes testing
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 The Quality attributes testing section provides a comprehensive guide to the various testing approaches necessary to ensure the highest quality of the Platform.
 This section comprises three main pages, each dedicated to a specific type of testing:

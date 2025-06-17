@@ -1,7 +1,7 @@
 :sectlinks:
 = Modeling elements
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 This section introduces the fundamental elements necessary for creating and optimizing business processes. You will learn about:
 

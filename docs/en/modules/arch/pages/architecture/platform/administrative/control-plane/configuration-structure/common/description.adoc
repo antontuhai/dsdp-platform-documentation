@@ -1,5 +1,5 @@
 == Overview
 
-The Platform for state registries stores its settings in the configuration changes review and storage service (Gerrit) according to the `GitOps` approach.
+The Digital Services Development Platform stores its settings in the configuration changes review and storage service (Gerrit) according to the `GitOps` approach.
 
 TIP: The GitOps approach relies on the Git repository as the sole source of the subsystem configuration files when orchestrating the Platform infrastructure and deploying registries. GitOps provides automated deployment, streamlined version control, effortless change reversals, and enhanced visibility of system changes through Git-based workflows and declarative descriptions of the desired state of the Platform and registry.

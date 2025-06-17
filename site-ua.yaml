@@ -1,6 +1,6 @@
 site:
   title: Платформа для розгортання та супроводження державних електронних реєстрів
-  start_page: platform:ROOT:index.adoc
+  start_page: DSDP:ROOT:index.adoc
   url: /ua
 runtime:
   fetch: true

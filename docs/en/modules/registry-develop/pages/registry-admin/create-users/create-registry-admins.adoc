@@ -1,7 +1,7 @@
 = Creating registry administrators
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 *_Registry administrators_* are official administrators who perform the functions of registry support, as well as the deployment and maintenance of regulations for the respective registries.
 

@@ -1,10 +1,10 @@
 = Service Mesh: Platform and registry components
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //В даній секції приведені компоненти _Платформи Реєстрів_, що утворюють _Service Mesh_.
-This section lists the components of the _Registries Platform_ that make up the _Service Mesh_.
+This section lists the components of the _Digital Services Development Platform_ that make up the _Service Mesh_.
 
 ////
 |===

@@ -1,7 +1,7 @@
 :sectlinks:
 = Subprocesses
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 This section dives into *subprocesses* in BPMN (Business Process Model and Notation) business process modeling. *_Subprocesses_* are essential for breaking down complex processes into more manageable, smaller parts. Here's what you'll learn about:
 

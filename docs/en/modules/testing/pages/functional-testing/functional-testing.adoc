@@ -1,7 +1,7 @@
 = Functional testing
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Introduction
 
@@ -57,7 +57,7 @@ Ultimately, functional testing ensures the software meets user expectations and 
 
 === Functional testing scope
 
-The scope of functional testing encompasses all the platform and registry components within the *Platform for state registries*.
+The scope of functional testing encompasses all the platform and registry components within the *Digital Services Development Platform*.
 
 == Functional testing approach
 === Functional testing methodologies

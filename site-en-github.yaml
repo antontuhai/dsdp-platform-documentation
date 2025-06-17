@@ -2,14 +2,14 @@
 # COMMENT LINE WITH '@antora/lunr-extension' IF YOU FACE ISSUES DURING THE LOCAL BUILD
 # COMMENT LINE WITH plantuml-server-url IF YOU FACE ISSUES DURING THE LOCAL BUILD
 site:
-  title: Platform for deployment and maintenance of state electronic registers
-  start_page: platform:ROOT:index.adoc
-  url: /edp-ddm-architecture/en
+  title: Digital Services Development Platform
+  start_page: DSDP:ROOT:index.adoc
+  url: /dsdp-platform/en
 runtime:
   fetch: true
 content:
   sources:
-    - url: ./
+    - url: https://github.com/antontuhai/dsdp-platform-documentation
       branches: HEAD
       start_path: docs/en
 
@@ -36,4 +36,4 @@ antora:
   extensions:
     - require: '@antora/lunr-extension'
       index_latest_only: true
-      languages: [ru, en]
+      languages: [en]

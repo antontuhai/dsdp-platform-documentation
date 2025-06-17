@@ -1,13 +1,13 @@
 = Installer component structure
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Definitions
 
 *_Installer_* is a set of software tools for deploying the Platform
 
-The Installer is used to deploy the Platform for state registries, which is delivered as a zip archive.
+The Installer is used to deploy the Digital Services Development Platform, which is delivered as a zip archive.
 
 .Installer structure
 [plantuml, structure, svg]

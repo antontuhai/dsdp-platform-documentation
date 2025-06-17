@@ -1,11 +1,11 @@
 = Platform quality attributes
 include::ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 
-This section shows the non-functional requirements that the _Registries Platform_ must fulfil.
+This section shows the non-functional requirements that the _Digital Services Development Platform_ must fulfil.
 
 For each quality attribute, the following information is provided: overview of approach, implementation in solution architecture, key metrics. Additionally, links to the technical design of the corresponding subsystems, and sections with detailed descriptions are provided.
 

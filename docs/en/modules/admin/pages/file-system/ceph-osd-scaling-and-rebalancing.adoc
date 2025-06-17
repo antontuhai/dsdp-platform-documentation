@@ -1,7 +1,7 @@
 = Ceph OSD scaling and rebalancing
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 This guide covers how to scale a Ceph cluster by adding new OSDs (Object Storage Daemons) and optimize the rebalancing process to prevent performance degradation.
 

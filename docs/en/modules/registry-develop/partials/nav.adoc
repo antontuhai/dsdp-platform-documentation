@@ -1,4 +1,4 @@
-* xref:registry-develop:overview.adoc[Registry development and maintenance teams]
+* xref:registry-develop:overview.adoc[Digital service development teams]
 +
 // // ================= REGISTRY ADMINISTRATORS =================
 ** xref:registry-develop:registry-admin/index.adoc[Registry administrators]

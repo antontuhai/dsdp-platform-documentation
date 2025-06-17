@@ -1,13 +1,13 @@
 = Platform technology stack
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
-This page presents the key technologies and how they address the _Registries Platform's_ functional and non-functional requirements.
+This page presents the key technologies and how they address the _Digital Services Development Platform's_ functional and non-functional requirements.
 
-include::platform:ROOT:partial$admonitions/os-apache-license-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/os-apache-license-en.adoc[]
 
 .High-level structure diagram. Technology stack
 image::architecture/ddm-platform-tech-view.svg[]

@@ -1,7 +1,7 @@
 = Managing registry resources
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 The *Control Plane* administrative panel provides flexible management of parameters using the power of the Platform. It is an effective tool for managing resources used by containers within your registry instance, ensuring optimal performance and efficiency.
 
@@ -46,7 +46,7 @@ These parameters specify the optimal (*Requests*) and maximum (*Limits*) resourc
 +
 *Limits* represent the maximum resources allowed for the container by OpenShift. In our example, it is `1` CPU and `2Gi` memory for the main container. If the container tries to use more resources, it may be forcibly stopped or demoted to a lower priority in the deployment queue on the nodes.
 +
-* *Environment variables*  are dynamic name-value pairs stored in the system and can be used by various programs. They are particularly useful in containerized and distributed environments like the registry platform, where each container or pod can have its own environment variables. This allows individual control over the configuration and behavior of each container or pod.
+* *Environment variables*  are dynamic name-value pairs stored in the system and can be used by various programs. They are particularly useful in containerized and distributed environments like the Digital Services Development Platform, where each container or pod can have its own environment variables. This allows individual control over the configuration and behavior of each container or pod.
 +
 The `JAVA_OPTS` variable is used to configure the JVM (Java Virtual Machine) parameters.
 +

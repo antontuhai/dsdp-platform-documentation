@@ -1,7 +1,7 @@
 = Selecting language in registry user portals
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 The language selection feature allows users of the registry web portals to dynamically choose the interface language using a selector located at the top of the web interface. This feature is available in the following interfaces:
 

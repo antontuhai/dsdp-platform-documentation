@@ -16,12 +16,12 @@ _External integrations management subsystem_ supports the following options for 
 //* Через налаштування прямих інтеграцій з зовнішніми системами, які не є учасниками інформаційного обміну _СЕВДЕІР "Трембіта"_.
 * Via the configuration of direct integrations with external systems that aren't part of _Secure Exchange Gateway_ information exchange.
 //* Через налаштування прямих інтеграцій з реєстрами, які розгорнуті на одному екземплярі _Платформи Реєстрів_.
-* Via the configuration of direct integrations with the Registries deployed on one _Registry Platform_ instance.
+* Via the configuration of direct integrations with the Registries deployed on one _Digital Services Development Platform_ instance.
 //* Через публічно-доступний _API_.
 * Via public _API_.
 
 //Зовнішніми системами для інтеграції можуть виступати як сторонні інформаційні системи, так і реєстри, розгорнуті на окремих екземплярах _Платформи Реєстрів_.
-Existing information systems, and Registries deployed on separate _Registry Platform_ instances can act as external systems for integration.
+Existing information systems, and Registries deployed on separate _Digital Services Development Platform_ instances can act as external systems for integration.
 
 //== Функції підсистеми
 == Subsystem functions
@@ -31,7 +31,7 @@ Existing information systems, and Registries deployed on separate _Registry Plat
 //* Надання API пошукових операцій по даним реєстру стороннім системам.
 * Providing search API for Registry data to external systems.
 //* Маршрутизація запитів при міжреєстровій взаємодії на одному екземплярі _Платформи Реєстрів_.
-* Request routing during cross-Registry interaction on one _Registry Platform_ instance.
+* Request routing during cross-Registry interaction on one _Digital Services Development Platform_ instance.
 
 //== Технічний дизайн підсистеми
 == Subsystem technical design

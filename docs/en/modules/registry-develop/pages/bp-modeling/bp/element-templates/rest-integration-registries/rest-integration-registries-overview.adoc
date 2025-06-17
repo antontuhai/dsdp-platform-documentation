@@ -2,7 +2,7 @@
 :sectanchors:
 :sectlinks:
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 Additional extensions, or delegates, are implemented to transfer and receive data as part of the REST interaction between the different registries on the Platform and the business process modeled within their regulations.
 

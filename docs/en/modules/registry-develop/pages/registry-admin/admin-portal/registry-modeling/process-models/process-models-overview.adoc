@@ -2,7 +2,7 @@
 :sectlinks:
 :sectanchors:
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 This section demonstrates the functionality of modeling and managing business process diagrams the Administrative portal for registry regulations developers.
 

@@ -3,7 +3,7 @@
 :sectanchors:
 :sectlinks:
 
-The *_Business Process (BP) modelers_* craft the core of the Registries Platform — *Business Processes*, which underpin all services offered.
+The *_Business Process (BP) modelers_* craft the core of Digital Services Development Platform — *Business Processes*, which underpin all services offered.
 
 Using tools like the *Administrative portal*, Camunda Modeler, and standards like *BPMN* and DMN, BP modelers design *processes*, *UI forms*, and *integrations*.
 Complex models often incorporate *Groovy scripting*, *JUEL functions*, and *JSON structures*. Modelers and developers employ *REST and SOAP connectors* for interactions with external systems or other Registries on the Platform.

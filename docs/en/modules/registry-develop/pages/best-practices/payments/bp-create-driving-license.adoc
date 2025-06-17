@@ -1,5 +1,5 @@
 = Reference business process: Creating a driving license
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
 == General description
 
@@ -55,7 +55,7 @@ Creating a business process is straightforward. Here's how to get started:
 [TIP]
 ====
 The Administrative Portal will be available if deployed in your demo registry by the following link:
-include::platform:ROOT:partial$templates/links/registry/administrative/admin-portal.adoc[]
+include::DSDP:ROOT:partial$templates/links/registry/administrative/admin-portal.adoc[]
 .
 ====
 

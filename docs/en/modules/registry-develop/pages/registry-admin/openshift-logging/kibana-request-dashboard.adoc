@@ -1,7 +1,7 @@
 = Visualizing request states in Kibana
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Dashboard overview
 
@@ -29,7 +29,7 @@ The dashboard includes visualizations for monitoring microservice requests, trac
 |*Calls from Trembita (Secure Exchange Gateway)*
 a|Displays requests routed through the Trembita integration platform, categorized by response codes.
 
-include::platform:ROOT:partial$admonitions/ua-specific.adoc[]
+include::DSDP:ROOT:partial$admonitions/ua-specific.adoc[]
 
 
 |*Unexpected EOF on client connection*

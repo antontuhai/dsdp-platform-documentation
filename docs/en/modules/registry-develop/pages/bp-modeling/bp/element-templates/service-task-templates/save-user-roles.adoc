@@ -1,8 +1,8 @@
 //= Збереження ролей користувачів до Keycloak (Save user roles)
 = Save user roles in Keycloak
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //CAUTION: Новіша версія цього інтеграційного розширення описана на сторінці розділі xref:#batch-creation-entities-v2[].
 CAUTION: The latest version of this integration extension is described at xref:#batch-creation-entities-v2[].

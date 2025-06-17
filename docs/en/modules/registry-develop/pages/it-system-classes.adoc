@@ -1,13 +1,13 @@
-= Classes of IT systems that can be built on the Registries Platform
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+= Classes of IT systems that can be built on Digital Services Development Platform
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
-== What is the _Registries Platform_?
+== What is the _Digital Services Development Platform_?
 
-The *_Registries Platform_* is a flexible, secure, low-code digital backend for building various IT systems. Let's elaborate:
+The *_Digital Services Development Platform_* is a flexible, secure, low-code digital backend for building various IT systems. Let's elaborate:
 
-* *Flexible*: The Platform for state registries is cloud-agnostic, meaning it can function effectively on different cloud services without relying on a specific environment.
+* *Flexible*: The Digital Services Development Platform is cloud-agnostic, meaning it can function effectively on different cloud services without relying on a specific environment.
 * *Secure*: As one of the digital transformation tools of Ukraine's government services, the Platform is built with security in mind.
 * *Low-code*: Using the Platform does not require large teams or high-level experts. The system can be administered with minimal programming, and end-users need only basic computer skills.
 * *Digital backend*: The Platform provides the infrastructure and components necessary to build the IT system according to your business needs.

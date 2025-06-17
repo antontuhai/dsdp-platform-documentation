@@ -1,7 +1,7 @@
 = Configuring the regulations to provide access to data via SOAP and REST APIs
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 If your registry is the data owner, and you wish to establish integration API points, receive requests, and provide data to other registries and systems, configure the following regulations settings:
 

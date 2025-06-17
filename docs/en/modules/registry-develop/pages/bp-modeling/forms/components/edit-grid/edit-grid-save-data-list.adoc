@@ -1,7 +1,7 @@
 = Saving form data to the database as an array
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 To load an array of data to the data factory, use the *Edit Grid* component when modeling the UI form.
 

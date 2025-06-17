@@ -1,7 +1,7 @@
 = Data encryption in transit
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 
@@ -49,7 +49,7 @@ Further details can be found at xref:admin:installation/platform-deployment/plat
 === Encryption of traffic within the Platform
 
 //Платформа реєстрів а саме _Підсистема управління міжсервісною взаємодією_ використовує мережевий паттерн _Service Mesh_ однією з цілей якого є шифрування трафіку між сервісами. За динамічну генерацію, розповсюдження та підтвердження виданих сертифікатів відповідає окремий компонент Citadel.
-The Platform for state registries, specifically the _Cross-service communication management subsystem_, employs the _Service Mesh_ network pattern, one of its goals being the encryption of traffic between services. For dynamic certificate generation, distribution, and validation, a dedicated component, Citadel, is responsible.
+The Digital Services Development Platform, specifically the _Cross-service communication management subsystem_, employs the _Service Mesh_ network pattern, one of its goals being the encryption of traffic between services. For dynamic certificate generation, distribution, and validation, a dedicated component, Citadel, is responsible.
 
 [TIP]
 --

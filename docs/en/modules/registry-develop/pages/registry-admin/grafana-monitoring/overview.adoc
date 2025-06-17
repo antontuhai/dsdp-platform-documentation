@@ -2,7 +2,7 @@
 :sectlinks:
 :sectanchors:
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 _Monitoring_ is a critical element of the effective operation of any IT platform. To ensure complete control over the functioning of our systems and to detect and remedy potential problems, we employ a powerful monitoring tool -- *_Grafana_*.
 

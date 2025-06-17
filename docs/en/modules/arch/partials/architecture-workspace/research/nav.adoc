@@ -1,1 +1,0 @@
-**** xref:arch:architecture-workspace/research/state-of-the-art/other-egov-initiatives.adoc[Global approaches to building e-government platforms]

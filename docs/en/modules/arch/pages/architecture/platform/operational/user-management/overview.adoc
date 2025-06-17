@@ -1,12 +1,12 @@
 = Users and roles management subsystem
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
 //Підсистема, що забезпечує управління користувачами та їх доступом, налаштуваннями автентифікації, авторизації, single sign-on (SSO) та інтеграції з зовнішніми _Identity Providers_ в Платформи реєстрів.
-The subsystem that provides management for users, user management, authentication/authorization settings, signle sign-on (SSO), and external _Identity Providers_ integration in the Registry Platform.
+The subsystem that provides management for users, user management, authentication/authorization settings, signle sign-on (SSO), and external _Identity Providers_ integration in the Digital Services Development Platform.
 
 == Subsystem functions
 

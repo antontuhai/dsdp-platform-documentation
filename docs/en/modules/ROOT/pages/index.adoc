@@ -1,13 +1,21 @@
-= Platform for state registries
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
-
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+= Digital Services Development Platform (DSDP)
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
 == About the Platform
 
-*_The Platform for state registries_* is an information system designed to _deliver government services in a digital format efficiently_. It enables the rapid creation, modeling, deployment, and maintenance of electronic state registries, striking an optimal balance between data security requirements, deployment speed, registry ownership costs, and data exchange with other registries.
+The *Digital Services Development Platform (DSDP)* is an open-source solution for building
+and operating digital services across public and private sectors.
+It provides tools for modeling, configuring, deploying,
+and managing digital systems that support a wide range of organizational needs.
 
-include::platform:ROOT:partial$admonitions/os-apache-license-en.adoc[]
+DSDP helps teams accelerate service delivery by simplifying how systems are designed and maintained.
+It enables secure data handling, promotes interoperability,
+and reduces operational overhead through a standardized, reusable architecture.
+
+The platform is designed to be flexible and scalable,
+allowing organizations to implement digital workflows that adapt to changing business, legal, or technical requirements.
+
+include::DSDP:ROOT:partial$admonitions/os-apache-license-en.adoc[]
 
 .Context diagram of the Platform
 image::arch:architecture/ddm-platform-context.svg[]

@@ -1,14 +1,14 @@
 = Security testing
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Introduction
 
-The purpose of the security testing approach is to outline the strategy, objectives, and scope of security testing for the _Registries Platform_. It provides a thorough description of how security vulnerabilities are identified and addressed to ensure the protection of sensitive data and maintain the integrity of the application.
+The purpose of the security testing approach is to outline the strategy, objectives, and scope of security testing for the _Digital Services Development Platform_. It provides a thorough description of how security vulnerabilities are identified and addressed to ensure the protection of sensitive data and maintain the integrity of the application.
 
 === Scope of the Security Testing
-The security testing focuses on identifying vulnerabilities within the Registries Platform web application and related infrastructure. It covers areas such as authentication, authorization, input validation, session management, data encryption, and secure configuration.
+The security testing focuses on identifying vulnerabilities within Digital Services Development Platform web application and related infrastructure. It covers areas such as authentication, authorization, input validation, session management, data encryption, and secure configuration.
 
 === Objectives
 The main objectives of security testing are:
@@ -19,7 +19,7 @@ The main objectives of security testing are:
 
 === References
 
-The Registries Platform is developed in accordance with the following security standards:
+Digital Services Development Platform is developed in accordance with the following security standards:
 
 * The software security posture management according to OWASP Software Assurance Maturity Model (SAMM).
 * The OWASP Application Security Verification Standard (ASVS) Project as a basis for testing the web application's technical security controls and a source of requirements for secure development.
@@ -85,7 +85,7 @@ Security testing is continuously conducted in a separate prod-like environment o
 
 == Security Test Scenarios
 
-Here is a set of specific test cases or situations designed to evaluate the security aspects of the Registries Platform:
+Here is a set of specific test cases or situations designed to evaluate the security aspects of Digital Services Development Platform:
 
 [cols="3a,3a,3a"]
 |===
@@ -140,7 +140,7 @@ Currently, the threat model is made for the entire application and almost all th
 
 === Automated scanning
 
-The development of the Registries Platform is performed following the Secure Software Development Life Cycle (SSDLC) approach.
+The development of Digital Services Development Platform is performed following the Secure Software Development Life Cycle (SSDLC) approach.
 Automated security scanning plays a crucial role in SSDLC by helping to identify and mitigate security vulnerabilities and weaknesses in the software early in the development process. It is an essential component of the SSDLC, providing continuous security testing and feedback throughout the development lifecycle.
 
 Plenty of security controls have been integrated into the CI/CD pipelines. All of them were integrated with the vulnerability management system to build security quality gates, which can break the pipeline according to the set criteria for a particular service or condition. There is also an exception mechanism in place to bypass this behavior if the risk of a particular vulnerability has been accepted or mitigated. These cases are explicitly approved first and all occurrences are logged together with a rationale.
@@ -165,7 +165,7 @@ There are six phases of Dynamic Application Security Testing for every change:
 * REST API vulnerability scanning using updated contracts
 * Results are imported into the vulnerability management system for further analysis by a security engineer
 
-This way, we utilize a thorough approach for proactively finding and fixing vulnerabilities to enhance the security posture of the Registries Platform and protect it against potential cyber threats.
+This way, we utilize a thorough approach for proactively finding and fixing vulnerabilities to enhance the security posture of Digital Services Development Platform and protect it against potential cyber threats.
 
 === Penetration testing
 
@@ -187,4 +187,4 @@ Eventually, the vulnerability management system is a source of truth for our sec
 
 == Reporting
 
-We use the vulnerability management system's reporting capabilities to generate reports of different immersion levels to get insight into the overall picture of the Registries Platform development and to adjust the security program.
+We use the vulnerability management system's reporting capabilities to generate reports of different immersion levels to get insight into the overall picture of Digital Services Development Platform development and to adjust the security program.

@@ -1,7 +1,7 @@
 = Managing users
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 The *User management* section allows you to import registry users (officers) through a CSV file. After uploading the file, users and all their privileges are automatically created in the system.
 

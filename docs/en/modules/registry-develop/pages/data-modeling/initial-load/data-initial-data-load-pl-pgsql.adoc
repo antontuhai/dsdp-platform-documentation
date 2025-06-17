@@ -1,7 +1,7 @@
 = Initial loading of registry data
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 The *_PL/pgSQL_* database procedure, a programming language embedded in PostgreSQL for advanced procedures and functions, is used for the initial data load.
 

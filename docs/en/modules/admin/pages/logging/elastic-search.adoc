@@ -1,7 +1,7 @@
 = Expanding space for Elasticsearch
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Цей документ надає докладні інструкції, як розширити місце на дисках EFK-стека, а також, як видаляти індекси для оптимізації дискового простору.
 This document provides the following instructions:

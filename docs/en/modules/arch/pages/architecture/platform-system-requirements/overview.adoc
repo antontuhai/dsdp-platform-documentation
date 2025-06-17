@@ -2,7 +2,7 @@
 :sectanchors:
 :sectlinks:
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 In this section, you will find straightforward and understandable system requirements that will help ensure the reliable operation of the Platform and the Registry instance.
 

@@ -1,7 +1,7 @@
 = Notifying about successful task completion in User portals
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Посадові особи та отримувачі послуг в особистих Кабінетах мають можливість отримувати повідомлення/нотифікації про успішне виконання задач в рамках бізнес-процесів.
 Officers and citizens in their portals have the option to receive messages/notifications about the successful completion of tasks within business processes.

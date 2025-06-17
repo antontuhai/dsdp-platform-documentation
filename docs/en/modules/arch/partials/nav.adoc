@@ -1,7 +1,3 @@
 * Technical documentation
 // Архітектурна документація
 include::arch:partial$architecture/nav.adoc[]
-//Architecture workspace
-** Architecture workspace
-*** Research and prototyping
-include::arch:partial$architecture-workspace/research/nav.adoc[]

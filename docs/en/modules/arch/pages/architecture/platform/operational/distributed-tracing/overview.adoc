@@ -1,11 +1,11 @@
 = Request tracing subsystem
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
-_The Request Tracing Subsystem_ assists administrators and registry developers in tracking, profiling, and debugging in microservice-oriented distributed systems like the Registry Platform. It provides the ability to trace requests as they navigate through a complex architecture, allowing administrators and developers to understand how different Platform services interact and where there might be performance issues.
+_The Request Tracing Subsystem_ assists administrators and registry developers in tracking, profiling, and debugging in microservice-oriented distributed systems like the Digital Services Development Platform. It provides the ability to trace requests as they navigate through a complex architecture, allowing administrators and developers to understand how different Platform services interact and where there might be performance issues.
 
 _The Request Tracing Subsystem_ comprises several components: agents, collectors, a storage repository for traces, and a query service. Agents collect data from microservices and forward it to the collectors. Collectors store and index this data, and the query service facilitates the searching and visualization of this data in a user-friendly manner.
 

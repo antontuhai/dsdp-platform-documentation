@@ -1,7 +1,7 @@
 = Managing access control
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 
@@ -36,7 +36,7 @@ Key terms and concepts related to access control include:
 == Access control principles
 
 //Принципи управління доступом встановлюють основні настанови та підходи до реалізації безпеки та ефективності управління доступом на платформі реєстрів.
-Access control principles establish basic guidelines and approaches for implementing security and efficiency in access management on the registry Platform.
+Access control principles establish basic guidelines and approaches for implementing security and efficiency in access management on the Digital Services Development Platform.
 
 //- **Принцип найменшого привілею (Principle of Least Privilege - PoLP):** Користувачеві надаються лише ті права, які необхідні для виконання його завдань. Це зменшує ризики несанкціонованого використання та поширення прав доступу.
 - *Principle of Least Privilege (PoLP)*: Users are granted only the rights necessary to perform their tasks. This reduces the risks of unauthorized use and the spread of access rights.
@@ -54,7 +54,7 @@ Access control principles establish basic guidelines and approaches for implemen
 == Access control methods
 
 //Платформа реєстрів будує свою авторизаційну модель на наступних методах управління:
-The Platform for state registries builds its authorization model using the following access control methods:
+The Digital Services Development Platform builds its authorization model using the following access control methods:
 
 //- **RBAC (Role-Based Access Control)** - це метод управління доступом до даних на платформі, який оснований на присвоєнні користувачам окремих ролей та виділенні дозволів відповідно до цих ролей. Використовуючи RBAC, адміністратор реєстрів та розробники регламенту визначають рівень доступу для кожної ролі, а також процедуру присвоєння користувачам відповідних ролей. Таким чином, користувачі отримують доступ лише до тих даних та бізнес-процесів, які дозволені для їхніх ролей.
 - *Role-Based Access Control (RBAC)*: This method of data access control on the Platform is based on assigning individual roles to users and allocating permissions according to these roles. Using RBAC, registry administrators and developers define the level of access for each role and the procedure for assigning users the appropriate roles. This way, users only have access to data and business processes allowed for their roles.
@@ -66,10 +66,10 @@ The Platform for state registries builds its authorization model using the follo
 == Components of the access control system
 
 //Управління доступом на Платформі Реєстрів здійснюється за допомогою чотирьох ключових складових, а саме:
-Access management on the Platform for state registries is achieved through four key components:
+Access management on the Digital Services Development Platform is achieved through four key components:
 
 //- **Сервіс управління користувачами та ролями:** Реалізований на базі програмного забезпечення Keycloak. Відповідає за управління користувачами та їх доступом, налаштуваннями автентифікації, авторизації, single sign-on (SSO) та інтеграції з зовнішніми Identity Providers на Платформі реєстрів.
-- *User and role management service*: Implemented using Keycloak software, this component manages users and their access, authentication and authorization settings, single sign-on (SSO) configurations, and integration with external Identity Providers on the Platform for state registries.
+- *User and role management service*: Implemented using Keycloak software, this component manages users and their access, authentication and authorization settings, single sign-on (SSO) configurations, and integration with external Identity Providers on the Digital Services Development Platform.
 
 //- **Внутрішній OAuth сервер:** Реалізований на базі програмного забезпечення OAuth Openshift. Компонент підсистеми управління користувачами та ролями який забезпечує автентифікацію та авторизацію для певних адміністративних сервісів платформи. Компонент являється проміжною ланкою в процесі автентифікації між сервісам та основним сервісом управління користувачами та ролями.
 - *Internal OAuth Server*: Implemented using OAuth Openshift software, this component provides authentication and authorization for specific administrative services of the Platform. It acts as an intermediary in the authentication process between services and the main User and role management service.
@@ -195,7 +195,7 @@ a|
 === Authentication process description
 
 //Автентифікація на платформі реєстрів для отримувачів та надавачів послуг відбувається одним з вибраних методів - Інтегрована Система Електронної Ідентифікації ID.GOV.UA або IIT Віджет що виступають сторонніми identity провайдерами в підсистемі управління користувачами та ролями а саме в KeyCloak. Вибір методу автентифікації делегується адміністратору реєстру.
-Authentication on the Platform for state registries for Citizens (service recipients) and Officers (service providers) occurs through one of the selected methods: the Integrated Electronic Identification System ID.GOV.UA or the IIT Widget, which act as third-party identity providers in the user and role management subsystem, specifically in KeyCloak. The choice of authentication method is delegated to the registry administrator.
+Authentication on the Digital Services Development Platform for Citizens (service recipients) and Officers (service providers) occurs through one of the selected methods: the Integrated Electronic Identification System ID.GOV.UA or the IIT Widget, which act as third-party identity providers in the user and role management subsystem, specifically in KeyCloak. The choice of authentication method is delegated to the registry administrator.
 
 //На відміну від методу автентифікації перелічених користувачів адміністратор реєстру автентифікується за допомогою своїх облікових даних. Процес відбувається також через підсистему управління користувачами і ролями але вже через openshift-sso identity provider та зберігається в KeyCloak.
 In contrast to the authentication method for the listed users, the registry administrator authenticates using their own credentials. The process also takes place through the Users and roles management subsystem but via the openshift-sso identity provider and is stored in KeyCloak.
@@ -308,7 +308,7 @@ Furthermore, additional roles for platform and registry administrative services 
 == Managing roles and permissions
 
 //Платформа реєстрів надає можливість розширювати перелік ролей для чиновників та громадян за допомогою регламентних ролей. В подальшому ролі регламенту можуть бути використані для налаштування карти доступу на рівні фізичною моделі чи налаштування доступу до окремих бізнес-процесів регламенту.
-The Platform for state registries provides the capability to expand the list of roles for Officers and Citizens through regulations roles. In the future, regulations roles can be used to configure access control at the physical model level or to adjust access to specific regulations business processes.
+The Digital Services Development Platform provides the capability to expand the list of roles for Officers and Citizens through regulations roles. In the future, regulations roles can be used to configure access control at the physical model level or to adjust access to specific regulations business processes.
 
 [NOTE]
 --
@@ -321,7 +321,7 @@ Detailed information is available in the section:
 == RLS (Row-Level Security)
 
 //Платформа реєстрів надає можливість побудувати ієрархічну модель доступу до об’єктів даних відповідно до рівнів ієрархічної структури та ролей користувачів. Це дозволяє забезпечити контроль над доступом до об’єктів на основі їх ієрархічного положення та ролі користувача.
-The Platform for state registries offers the ability to establish a hierarchical model of data object access based on the levels of the hierarchical structure and user roles. This enables control over access to objects based on their hierarchical position and user roles.
+The Digital Services Development Platform offers the ability to establish a hierarchical model of data object access based on the levels of the hierarchical structure and user roles. This enables control over access to objects based on their hierarchical position and user roles.
 
 //Ієрархічна модель складається з трьох основних частин:
 The hierarchical model consists of three main components:
@@ -353,7 +353,7 @@ xref:registry-develop:registry-admin/hierarchical-model.adoc[]
 == Managing sessions
 
 //Управління сесіями та їх забезпечення має важливе значення у контексті безпеки та коректного функціонування Платформи Реєстрів. Сесія є тимчасовими діалогом між користувачем та системою, який відбувається під час аутентифікації та авторизації користувача. Управління сесіями дозволяє слідкувати за активністю користувача, автентифікувати його, встановлювати часові обмеження, та, у разі потреби, здійснювати примусове відключення користувача.
-Session management and its provision are of great importance in the context of security and the proper functioning of the Platform for state registries. A session is a temporary dialog between the user and the system that occurs during user authentication and authorization. Session management allows tracking user activity, authenticating them, setting time limits, and, if necessary, forcibly terminating user sessions.
+Session management and its provision are of great importance in the context of security and the proper functioning of the Digital Services Development Platform. A session is a temporary dialog between the user and the system that occurs during user authentication and authorization. Session management allows tracking user activity, authenticating them, setting time limits, and, if necessary, forcibly terminating user sessions.
 
 //Підсистема управління користувачами та ролями налаштована таким чином:
 The users and roles management subsystem is configured as follows:

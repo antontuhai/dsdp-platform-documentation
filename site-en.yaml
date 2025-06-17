@@ -1,6 +1,6 @@
 site:
   title: Platform for deployment and maintenance of state electronic registers
-  start_page: platform:ROOT:index.adoc
+  start_page: DSDP:ROOT:index.adoc
   url: /en
 runtime:
   fetch: true

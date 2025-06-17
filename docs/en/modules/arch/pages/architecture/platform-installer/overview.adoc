@@ -1,18 +1,18 @@
 = Component for managing the state of Platform resources
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 
-A Component that provides the ability to install and update an instance of the Registry Platform.
+A Component that provides the ability to install and update an instance of the Digital Services Development Platform.
 
-Functions of the component
+Component functions:
 
-* Installation of the Register Platform
-* Updating the Registers Platform
-* Deployment of the component xref:arch:architecture/platform-secret-management/overview.adoc[]
-* Deployment of the component xref:arch:architecture/platform-backup-storage/overview.adoc[]
+* Installing the Digital Services Development Platform
+* Updating the Digital Services Development Platform
+* Deploying the component xref:arch:architecture/platform-secret-management/overview.adoc[]
+* Deploying the component xref:arch:architecture/platform-backup-storage/overview.adoc[]
 
 == Technical design
 
@@ -56,4 +56,4 @@ both in cloud infrastructure environments (AWS) and in local server equipment (v
 === Upgradability
 
 The _Platform resource state management component_ is designed with backward compatibility in mind and preserves existing features, integrations, and interactions with users,
-thereby reducing disruption and ensuring a smooth transition when implementing new updates and improvements to the Registries Platform.
+thereby reducing disruption and ensuring a smooth transition when implementing new updates and improvements to Digital Services Development Platform.

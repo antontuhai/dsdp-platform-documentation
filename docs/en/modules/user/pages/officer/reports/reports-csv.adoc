@@ -1,7 +1,7 @@
 = Generating excerpts in CSV format
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Функціональністю Кабінету посадової особи передбачена можливість формування та отримання витягів-звітів у форматі _.csv_ на підставі даних реєстру. Процес включає декілька етапів: попереднє замовлення, завантаження та перегляд.
 The functionality of the Officer portal includes the ability to generate and obtain reports excerpts in the _.csv_ format based on registry data. The process involves several stages: pre-ordering, downloading, and viewing.

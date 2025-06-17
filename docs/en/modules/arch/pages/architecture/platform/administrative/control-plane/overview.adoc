@@ -1,7 +1,7 @@
 = Platform and registries management subsystem
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 
@@ -82,7 +82,7 @@ cluster, Platform and registries.
 |`control-plane-console`
 |origin
 |https://github.com/epam/edp-ddm-control-plane-console[github:/epam/edp-ddm-control-plane-console]
-|A single web interface for managing the Registry Platform and registries. Allows you to add administrators, configure
+|A single web interface for managing the Digital Services Development Platform and registries. Allows you to add administrators, configure
 accesses, DNS, update registries, etc.
 
 |_Admin console operator_
@@ -107,7 +107,7 @@ subsystem component.
 |origin
 |https://github.com/epam/edp-ddm-architecture[github:/epam/edp-ddm-architecture]
 |A complete collection of architecture documentation and articles containing how-tos, feature descriptions, and APIs,
-use cases and other information necessary to understand and use the Registries Platform.
+use cases and other information necessary to understand and use Digital Services Development Platform.
 
 |===
 

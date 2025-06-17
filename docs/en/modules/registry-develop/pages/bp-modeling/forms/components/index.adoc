@@ -1,7 +1,7 @@
 = UI form modeling components
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 This section provides an overview of the *_Updated components_* for UI form modeling. We recommend using these components to develop the regulations more efficiently and improve the user experience. The updated components of the standard *Form IO* set provide more flexibility and expanded functionality.
 

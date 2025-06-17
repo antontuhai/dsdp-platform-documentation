@@ -1,7 +1,7 @@
 = Approving registry configuration update requests
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 You can approve registry configuration update requests using the Control Plane admin console -- that is, perform a `git merge` to the repository from the Control Plane interface.
 

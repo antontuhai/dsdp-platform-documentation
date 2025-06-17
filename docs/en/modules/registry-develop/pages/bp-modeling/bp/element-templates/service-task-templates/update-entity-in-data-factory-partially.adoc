@@ -1,8 +1,8 @@
 //= Часткове оновлення сутності у Фабриці даних (Update entity in data factory partially)
 = Update entity in data factory partially
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //.Короткі відомості про делегат
 .Brief information about the delegate

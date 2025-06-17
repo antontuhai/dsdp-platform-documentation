@@ -3,19 +3,19 @@
 ** xref:release-notes:release-notes.adoc[Release notes]
 ** xref:release-notes:breaking-changes.adoc[Breaking changes]
 ** xref:release-notes:deprecated-functionality.adoc[Deprecated functionality]
-// КОРИСТУВАЧАМ
+// END USERS
 include::user:partial$nav.adoc[]
-// АДМІНІСТРАТОРАМ ПЛАТФОРМИ
+// PLATFORM ADMINS
 include::admin:partial$nav.adoc[]
-// КОМАНДІ РОЗРОБКИ ТА СУПРОВОДУ РЕЄСТРУ
+// SERVICE DEVELOPMENT TEAMS
 include::registry-develop:partial$nav.adoc[]
-// КОМАНДІ РОЗРОБКИ ПЛАТФОРМИ
+// PLATFORM DEVELOPMENT TEAM
 include::platform-develop:partial$nav.adoc[]
-// АРХІТЕКТУРНА ДОКУМЕНТАЦІЯ
+// ARCHITECTURE DOCS
 include::arch:partial$nav.adoc[]
-//ТЕСТУВАННЯ АТРИБУТІВ ЯКОСТІ ПЛАТФОРМИ
+// QUALITY ATTRIBUTES
 include::testing:partial$nav.adoc[]
-//ГЛОСАРІЙ ПЛАТФОРМИ
+// GLOSSARY
 * xref:ROOT:platform-glossary.adoc[Glossary]
-// ПИТАННЯ ТА ВІДПОВІДІ
+// Q&A
 //* xref:faq:faq.adoc[]

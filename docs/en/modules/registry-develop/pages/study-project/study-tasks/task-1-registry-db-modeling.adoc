@@ -1,7 +1,7 @@
 = Task 1. Modeling registry database structures
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 [CAUTION,caption=UA-SPECIFIC]
 This training task focuses on scenarios specific to Ukraine. However, it is also valuable for developers working on registry regulations, as it offers a comprehensive guide to using a declarative approach in data-modeling. The task covers essential skills such as creating tables, defining relationships and dependencies, setting up search conditions (views), and managing the initial data load process for registries.
@@ -744,7 +744,7 @@ Never perform cleanup in the `production` environment, even if it's technically 
 
 *At the database level, they are implemented through views*, which are defined using SQL queries that access one or more tables.
 
-To create search conditions, *use the* `*<ext:createSearchCondition>*` *tag*, developed as part of the Liquibase-based physical data modeling tool extension on the Registry Platform, as well as specific xref:registry-develop:data-modeling/data/physical-model/liquibase-ddm-ext.adoc#sc-attribute-values[search condition attributes].
+To create search conditions, *use the* `*<ext:createSearchCondition>*` *tag*, developed as part of the Liquibase-based physical data modeling tool extension on the Digital Services Development Platform, as well as specific xref:registry-develop:data-modeling/data/physical-model/liquibase-ddm-ext.adoc#sc-attribute-values[search condition attributes].
 
 [NOTE]
 ====

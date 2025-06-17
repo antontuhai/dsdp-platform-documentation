@@ -1,24 +1,24 @@
 = Standards and compliance
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
 == Overview
 
 In the context of data registries, where valuable information is collected, processed, and maintained, the significance of robust regulations and data privacy measures becomes paramount. Data registries serve as critical repositories of confidential data, ranging from personal records to vital statistics, making adherence to data protection regulations a vital ethical and legal imperative.
 
-The document underscores the fundamental role that data privacy and regulatory compliance play in safeguarding the integrity, confidentiality, and accessibility of the information entrusted to the Registry Platform.
+The document underscores the fundamental role that data privacy and regulatory compliance play in safeguarding the integrity, confidentiality, and accessibility of the information entrusted to the Digital Services Development Platform.
 
 == Applicable regulations and standards
 
-The Registry platform has been developed according to Ukrainian national standards and data privacy laws.
+The Digital Services Development Platform has been developed according to Ukrainian national standards and data privacy laws.
 It holds the Certificate of Compliance of Comprehensive information protection system (The Ukrainian term 'КСЗІ' stands for 'Комплексна система захисту інформації'). It is the result of a state examination in the field of technical information protection.
 
-The Registry Platform complying with key concepts of the Ukrainian Personal Data Protection Law.
+The Digital Services Development Platform complying with key concepts of the Ukrainian Personal Data Protection Law.
 
-While aligning of technical controls with Ukrainian Personal Data Protection Law, The Registry Platform also has the potential to extend its compliance to the GDPR-ready state, as many of the key concepts and requirements overlap.
+While aligning of technical controls with Ukrainian Personal Data Protection Law, The Digital Services Development Platform also has the potential to extend its compliance to the GDPR-ready state, as many of the key concepts and requirements overlap.
 
 Data protection principles, such as lawful processing, data minimization, and accountability, are integral to both Ukrainian and EU data protection laws. The platform's potential to become GDPR-ready signifies its dedication to meeting high data protection standards, extending its commitment to users' privacy and security beyond national borders.
 
-Addititonally The Registries Platform is developed following the next security standards:
+Additionally, Digital Services Development Platform is developed following the next security standards:
 
 * The software security posture management acording to OWASP Software Assurance Maturity Model (SAMM).
 
@@ -28,23 +28,23 @@ Addititonally The Registries Platform is developed following the next security s
 
 == Scope of compliance
 
-The Registry Platform is subject to compliance with mentioned regulations and standards to ensure the secure and lawful handling of user data. This section defines the scope of compliance efforts, delineates the specific product-related responsibilities, and focuses on the platform's readiness to adhere to GDPR principles.
+The Digital Services Development Platform is subject to compliance with mentioned regulations and standards to ensure the secure and lawful handling of user data. This section defines the scope of compliance efforts, delineates the specific product-related responsibilities, and focuses on the platform's readiness to adhere to GDPR principles.
 
 Platform-Specific compliance: ::
 
-* The compliance and regulatory efforts are solely focused on the functionalities and data processing activities of the Registry Platform. Any compliance measures mentioned in this document refer exclusively to the platform's data handling capabilities.
+* The compliance and regulatory efforts are solely focused on the functionalities and data processing activities of the Digital Services Development Platform. Any compliance measures mentioned in this document refer exclusively to the platform's data handling capabilities.
 
-* The platform's compliance scope encompasses all data processing activities performed directly by the Registry Platform itself. It does not extend to any data processing activities conducted by third-party integrations or external services utilized by the platform and configured by developer of platform regulations.
+* The platform's compliance scope encompasses all data processing activities performed directly by the Digital Services Development Platform itself. It does not extend to any data processing activities conducted by third-party integrations or external services utilized by the platform and configured by developer of platform regulations.
 
-* The compliance efforts center on the protection of personal data collected, stored, processed, and transmitted within the Registry Platform. Other data processing activities within the organization (platform owner) fall outside the scope of this compliance documentation.
+* The compliance efforts center on the protection of personal data collected, stored, processed, and transmitted within the Digital Services Development Platform. Other data processing activities within the organization (platform owner) fall outside the scope of this compliance documentation.
 
 GDPR-readiness: ::
 
-* The Registry Platform is designed with a focus on Personal Data Protection Law thus transitively on GDPR-readiness, aiming to align with the key principles and requirements of data privacy regulations.
+* The Digital Services Development Platform is designed with a focus on Personal Data Protection Law thus transitively on GDPR readiness, aiming to align with the key principles and requirements of data privacy regulations.
 
 * The platform is intended to support the rights of data subjects, including the right to access, rectify and erase on demand of their personal data.
 
-* The Registry Platform intends to maintain robust security measures, such as data encryption, access controls and audit to safeguard user data.
+* The Digital Services Development Platform intends to maintain robust security measures, such as data encryption, access controls and audit to safeguard user data.
 
 * The platform's compliance efforts also encompass ensuring data transparency and accountability in its data processing activities.
 
@@ -52,13 +52,13 @@ Exclusions: ::
 
 * This compliance document does not cover target organization's (platform owner) general data protection practices or policies. It solely addresses the software part of platform's compliance scope.
 
-* The Registry Platform may interact with other systems or services operated by the organization (platform owner). However, this compliance document does not extend to the compliance status of those external systems.
+* The Digital Services Development Platform may interact with other systems or services operated by the organization (platform owner). However, this compliance document does not extend to the compliance status of those external systems.
 
 * Third-party applications, services, or integrations utilized by the product are the responsibility of their respective owners and fall outside the scope of this compliance documentation
 
 == Data protection measures
 
-The Data Protection Measures implemented in the Registry Platform are designed to ensure the security, confidentiality, and integrity of personal data processed by the software. Below are the key data protection measures implemented:
+The Data Protection Measures implemented in the Digital Services Development Platform are designed to ensure the security, confidentiality, and integrity of personal data processed by the software. Below are the key data protection measures implemented:
 
 === Encryption at rest and in transit
 
@@ -84,11 +84,11 @@ For more information, please visit:
 
 The platform by itself follows the principle of data minimization.  Hovewer forms and data modeling capabilities are fully owned by developers of registry regulations. Thus, developers should carefully select the type and amount of information requested and collected. By doing so, they aim to limit the data collection process to the bare essentials, thereby reducing the potential risks associated with excessive data exposure. This not only safeguards user privacy but also aligns with prevailing data protection regulations that emphasize the importance of minimizing personal data processing.
 
-Personal data is retained only for as long as required to fulfill the intended purposes, since Registries Platform has been developed to meet a legal obligation under national legislation for government organizations, the prolonged storage of user data is utilized.
+Personal data is retained only for as long as required to fulfill the intended purposes, since Digital Services Development Platform has been developed to meet a legal obligation under national legislation for government organizations, the prolonged storage of user data is utilized.
 
 === Pseudonymization
 
-The Registry Platform doesn't utilize pseudonymization techniques to replace identifiable information with reversible identifiers in order to reduce the risk of unauthorized access in favour of other more critical security controls.
+The Digital Services Development Platform doesn't utilize pseudonymization techniques to replace identifiable information with reversible identifiers in order to reduce the risk of unauthorized access in favour of other more critical security controls.
 
 === Secure development practices
 
@@ -124,18 +124,23 @@ For more information, please visit:
 
 === Limit collection
 
-The _Registries Platform_ limits the collection of PII to the minimum that is relevant, proportional and necessary for the identified purposes. It means that platform limits the amount of PII that the organization (platform owner) collects indirectly (e.g. through web logs, system logs, etc.).
+The _Digital Services Development Platform_ limits the collection of PII to the minimum that is relevant,
+proportional and necessary for the identified purposes.
+It means
+that platform limits the amount of PII
+that the organization (platform owner) collects indirectly (e.g. through web logs,
+system logs, etc.).
 
 The organization (platform owner) should limit the collection of PII to what is adequate, relevant and necessary in relation to the identified purposes throught the registry regulations modeling.  There is only one place where personal data leave the footprint beyond the business process scope is a historical data which is gathered as non-repudiation control.
 
 === Limit processing
 
-The _Registries Platform_ limits the processing of PII to that, which is adequate, relevant and necessary for
+The _Digital Services Development Platform_ limits the processing of PII to that, which is adequate, relevant and necessary for
 the identified purposes. All the personal data collected through the modeled business processes handled to fulfill the objectives of user-initiated request only. Default settings prioritize data protection, minimizing the processing of personal data by disabling external system integrations. All the data related to business processes are transparently available for the data principal in user portal.
 
 === Accuracy and quality
 
-The _Registries Platform_ ensures that PII is as accurate and complete as is necessary for the purposes for which it is processed.
+The _Digital Services Development Platform_ ensures that PII is as accurate and complete as is necessary for the purposes for which it is processed.
 In order to achieve its ambedded data validation control on business process modeling stage, digital documents validation and registry regulations' changes as well.
 
 === Temporary files
@@ -144,19 +149,19 @@ Temporary files and data which are produced as intermediaries of bussiness proce
 
 === Disposal
 
-The Registry Platform currently does not implement any specific data disposal approach.
+The Digital Services Development Platform currently does not implement any specific data disposal approach.
 
 === PII transmission controls
 
 Transmission of PII is controlled by ensuring that only authorized systems have access to transmission systems, and by following the appropriate processes to ensure that PII is transmitted without a compromise to the correct recipients.
 
-The _Registries Platform_ utilizes secure data exchange gateway. Its a modern organizational and technical solution that allows state bodies and local self-government bodies to use secure information interdepartmental interactions via the Internet by exchanging electronic messages between their information systems.
+The _Digital Services Development Platform_ utilizes secure data exchange gateway. Its a modern organizational and technical solution that allows state bodies and local self-government bodies to use secure information interdepartmental interactions via the Internet by exchanging electronic messages between their information systems.
 
 == Data Subject Rights
 
 === Right to Access and Rectification
 
-The Registry Platform is designed to satisfy almost all requirements of organization in terms of data processing due to extensive registry regulation development capabilities.
+The Digital Services Development Platform is designed to satisfy almost all requirements of organization in terms of data processing due to extensive registry regulation development capabilities.
 
 Registry regulation modeler can create a business processes which will let the data principal to access provided information in order to satisfy the right to access.
 
@@ -164,7 +169,7 @@ Another business process can be created and designed in a way to satisfy the rig
 
 === Right to erasure (Right to be forgotten):
 
-The Registry Platform has been developed to meet legal obligation under national legislation for government organizations, thus the prolonged storage of user data is utilized.
+The Digital Services Development Platform has been developed to meet legal obligation under national legislation for government organizations, thus the prolonged storage of user data is utilized.
 
 The platform is still subject to data protection laws and regulations, which may include provisions regarding the right to erasure. These laws outline the circumstances under which individuals can request the deletion of their personal data.
 

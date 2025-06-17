@@ -1,7 +1,7 @@
 = Registries update
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //- Оновлення не має потребувати внесення змін до регламенту реєстру та бути _backward-compatible_
 - The update should not require amendments to the registry regulations and should remain _backward-compatible_

@@ -1,7 +1,7 @@
 = Initial configuration for Scrubbing and Deep Scrubbing in a Ceph cluster
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 After installing the Platform on an *OKD cluster*, it is recommended to configure the *scrubbing* and *deep scrubbing* processes in the Ceph cluster to ensure data integrity and system stability.
 

@@ -2,7 +2,7 @@
 :sectlinks:
 :sectanchors:
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 The *_Managing UI Forms_* section demonstrates the functionality for modeling and managing form schemas for business processes in the Administrative portal.
 

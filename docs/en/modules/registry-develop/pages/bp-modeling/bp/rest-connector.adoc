@@ -1,7 +1,7 @@
 = Integration with external services using the REST connector
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 You can use the `REST connector` to connect to secured services or systems outside the Platform cluster.
 

@@ -1,7 +1,7 @@
 :sectlinks:
 = Events
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 In this section, you'll explore *events* within the context of business process modeling using BPMN (Business Process Model and Notation). *_Events_* are crucial in defining how processes start, progress, and conclude. We'll cover the main types of events in detail:
 

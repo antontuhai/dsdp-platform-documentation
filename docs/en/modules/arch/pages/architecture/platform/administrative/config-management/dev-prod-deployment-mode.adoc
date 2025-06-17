@@ -1,7 +1,7 @@
 = Deploying the Platform to production without registry development tools
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Цей документ містить інформацію про загальні положення та технічний дизайн при розгортанні Платформи реєстрів.
 This document provides information on the general points and technical design during Platform deployment.
@@ -9,9 +9,9 @@ This document provides information on the general points and technical design du
 == General provisions
 
 //* Компоненти, які задіяні у процесах розробки реєстрів не повинні розгортатись разом із продакшн версіями Платформи реєстрів.
-* Components involved in the processes of registry development must not be deployed together with a production version of the Platform for state registries.
+* Components involved in the processes of registry development must not be deployed together with a production version of the Digital Services Development Platform.
 //* Публічні роути компонентів, які задіяні у процесах розробки реєстрів, не повинні створюватись разом із продакшн версіями Платформи реєстрів.
-* Public routes of components involved in the processes of registry development must not be created together with a production version of the Platform for state registries.
+* Public routes of components involved in the processes of registry development must not be created together with a production version of the Digital Services Development Platform.
 * Registry template must include a variable to set the current Platform deployment mode.
 //* Підтримується два режими деплоя: `production` та `development`.
 * Two deployment modes are supported: `production` and `development`.
@@ -21,7 +21,7 @@ This document provides information on the general points and technical design du
 
 The following table lists the components and their routes, which are involved, or need to be changed/created within the realization of functional requirements according to the technical solution design.
 
-include::platform:ROOT:partial$templates/snippets/dev-prod-mode-en.adoc[]
+include::DSDP:ROOT:partial$templates/snippets/dev-prod-mode-en.adoc[]
 
 //Для налаштування відповідних режимів для темплейтів потрібно вказати потрібний режим наступним чином:
 To configure the corresponding modes for the templates, set the mode the following way:

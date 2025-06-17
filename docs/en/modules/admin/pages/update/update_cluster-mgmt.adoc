@@ -1,7 +1,7 @@
 = Updating Platform infrastructure components
-include::platform:ROOT:partial$templates/document-attributes/default-set-ua.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-ua.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 NOTE: Start the update process on the page xref:admin:update/special-steps-for-update/special-steps.adoc[Special steps for update], and then, within the framework of performing special steps, proceed to update the infrastructure components.
 

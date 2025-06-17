@@ -1,7 +1,7 @@
 = Email messaging subsystem
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
@@ -11,7 +11,7 @@ Subsystem, designed for Registry mailbox service, antivirus/antispam email analy
 == Subsystem functions
 
 //* Адміністрування поштових служб екземпляра _Платформи Реєстрів_
-* Administering of email services in a _Registry Platform_ instance
+* Administering of email services in a _Digital Services Development Platform_ instance
 //* Обслуговування поштових скриньок реєстрів
 * Registry mailboxes service
 //* Відправка поштових повідомлень користувачам реєстрів

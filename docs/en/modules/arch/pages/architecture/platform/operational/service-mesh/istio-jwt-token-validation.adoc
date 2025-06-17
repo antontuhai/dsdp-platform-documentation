@@ -1,7 +1,7 @@
 = Validating JWT with Istio Envoy
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //TIP: JWT-token (_eng. **JSON Web Token**_) -- формат безпечного обміну даними, який використовується найчастіше для передачі чутливої інформації або авторизації HTTP-запитів користувачів. JWT-токен може бути підписаний секретом (за допомогою HMAC алгоритму) або пар відкритий/приватний ключ використовуючи алгоритми RSA або ECDSA. Стандартизований у RFC 7519.
 TIP: JWT-token (_eng. **JSON Web Token**_) -- a secure data exchange format that is most commonly used to transfer sensitive information or authorize user HTTP requests. The JWT token can be signed with a secret (using the HMAC algorithm) or a public/private key pair using the RSA or ECDSA algorithms. Standardized in RFC 7519.

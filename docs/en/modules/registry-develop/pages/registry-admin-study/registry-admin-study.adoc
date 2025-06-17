@@ -1,8 +1,8 @@
 //= Онбординг технічних адміністраторів реєстру
 = Registry administrators onboarding
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 [NOTE]
 ====
 //Ми надаємо можливість не лише теоретично ознайомитися з навчальними матеріалами, а й перевірити на практиці роботу та налаштування всього, що описано на цій сторінці, за допомогою _тестового реєстру_. Його може розгорнути Адміністратор Платформи в окремому проєкті (namespace) на Платформі.

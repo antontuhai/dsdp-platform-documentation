@@ -1,7 +1,7 @@
 = Configuring the Select component to get and filter data from API resources
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 TIP: An _API endpoint_ is a service entry point that enables communication between different systems, allowing them to interact and exchange data.
 

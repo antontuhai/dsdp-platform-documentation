@@ -18,8 +18,6 @@ jobs:
         run: npm i asciidoctor-kroki
       - name: Generate Site EN
         run: npx antora site-en-github.yaml
-      - name: Generate Site UA
-        run: npx antora site-ua-github.yaml
       - name: Run update vars script for demo registry's URLs
         run: ./.github/scripts/update-demo-registry-vars.sh
         shell: bash

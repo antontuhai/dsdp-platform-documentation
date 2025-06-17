@@ -1,7 +1,7 @@
 = JUEL functions in business processes
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General overview
 
@@ -11,7 +11,7 @@ In https://camunda.com/products/camunda-platform/modeler/[Camunda], you can use 
 
 //У розрізі Платформи реєстрів реалізовано підтримку скриптування за допомогою Groovy та http://juel.sourceforge.net/[JUEL (Java Unified Expression Language)] -- уніфікованої скриптової мови виразів Java -- з використанням спеціальних розроблених JUEL-функцій.
 
-In the context of the Registry Platform, scripting support is implemented using Groovy and http://juel.sourceforge.net/[JUEL (Java Unified Expression Language)] -- a unified scripting language for Java expressions - using specially developed JUEL functions.
+In the context of the Digital Services Development Platform, scripting support is implemented using Groovy and http://juel.sourceforge.net/[JUEL (Java Unified Expression Language)] -- a unified scripting language for Java expressions - using specially developed JUEL functions.
 
 //Використовуйте платформні JUEL-функції для спрощення моделювання бізнес-процесів. Наразі імплементовано такі функції та їх автодоповнення у візуальному редакторі коду:
 Use the platform JUEL functions to simplify business process modeling. Currently, the following functions and their auto-completion are implemented in the visual code editor:

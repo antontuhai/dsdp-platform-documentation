@@ -1,7 +1,7 @@
 = Copying UI forms
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 Regulation developers have the ability to create duplicates of UI forms, which involves reproducing all their components, including JSON code and modeling components. Each copy is given the prefix `_COPY_` in its name. This feature is especially useful when developing a series of similar forms or when using an existing form as a template.
 

@@ -12,9 +12,9 @@
 
 = Deploying the Platform on target environments
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
-The Platform for state registries is *_cloud-agnostic_*, meaning it can function effectively on different cloud services without relying on a specific environment. This flexibility enables clients and developers to choose the most appropriate cloud service for their needs and preferences without being bound to a single provider.
+The Digital Services Development Platform is *_cloud-agnostic_*, meaning it can function effectively on different cloud services without relying on a specific environment. This flexibility enables clients and developers to choose the most appropriate cloud service for their needs and preferences without being bound to a single provider.
 
 The Platform must be deployed on virtual infrastructures that are officially supported, which currently include:
 

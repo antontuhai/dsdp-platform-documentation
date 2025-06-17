@@ -1,15 +1,15 @@
 .navbar {
-    background: #015ABC;
+    background:  #015ABC;
 }
 
 .navbar-brand {
-    justify-content: center;
+    justify-content: left;
     align-items: center;
 }
 
 .navbar-brand img.site-logo {
     height: 2.5rem;
-    display: flex;
+    display: inline-block;
 }
 
 .navbar-brand a.site-title {
@@ -17,12 +17,14 @@
 }
 
 footer.footer {
-    background-color: #015ABC;
-    color: #ffffff;
-    padding: 1rem;
+  background-color:  #015ABC;
+  color:  #ffffff;
+  padding: 1.5rem 1rem;
+  text-align: left;
+  font-size: 0.9rem;
 }
 
-footer.footer img.made-in-ua-logo {
+footer.footer img.footer-logo {
     display: inline-block;
     float: right;
     height: 2.5rem;
@@ -30,6 +32,17 @@ footer.footer img.made-in-ua-logo {
 
 footer.footer p {
     display: inline-block;
+}
+
+.navbar-container,
+.footer-container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
@@ -64,10 +77,19 @@ footer.footer p {
     margin-right: 4px;
 }
 
-.nav-item.is-active>a.nav-link {
-    color: #1565c0;
+.nav-item.is-active > a.nav-link,
+.nav-item.is-active > span.nav-text {
+  color: #015ABC;
+  font-weight: 600;
+  border-left: 3px solid #015ABC;
+  padding-left: 0.5em;
+  background-color: #e7f0fa; /* легке підсвічування для глибшої навігації */
+  border-radius: 0 4px 4px 0;
 }
 
-.nav-item.is-active>span.nav-text {
-    color: #1565c0;
+.site-title {
+  font-size: 1rem;
+  color: #fff;
+  cursor: default;
+  text-decoration: none;
 }

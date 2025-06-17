@@ -1,7 +1,7 @@
 = Моделювання та внесення змін до бізнес-процесу
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Опис механізму моделювання та внесення змін до бізнес-процесу наведений на прикладі бізнес-процесу оновлення довідника хімічних факторів довільних.
 The mechanism for modeling and making changes to the business process is described using the example of the arbitrary update of the chemical factors directory business process.

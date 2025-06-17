@@ -11,7 +11,7 @@
 
 = Creating merge requests
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 After deploying the registry regulations, only one version of changes is available -- the xref:registry-admin/admin-portal/version-control/master-version-settings.adoc[master version].
 

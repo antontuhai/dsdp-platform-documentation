@@ -1,7 +1,7 @@
 = Container orchestration platform
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General description
 
@@ -21,7 +21,7 @@ and respond to load increases or decreases.
 * distributed data stores for storing state and information of stateful applications.
 
 OpenShift is an ideal solution for organizations looking to modernize their software infrastructure
-and accelerate digital transformation processes. In Registry Platform, OpenShift is used as the main platform
+and accelerate digital transformation processes. In Digital Services Development Platform, OpenShift is used as the main platform
 for deploying and managing containerized applications.
 
 == Main features
@@ -39,7 +39,7 @@ The OpenShift architecture consists of several virtual machines, including:
 
 * *Master virtual machines*. Responsible for managing the overall health of the cluster, including application planning and deployment.
 * *Infrastructure and Platform virtual machines*. They contain system operators and applications that provide work for
-_Container orchestration Platform_ and _Registries Platforms_.
+_Container orchestration Platform_ and _Digital Services Development Platform_.
 * *Registry virtual machines*. Run containers with registry software.
 
 == Technology stack

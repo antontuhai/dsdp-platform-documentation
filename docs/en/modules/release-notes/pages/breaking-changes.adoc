@@ -2,6 +2,6 @@
 
 This page focuses on the most critical changes to the Platform functionality that are backward incompatible.
 
-// include::platform:ROOT:partial$admonitions/language-no-english.adoc[]
+// include::DSDP:ROOT:partial$admonitions/language-no-english.adoc[]
 
-include::platform:ROOT:partial$admonitions/no-release-notes-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/no-release-notes-en.adoc[]

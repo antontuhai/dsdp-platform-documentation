@@ -1,7 +1,7 @@
 = Backup and restore subsystem
-include::platform:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
@@ -13,7 +13,7 @@ Subsystem that provides safe backup copy and restore operations for Registry and
 * Safe backup copy and restore operations for Registry data
 * Recovery of Registry and central Platform components
 * Registry operation disaster recovery
-* Registry resources migration to another Registry Platform instance
+* Registry resources migration to another Digital Services Development Platform instance
 
 == Subsystem technical design
 
@@ -68,4 +68,4 @@ The _Backup and restore subsystem_ can operate with large volumes of Registry an
 
 === _Recoverability_
 
-_Backup and restore subsystem_ allows the Registry Platform to recover Platform and Registry data in case of failure or unplanned situations.
+_Backup and restore subsystem_ allows the Digital Services Development Platform to recover Platform and Registry data in case of failure or unplanned situations.

@@ -1,7 +1,7 @@
 = Generating excerpts in PDF format
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //Функціональністю Кабінету отримувача послуг передбачена можливість замовлення та отримання витягів на підставі даних реєстру. Процес включає декілька етапів: попереднє замовлення, завантаження та перегляд.
 The functionality of the Citizen portal includes the possibility to request and receive excerpt based on registry data. The process consists of several steps: pre-ordering, downloading, and viewing.

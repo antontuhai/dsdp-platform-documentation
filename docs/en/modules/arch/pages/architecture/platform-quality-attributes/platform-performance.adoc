@@ -1,13 +1,13 @@
 = Performance
 include::ROOT:partial$templates/document-attributes/arch-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == Overview
 
 _The quality attribute defines the capability of a system to process any request within a restricted time interval, and provide the processing of the required requests number in the set time interval without an increase in the time defined for their processing._
 
-The _Registry Platform_ performance requirements are represented by two key metrics:
+The _Digital Services Development Platform_ performance requirements are represented by two key metrics:
 
 * _Latency_ -- time delay between request sending and receiving system response (95th percentile)
 * _Throughput_ -- system channel; capacity, defined by the number of processed requests in a set time period

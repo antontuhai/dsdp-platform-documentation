@@ -1,7 +1,7 @@
 = Sorting services by execution status in the Officer portal
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 //З метою розширення можливостей інтерфейсу Кабінету посадової особи, а також сприянню використовності, розроблено підтримку функціональності сортування власних послуг у виконанні за статусом.
 To expand the capabilities of the Officer portal's interface and enhance usability, support for sorting functionality by execution status has been developed.

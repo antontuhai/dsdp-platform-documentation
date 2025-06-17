@@ -1,7 +1,7 @@
 = Downloading UI forms
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 Regulation developers have the ability to download UI forms in JSON format for further processing in a local environment.
 

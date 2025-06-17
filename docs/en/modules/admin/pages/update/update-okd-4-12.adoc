@@ -1,7 +1,7 @@
 = Updating OKD from version 4.11 to 4.12
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 This document describes the procedure for updating OKD from `4.11` to `4.12` on both *AWS* and *vSphere* infrastructures.
 

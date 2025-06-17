@@ -1,7 +1,7 @@
 = Sorting business processes
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 Utilize the functionality of sorting business processes. This allows you to arrange available process models in ascending `↑` or descending `↓` order, improve user experience, and explore the history of creation and modification of processes.
 

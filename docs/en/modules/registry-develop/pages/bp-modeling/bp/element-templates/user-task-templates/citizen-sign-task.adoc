@@ -1,7 +1,7 @@
 = Citizen sign task
-include::platform:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
+include::DSDP:ROOT:partial$templates/document-attributes/default-set-en.adoc[]
 
-include::platform:ROOT:partial$admonitions/language-en.adoc[]
+include::DSDP:ROOT:partial$admonitions/language-en.adoc[]
 
 == General overview
 //Розширення використовується для визначення задачі, що потребує валідації підписом особи-отримувача послуг реєстру (може бути доступна тільки ініціаторові бізнес-процесу).
